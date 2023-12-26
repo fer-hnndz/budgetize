@@ -1,11 +1,14 @@
-from rich.console import Console
-from rich.prompt import Prompt, IntPrompt, FloatPrompt
-from rich.table import Table
-from core.transaction import Transaction
 import time
-from core.cli.utils import should_run_initial_config, save_user_data, load_user_data
-from core.users.user import User
+
+from rich.console import Console
+from rich.prompt import FloatPrompt, IntPrompt, Prompt
+from rich.table import Table
+
 from core.accounts.account import Account
+from core.cli.utils import (load_user_data, save_user_data,
+                            should_run_initial_config)
+from core.transaction import Transaction
+from core.users.user import User
 
 console = Console()
 
