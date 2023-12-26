@@ -5,6 +5,7 @@ Util functions for the CLI
 import os
 import json
 from core.users.user import User
+import core.consts as consts
 
 
 def should_run_initial_config() -> bool:
@@ -15,7 +16,7 @@ def should_run_initial_config() -> bool:
     # Make sure if we need to run initial config
 
     # Check the user folder and if it contains the app folder
-    data_path = os.path.join(os.path.expanduser("~"), ".budgetify")
+    data_path = os.path.join(os.path.expanduser("~"), consts.APP_FOLDER_NAME)
 
     # If the folder does not exist, run initial config
     if not os.path.exists(data_path):
@@ -28,17 +29,20 @@ def should_run_initial_config() -> bool:
 def load_user_data() -> User:
     """Loads all the user data from the data file."""
 
-    data_path = os.path.join(os.path.expanduser("~"), ".budgetify", "user_data.bin")
+    data_path = os.path.join(
+        os.path.expanduser("~"), consts.APP_FOLDER_NAME, consts.USER_FILE_NAME
+    )
     with open(data_path) as f:
         data = json.load(f)
         return User.from_file_data(data)
 
 
 def save_user_data(user: User):
-    data_folder = os.path.join(os.path.expanduser("~"), ".budgetify")
+    data_folder = os.path.join(os.path.expanduser("~"), consts.APP_FOLDER_NAME)
+
     if not os.path.exists(data_folder):
         os.makedirs(data_folder)
 
-    data_path = os.path.join(data_folder, "user_data.bin")
+    data_path = os.path.join(data_folder, consts.USER_FILE_NAME)
     with open(data_path, "w") as f:
         f.write(json.dumps(user.to_dict(), indent=4))
