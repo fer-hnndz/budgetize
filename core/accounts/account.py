@@ -1,14 +1,6 @@
-from enum import Enum
-from transaction import Transaction
+from core.accounts.AccountType import AccountType
+from core.transaction import Transaction
 from typing import List
-
-
-class AccountType(Enum):
-    EMERGENCY = 1
-    SAVINGS = 2
-    WALLET = 3
-    CHECKING = 4
-    INVESTMENT = 5
 
 
 class Account:

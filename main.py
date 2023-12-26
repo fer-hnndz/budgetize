@@ -1,89 +1,75 @@
 from rich.console import Console
 from rich.prompt import Prompt, IntPrompt, FloatPrompt
 from rich.table import Table
-from user import User
-import os
+from core.transaction import Transaction
 import time
-import finance
-from transaction import Transaction
+from core.cli.utils import should_run_initial_config, save_user_data, load_user_data
+from core.users.user import User
 
 console = Console()
-# Comprobar si se debe iniciar la configuracion inicial
 
-data_path = os.path.join(os.path.expanduser("~"), ".pyfinance")
+# * Global vars
+running: bool = True
+user: User = None
 
 
+# Initial config
 def initial_config():
-    # Configuracion inicial cuando se abre el programa por primera vez
-    console.rule("[bold cyan] Configuración Inicial")
-    name = Prompt.ask("[bold yellow]Ingrese su primer nombre")
-    surname = Prompt.ask("[bold yellow]Ingrese su apellido: ")
+    console.rule("[bold cyan] Initial Config")
+    name = Prompt.ask("[bold yellow]What's your first name?")
+    surname = Prompt.ask("[bold yellow]What's your surname?")
 
-    new_user = User(1, name, surname, [])
-    # Guardar nueva informacion dentro de la carpeta de datos
+    new_user = User(name, surname, [])
 
-    with console.status("[bold cyan]Guardando información...", spinner="arc"):
-        time.sleep(1.5)
-        finance.write_user_data(new_user)
+    # Save user
+    with console.status("[bold cyan]Saving info...", spinner="arc"):
+        save_user_data(new_user)
 
     console.print("[bold green]Información guardada con éxito!")
+    time.sleep(0.7)
 
 
-if not os.path.exists(data_path):
-    with console.status(
-        "[bold red]No se pudo encontrar la carpeta de datos. Creando...",
-        spinner="arc",
-    ):
-        time.sleep(1.5)
-
-        console.print("[bold green]Carpeta creada con éxito!")
-        console.input("Presione enter para continuar...")
-        console.clear()
-
-
-if not "finances.bin" in os.listdir(data_path):
+if should_run_initial_config():
     initial_config()
 
-running: bool = True
-
-user = None
 try:
-    user = finance.load_user_data()
+    user = load_user_data()
 except:
     console.print(
-        "[bold red]HA OCURRIDO UN ERROR LEYENDO LOS DATOS GUARDADOS.\nSe ejecutará la configuración inicial de nuevo"
+        "[bold red]THERE WAS AN ERROR TRYING TO RETRIEVE THE USER DATA. RE-RUNNING INITIAL CONFIG..."
     )
-    console.input("[bold cyan]Presione enter para continuar.")
+    console.input("[bold cyan]Press enter to continue...")
     initial_config()
-    user = finance.load_user_data()
+    user = load_user_data()
 
 while running:
-    accounts_table = Table("Nombre", "Saldo", "Moneda", title="Cuentas")
+    # Setup accounts table
+    accounts_table = Table("Account Name", "Balance", "Currency", title="Accounts")
     accounts_table.expand = True
 
     for account in user.accounts:
         accounts_table.add_row(account.name, account.balance, "HNL")
 
-    console.rule("[bold cyan] Menú Principal")
+    console.rule("[bold cyan] Main Menu")
     console.print(
-        f"[bold cyan]Bienvenido, [bold yellow]{user.name} {user.surname}[/bold yellow]!\n"
+        f"[bold cyan]Welcome, [bold yellow]{user.name} {user.surname}[/bold yellow]!\n"
     )
     console.print(accounts_table)
     console.print(
         """\n
-1. Agregar Gasto
-2. Agregar Ingreso
-3. Administrar Cuentas
+1. Add Expense
+2. Add Income
+3. Manage Accounts
 """
     )
     op = int(
         Prompt.ask(
-            "[bold yellow]Ingrese la opción que desea realizar ",
+            "[bold yellow]Enter the number of the option you want to select:",
             choices=["1", "2", "3"],
         )
     )
-    console.log(op)
-    console.log(type(op))
+    # console.log(op)
+    # console.log(type(op))
 
     if op == 1:
         if len(user.accounts) == 0:  # Si no hay cuentas, no se puede agregar un gasto
