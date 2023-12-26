@@ -25,7 +25,7 @@ def initial_config():
     with console.status("[bold cyan]Saving info...", spinner="arc"):
         save_user_data(new_user)
 
-    console.print("[bold green]Información guardada con éxito!")
+    console.print("[bold green]User saved successfully!")
     time.sleep(0.7)
 
 

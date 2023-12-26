@@ -20,7 +20,7 @@ def should_run_initial_config() -> bool:
 
     # If the folder does not exist, run initial config
     if not os.path.exists(data_path):
-        return False
+        return True
 
     # Check if the folder has the user file, if it does not exist, run the config
     return not "user_data.bin" in os.listdir(data_path)
