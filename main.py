@@ -5,6 +5,7 @@ from core.transaction import Transaction
 import time
 from core.cli.utils import should_run_initial_config, save_user_data, load_user_data
 from core.users.user import User
+from core.accounts.account import Account
 
 console = Console()
 
@@ -44,11 +45,13 @@ except:
 
 while running:
     # Setup accounts table
-    accounts_table = Table("Account Name", "Balance", "Currency", title="Accounts")
+
+    # TODO: Currencies?
+    accounts_table = Table("Account Name", "Balance", title="Accounts")
     accounts_table.expand = True
 
     for account in user.accounts:
-        accounts_table.add_row(account.name, account.balance, "HNL")
+        accounts_table.add_row(account.name, "$" + str(account.balance))
 
     console.rule("[bold cyan] Main Menu")
     console.print(
@@ -59,7 +62,8 @@ while running:
         """\n
 1. Add Expense
 2. Add Income
-3. Manage Accounts
+3. Create Account
+4. Delete Account
 """
     )
     op = int(
@@ -110,3 +114,31 @@ while running:
         # categoria
 
         t = Transaction()
+    elif op == 3:
+        console.rule("[bold cyan]Add Accounts")
+
+        account_name = ""
+        while account_name.strip() == "":
+            account_name = Prompt.ask(
+                "[bold yellow]Enter the name of the account: "
+            ).strip()
+
+            if account_name == "":
+                console.print("[bold red]The account name cannot be empty.")
+
+        balance: int = -1
+        while balance < 0:
+            balance = IntPrompt.ask("[bold yellow]Enter the initial balance: ")
+
+            if balance <= 0:
+                console.print("[bold red]The initial balance must be atleast 0.")
+
+        # Create account
+        new_account = Account(account_name, balance)
+        user.accounts.append(new_account)
+
+        with console.status("[bold cyan]Saving info...", spinner="arc"):
+            save_user_data(user)
+
+        console.print("[bold green]Account saved successfully!")
+        time.sleep(0.7)
