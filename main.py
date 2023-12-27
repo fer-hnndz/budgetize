@@ -5,10 +5,11 @@ from rich.prompt import FloatPrompt, IntPrompt, Prompt
 from rich.table import Table
 
 from core.accounts.account import Account
-from core.cli.utils import (load_user_data, save_user_data,
-                            should_run_initial_config)
-from core.transaction import Transaction
+from core.cli.utils import load_user_data, save_user_data, should_run_initial_config
+from core.Transaction import Transaction
 from core.users.user import User
+from core.CurrencyManager import CurrencyManager
+import core.consts as consts
 
 console = Console()
 
@@ -19,11 +20,17 @@ user: User = None
 
 # Initial config
 def initial_config():
-    console.rule("[bold cyan] Initial Config")
-    name = Prompt.ask("[bold yellow]What's your first name?")
-    surname = Prompt.ask("[bold yellow]What's your surname?")
+    # Retrieve exchange rates
 
-    new_user = User(name, surname, [])
+    console.rule("[bold cyan]Initial Configuration")
+    name = Prompt.ask("[bold yellow]Enter your name")
+    base_currency = Prompt.ask(
+        "[bold yellow]Enter the symbol of you base currency",
+        choices=consts.CURRENCY_SYMBOLS,
+        default="USD",
+    )
+
+    new_user = User(name=name, base_currency=base_currency, accounts=[])
 
     # Save user
     with console.status("[bold cyan]Saving info...", spinner="arc"):
@@ -49,7 +56,13 @@ except:
 while running:
     # Setup accounts table
 
-    # TODO: Currencies?
+    exchanges = None
+    with console.status(
+        "[bold cyan]Retrieving latest exchange rates...", spinner="arc"
+    ):
+        currencies = CurrencyManager(user.base_currency)
+        exchanges = currencies.get_all_exchanges()
+
     accounts_table = Table("Account Name", "Balance", title="Accounts")
     accounts_table.expand = True
 
@@ -57,9 +70,7 @@ while running:
         accounts_table.add_row(account.name, "$" + str(account.balance))
 
     console.rule("[bold cyan] Main Menu")
-    console.print(
-        f"[bold cyan]Welcome, [bold yellow]{user.name} {user.surname}[/bold yellow]!\n"
-    )
+    console.print(f"[bold cyan]Welcome, [bold yellow]{user.name}[/bold yellow]!\n")
     console.print(accounts_table)
     console.print(
         """\n
