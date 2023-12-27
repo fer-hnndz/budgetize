@@ -4,12 +4,12 @@ from rich.console import Console
 from rich.prompt import FloatPrompt, IntPrompt, Prompt
 from rich.table import Table
 
+import core.consts as consts
 from core.accounts.account import Account
 from core.cli.utils import load_user_data, save_user_data, should_run_initial_config
+from core.CurrencyManager import CurrencyManager
 from core.Transaction import Transaction
 from core.users.user import User
-from core.CurrencyManager import CurrencyManager
-import core.consts as consts
 
 console = Console()
 

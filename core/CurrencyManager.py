@@ -1,8 +1,10 @@
-import os
-import core.consts as consts
-import requests
 import json
+import os
+
+import requests
 from arrow import Arrow
+
+import core.consts as consts
 
 
 class CurrencyManager:

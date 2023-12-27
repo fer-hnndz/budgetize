@@ -1,7 +1,6 @@
 from typing import List
 
 from core.accounts.AccountType import AccountType
-
 from core.Transaction import Transaction
 
 
