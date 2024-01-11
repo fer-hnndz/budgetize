@@ -1,11 +1,10 @@
-#accounts-label {
-    text-align: center;
-}
-
 DataTable {
     text-align: center;
 }
 
+Horizontal {
+    align: center top;
+}
 Button {
-    margin-top: 2;
+    margin: 1 2
 }

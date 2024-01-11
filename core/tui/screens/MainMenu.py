@@ -1,6 +1,7 @@
+from textual.binding import Binding
 from textual.containers import Horizontal
 from textual.screen import Screen
-from textual.widgets import Button, DataTable, Header, Label
+from textual.widgets import Button, DataTable, Footer, Header, Label
 
 from core.accounts.account import Account
 from core.accounts.AccountType import AccountType
@@ -10,6 +11,14 @@ from core.users.user import User
 
 class MainMenu(Screen):
     CSS_PATH = "css/main_menu.tcss"
+    BINDINGS = [
+        Binding(
+            key="n,N",
+            key_display="N",
+            action="push_screen('add_transaction')",
+            description="Add Transaction",
+        ),
+    ]
 
     def __init__(self):
         super().__init__()
@@ -27,7 +36,7 @@ class MainMenu(Screen):
     def compose(self):
         self.app.sub_title = "Main Menu"
         yield Header()
-        yield Label("Accounts", id="accounts-label")
+        yield Footer()
         yield DataTable()
         yield Horizontal(
             Button("Create Account", id="create-account-button"),
@@ -55,3 +64,5 @@ class MainMenu(Screen):
     def on_button_pressed(self, event: Button.Pressed):
         if event.button.id == "create-account-button":
             self.app.push_screen("create_account")
+        if event.button.id == "manage-accounts-button":
+            self.app.push_screen("manage_accounts")
