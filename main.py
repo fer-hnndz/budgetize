@@ -1,4 +1,4 @@
-from core.tui import Startup
+from core.tui import TuiApp
 
 if __name__ == "__main__":
-    Startup().run()
+    TuiApp().run()

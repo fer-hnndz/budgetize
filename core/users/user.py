@@ -5,6 +5,7 @@ from core.accounts.account import Account
 
 class User:
     def __init__(self, name: str, base_currency: str, accounts: List[Account]):
+        """Represents a user of the app"""
         self.name: str = name
         self.base_currency: str = base_currency
         self.accounts: List[Account] = accounts

@@ -1,1 +1,1 @@
-from .screens.Startup import Startup
+from .TuiApp import TuiApp
