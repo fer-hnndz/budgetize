@@ -1,5 +1,6 @@
 from textual.app import App, ComposeResult
-from .screens import Startup, InitialConfig, MainMenu
+
+from .screens import InitialConfig, MainMenu, Startup
 
 
 class TuiApp(App):

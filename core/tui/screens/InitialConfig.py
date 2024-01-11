@@ -1,9 +1,10 @@
 from textual.app import ComposeResult
 from textual.screen import Screen
-from core.users.user import User
-from textual.widgets import Label, Select, Header, Input, Button
+from textual.widgets import Button, Header, Input, Label, Select
+
 import core.consts as consts
 from core.cli.utils import save_user_data
+from core.users.user import User
 
 
 class InitialConfig(Screen):

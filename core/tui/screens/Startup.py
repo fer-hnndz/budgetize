@@ -1,9 +1,10 @@
+from textual import on
 from textual.app import ComposeResult
+from textual.events import Event, Ready
 from textual.screen import Screen
 from textual.widgets import Label, LoadingIndicator
+
 from core.cli.utils import should_run_initial_config
-from textual.events import Event, Ready
-from textual import on
 
 
 class Startup(Screen):
