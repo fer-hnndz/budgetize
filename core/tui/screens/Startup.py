@@ -1,6 +1,4 @@
-from textual import on
 from textual.app import ComposeResult
-from textual.events import Event, Ready
 from textual.screen import Screen
 from textual.widgets import Label, LoadingIndicator
 
@@ -14,9 +12,10 @@ class Startup(Screen):
         yield Label("Starting Budgetize...", id="Loading-Label")
         yield LoadingIndicator(id="Loading-Indicator")
 
-    @on(Ready)
-    def on_ready(self):
-        print("APP IS READY!!!")
+    def on_screen_resume(self):
+        # await sleep(1.3)
+
+        print("Startup screen is now current screen")
         if should_run_initial_config():
             self.app.push_screen("initial_config")
         else:
