@@ -1,0 +1,11 @@
+#accounts-label {
+    text-align: center;
+}
+
+DataTable {
+    text-align: center;
+}
+
+Button {
+    margin-top: 2;
+}

@@ -9,27 +9,27 @@ class Account:
         self,
         #       account_id: int,
         name: str,
-        #        account_type: AccountType,
-        #        owner_id: int,
+        account_type: AccountType,
         balance: float,
+        currency: str,
         transactions: list[Transaction] = [],
     ):
         # self.id = account_id
         self.name: str = name
-        # self.account_type: AccountType = account_type
-        # self.owner_id: int = owner_id
+        self.account_type: AccountType = account_type
+        self.currency = currency
         self.balance: float = balance
         self.transactions: List[Transaction] = transactions
 
     @classmethod
-    def from_data_file(cls, data: dict):
+    def from_file_data(cls, data: dict):
         return Account(
             # data["id"],
-            data["name"],
-            # AccountType[data["account_type"]],
-            # data["owner_id"],
-            data["balance"],
-            [
+            name=data["name"],
+            account_type=AccountType[data["account_type"]],
+            currency=data["currency"],
+            balance=data["balance"],
+            transactions=[
                 Transaction.from_data_file(transaction)
                 for transaction in data["transactions"]
             ],
@@ -39,8 +39,8 @@ class Account:
         return {
             # "id": self.id,
             "name": self.name,
-            # "account_type": self.account_type.name,
-            # "owner_id": self.owner_id,
+            "account_type": self.account_type.name,
+            "currency": self.currency,
             "balance": self.balance,
             "transactions": [
                 transaction.to_data_file() for transaction in self.transactions

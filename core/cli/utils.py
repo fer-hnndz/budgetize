@@ -24,7 +24,15 @@ def should_run_initial_config() -> bool:
         return True
 
     # Check if the folder has the user file, if it does not exist, run the config
-    return not "user_data.bin" in os.listdir(data_path)
+    if not consts.USER_FILE_NAME in os.listdir(data_path):
+        return True
+
+    # Check that the json file is readable
+    try:
+        user = load_user_data()
+        return False
+    except:
+        return True
 
 
 def load_user_data() -> User:

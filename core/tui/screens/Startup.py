@@ -16,7 +16,9 @@ class Startup(Screen):
         # await sleep(1.3)
 
         print("Startup screen is now current screen")
-        if should_run_initial_config():
+        do_setup = should_run_initial_config()
+        print("Initial Config returned: ", do_setup)
+        if do_setup:
             self.app.push_screen("initial_config")
         else:
             self.app.push_screen("main_menu")

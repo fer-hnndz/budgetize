@@ -1,9 +1,9 @@
-from enum import Enum
+from enum import Enum, auto
 
 
 class AccountType(Enum):
-    EMERGENCY = 1
-    SAVINGS = 2
-    WALLET = 3
-    CHECKING = 4
-    INVESTMENT = 5
+    EMERGENCY = auto()
+    SAVINGS = auto()
+    WALLET = auto()
+    CHECKING = auto()
+    INVESTMENT = auto()

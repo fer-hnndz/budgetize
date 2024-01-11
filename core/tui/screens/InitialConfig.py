@@ -14,7 +14,9 @@ class InitialConfig(Screen):
         self.app.sub_title = "Initial Setup"
         yield Header()
         yield Label("Select your base currency", id="currency-label")
-        yield Select(self.get_currency_choices(), id="currency-select")
+        yield Select(
+            self.get_currency_choices(), id="currency-select", allow_blank=False
+        )
         yield Label("Enter your name", id="name-label")
         yield Input(placeholder="Name", id="name-input")
         yield Button.success("Save", id="save-button")
@@ -28,6 +30,7 @@ class InitialConfig(Screen):
             self.app.pop_screen()
 
             self.app.push_screen("main_menu")
+            self.app.notify(f"Welcome to Budgetize, {name}", title="User Created")
 
     def get_currency_choices(self) -> list:
         res = []
