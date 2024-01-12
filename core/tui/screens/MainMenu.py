@@ -52,6 +52,8 @@ class MainMenu(Screen):
         table.clear(columns=True)
         table.add_columns("Account Name", "Account Type", "Balance", "Currency")
 
+        # Update user data
+        self.user = load_user_data()
         for acc in self.user.accounts:
             table.add_row(
                 acc.name, acc.account_type.name.capitalize(), acc.balance, acc.currency
