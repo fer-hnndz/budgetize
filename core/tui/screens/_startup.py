@@ -5,6 +5,7 @@ from textual.widgets import Label, LoadingIndicator
 from core.utils import should_run_initial_config
 
 
+# TODO: Refactor this screen to use new sqlite system
 class Startup(Screen):
     CSS_PATH = "css/startup.tcss"
 

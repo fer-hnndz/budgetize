@@ -6,7 +6,6 @@ import json
 import os
 
 import core.consts as consts
-from core.user import User
 
 
 def should_run_initial_config() -> bool:
@@ -35,7 +34,7 @@ def should_run_initial_config() -> bool:
         return True
 
 
-def load_user_data() -> User:
+def load_user_data():
     """Loads all the user data from the data file."""
 
     data_path = os.path.join(
@@ -43,10 +42,10 @@ def load_user_data() -> User:
     )
     with open(data_path) as f:
         data = json.load(f)
-        return User.from_file_data(data)
+        # return User.from_file_data(data)
 
 
-def save_user_data(user: User):
+def save_user_data(user):
     data_folder = os.path.join(os.path.expanduser("~"), consts.APP_FOLDER_NAME)
 
     if not os.path.exists(data_folder):

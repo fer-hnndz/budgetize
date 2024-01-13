@@ -6,14 +6,14 @@ from sqlalchemy.orm import Session
 
 from core.consts import DB_URL
 
-from .orm import Account, Transaction
+from .orm import Account, Base, Transaction
 
 
 class Database:
     engine = create_engine(DB_URL, echo=True)
 
     def __init__(self):
-        MetaData.create_all(Database.engine)
+        Base.metadata.create_all(self.engine)
 
     def get_transactions_from_account(self, account_id: int) -> Iterator[Transaction]:
         """Returns an iterator of transactions from the specified account"""

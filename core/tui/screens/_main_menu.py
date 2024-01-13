@@ -6,8 +6,7 @@ from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import Button, DataTable, Footer, Header, Label, Rule, Tabs
 
-from core.accounts import Account, AccountType
-from core.user import User
+from core.db import Database
 from core.utils import load_user_data
 
 
@@ -24,9 +23,7 @@ class MainMenu(Screen):
 
     def __init__(self) -> None:
         super().__init__()
-        # Actual user should only be loaded when screen is loaded,
-        # since the screen may be initialized but the data does not exist
-        self.user: User = User(name="Default User", base_currency="USD", accounts=[])
+        self.db = Database()
 
     def compose(self) -> ComposeResult:
         self.app.sub_title = "Main Menu"
@@ -55,7 +52,6 @@ class MainMenu(Screen):
         yield Rule(orientation="horizontal")
 
     def on_mount(self):
-        self.user = load_user_data()
         self._update_account_tables()
         self._update_recent_transactions_table()
 
@@ -73,9 +69,7 @@ class MainMenu(Screen):
         table.clear(columns=True)
         table.add_columns("Account Name", "Account Type", "Balance", "Currency")
 
-        # Update user data
-        self.user = load_user_data()
-        for acc in self.user.accounts:
+        for acc in self.db.get_accounts():
             table.add_row(
                 acc.name, acc.account_type.name.capitalize(), acc.balance, acc.currency
             )

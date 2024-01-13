@@ -3,7 +3,6 @@ from textual.screen import Screen
 from textual.widgets import Button, Header, Input, Label, Select
 
 import core.consts as consts
-from core.user import User
 from core.utils import save_user_data
 
 
@@ -27,8 +26,8 @@ class InitialConfig(Screen):
             currency: str = self.get_widget_by_id(
                 "currency-select"
             ).value  # type:ignore
-            user = User(name=name, base_currency=currency, accounts=[])
-            save_user_data(user)
+            # user = User(name=name, base_currency=currency, accounts=[])
+            # save_user_data(user)
 
             self.app.pop_screen()
             self.app.push_screen("main_menu")

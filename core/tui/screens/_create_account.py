@@ -3,8 +3,8 @@ from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from core.accounts import Account, AccountType
 from core.consts import CURRENCY_SYMBOLS
+from core.db.orm import Account, AccountType
 from core.utils import load_user_data, save_user_data
 
 
