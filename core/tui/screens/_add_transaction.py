@@ -1,16 +1,18 @@
-import time
+"""Module that defines the AddTransaction screen"""
 
-import arrow
 from arrow import Arrow
 from textual.binding import Binding
 from textual.screen import Screen
 from textual.validation import Number
-from textual.widgets import Button, Footer, Header, Input, Label, Rule, Select
+from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from core.utils import load_user_data, save_user_data
+from core.db import Database
 
 
 class AddTransaction(Screen):
+    """Screen that handles adding a new transaction"""
+
+    DB = Database()
     BINDINGS = [
         Binding(
             key="q,Q",
@@ -58,14 +60,15 @@ class AddTransaction(Screen):
         yield Button("Add Transaction", id="add-transaction-button")
 
     def on_button_pressed(self, event: Button.Pressed):
+        """Handles button presses"""
+
         if event.button.id == "add-transaction-button":
-            user = load_user_data()
             account_selected: int = self.get_widget_by_id("account-select").value  # type: ignore
-            account = user.accounts[int(account_selected)]
+            account = self.DB.get_account_by_id(account_selected)
             currency = account.currency
 
             # This can either be Income or Expense
-            transaction_type_name = self.get_widget_by_id("transaction-type-select").value  # type: ignore
+            transaction_type_name = self.get_widget_by_id("transaction-type-select").value  # type: ignore # pylint: disable=line-too-long
             amount = self.get_widget_by_id("amount-input").value  # type: ignore
 
             # Clear fields
@@ -77,6 +80,6 @@ class AddTransaction(Screen):
                 f"You added an {transaction_type_name} of {currency} {amount}"
             )
 
-    def _get_account_options(self):
-        user = load_user_data()
-        return [(account.name, i) for i, account in enumerate(user.accounts)]
+    def _get_account_options(self) -> list[tuple[str, int]]:
+        """Returns a list of tuples (name, id) for the TUI to show"""
+        return [(account.name, account.id) for account in self.DB.get_accounts()]

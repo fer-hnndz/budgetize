@@ -1,11 +1,15 @@
-from textual.app import App, ComposeResult
-from textual.message import Message
+"""Main Module that starts the Terminal User Interface (TUI)"""
+
+from textual.app import App
 
 from .screens import AddTransaction, CreateAccount, InitialConfig, MainMenu, Startup
 
 
 class TuiApp(App):
+    """App that handles the TUI"""
+
     def on_mount(self):
+        """Called when the app is mounted"""
         self.title = "Budgetize"
         self.install_screen(Startup(), "startup")
         self.install_screen(InitialConfig(), "initial_config")

@@ -1,8 +1,10 @@
+"Module that stores constant variables for the app such like names or paths"
+
 APP_FOLDER_NAME = ".budgetize"
 USER_FILE_NAME = "user_data.bin"
 EXCHANGERATES_FREE_API_KEY = "9c21e1d06665202b12fb2962b75c4e35"
 VALID_EXCHANGE_TIMESTAMP = 36 * 60  # 36 hours
-DB_URL = "sqlite:///budgetize.db"
+DB_URL = "sqlite:///budgetize.sqlite"
 CURRENCY_SYMBOLS = [
     "AED",
     "AFN",

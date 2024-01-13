@@ -18,3 +18,15 @@ repos:
     hooks:
     -   id: mypy
         additional_dependencies: [textual, arrow, types-requests]
+-   repo: local
+    hooks:
+    -   id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        args: [
+            "--fail-under=9",
+            "--recursive=True",
+            "--output-format=colorized"
+        ]
