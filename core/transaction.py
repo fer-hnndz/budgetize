@@ -15,7 +15,7 @@ class Transaction:
             Arrow.fromtimestamp(data["date"]),
         )
 
-    def to_file_data(self) -> dict:
+    def to_data_file(self) -> dict:
         return {
             "account": self.account,
             "amount": self.amount,

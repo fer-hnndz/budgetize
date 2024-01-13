@@ -1,14 +1,12 @@
-from typing import List
-
-from core.accounts.account import Account
+from core.accounts import Account
 
 
 class User:
-    def __init__(self, name: str, base_currency: str, accounts: List[Account]):
+    def __init__(self, name: str, base_currency: str, accounts: list[Account]):
         """Represents a user of the app"""
         self.name: str = name
         self.base_currency: str = base_currency
-        self.accounts: List[Account] = accounts
+        self.accounts: list[Account] = accounts
 
     @classmethod
     def from_file_data(cls, data: dict):

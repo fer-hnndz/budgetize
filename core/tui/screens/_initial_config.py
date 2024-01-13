@@ -3,8 +3,8 @@ from textual.screen import Screen
 from textual.widgets import Button, Header, Input, Label, Select
 
 import core.consts as consts
-from core.cli.utils import save_user_data
-from core.users.user import User
+from core.user import User
+from core.utils import save_user_data
 
 
 class InitialConfig(Screen):
@@ -23,16 +23,18 @@ class InitialConfig(Screen):
 
     def on_button_pressed(self, event: Button.Pressed):
         if event.button.id == "save-button":
-            name = self.get_widget_by_id("name-input").value
-            currency = self.get_widget_by_id("currency-select").value
+            name: str = self.get_widget_by_id("name-input").value  # type:ignore
+            currency: str = self.get_widget_by_id(
+                "currency-select"
+            ).value  # type:ignore
             user = User(name=name, base_currency=currency, accounts=[])
             save_user_data(user)
-            self.app.pop_screen()
 
+            self.app.pop_screen()
             self.app.push_screen("main_menu")
             self.app.notify(f"Welcome to Budgetize, {name}", title="User Created")
 
-    def get_currency_choices(self) -> list:
+    def get_currency_choices(self) -> list[tuple[str, str]]:
         res = []
         for symbol in consts.CURRENCY_SYMBOLS:
             res.append((symbol, symbol))

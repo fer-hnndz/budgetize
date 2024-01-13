@@ -6,7 +6,7 @@ import json
 import os
 
 import core.consts as consts
-from core.users.user import User
+from core.user import User
 
 
 def should_run_initial_config() -> bool:

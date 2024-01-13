@@ -1,12 +1,14 @@
+from typing import Any
+
+from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import Button, DataTable, Footer, Header, Label, Rule, Tabs
 
-from core.accounts.account import Account
-from core.accounts.AccountType import AccountType
-from core.cli.utils import load_user_data
-from core.users.user import User
+from core.accounts import Account, AccountType
+from core.user import User
+from core.utils import load_user_data
 
 
 class MainMenu(Screen):
@@ -20,20 +22,13 @@ class MainMenu(Screen):
         ),
     ]
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.user: User = None  # Should only be loaded when screen is loaded, since the screen may be initialized but the data does not exist
-        # self.user.accounts.append(
-        #     Account(
-        #         account_type=AccountType.WALLET,
-        #         name="Wallet",
-        #         currency="HNL",
-        #         balance=250,
-        #         transactions=[],
-        #     )
-        # )
+        # Actual user should only be loaded when screen is loaded,
+        # since the screen may be initialized but the data does not exist
+        self.user: User = User(name="Default User", base_currency="USD", accounts=[])
 
-    def compose(self):
+    def compose(self) -> ComposeResult:
         self.app.sub_title = "Main Menu"
         yield Header()
         yield Footer()
@@ -67,14 +62,14 @@ class MainMenu(Screen):
     def _update_recent_transactions_table(self) -> None:
         # TODO: Implement this method based on users' transactions
 
-        table = self.get_widget_by_id("recent-transactions-table")
+        table: DataTable = self.get_widget_by_id("recent-transactions-table")  # type: ignore
         table.clear(columns=True)
         table.add_columns("Account", "Amount", "Date", "Category")
         table.add_row("Wallet", "[red] HNL 250.00", "2021-01-01", "Food")
         table.add_row("Wallet", "[green] HNL 250.00", "2021-01-01", "Income")
 
     def _update_account_tables(self) -> None:
-        table = self.get_widget_by_id("accounts-table")
+        table: DataTable = self.get_widget_by_id("accounts-table")  # type: ignore
         table.clear(columns=True)
         table.add_columns("Account Name", "Account Type", "Balance", "Currency")
 

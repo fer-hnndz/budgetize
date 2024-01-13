@@ -7,7 +7,7 @@ from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Rule, Select
 
-from core.cli.utils import load_user_data, save_user_data
+from core.utils import load_user_data, save_user_data
 
 
 class AddTransaction(Screen):
@@ -60,19 +60,22 @@ class AddTransaction(Screen):
     def on_button_pressed(self, event: Button.Pressed):
         if event.button.id == "add-transaction-button":
             user = load_user_data()
-            account_selected = self.get_widget_by_id("account-select").value
-            account = user.accounts[account_selected]
-
+            account_selected: int = self.get_widget_by_id("account-select").value  # type: ignore
+            account = user.accounts[int(account_selected)]
             currency = account.currency
-            transaction_type = self.get_widget_by_id("transaction-type-select").value
-            amount = self.get_widget_by_id("amount-input").value
+
+            # This can either be Income or Expense
+            transaction_type_name = self.get_widget_by_id("transaction-type-select").value  # type: ignore
+            amount = self.get_widget_by_id("amount-input").value  # type: ignore
 
             # Clear fields
-            self.get_widget_by_id("amount-input").value = ""
-            self.get_widget_by_id("date-input").value = ""
+            self.get_widget_by_id("amount-input").value = ""  # type: ignore
+            self.get_widget_by_id("date-input").value = ""  # type: ignore
 
             self.app.pop_screen()
-            self.app.notify(f"You added an {transaction_type} of {currency} {amount}")
+            self.app.notify(
+                f"You added an {transaction_type_name} of {currency} {amount}"
+            )
 
     def _get_account_options(self):
         user = load_user_data()

@@ -2,7 +2,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Label, LoadingIndicator
 
-from core.cli.utils import should_run_initial_config
+from core.utils import should_run_initial_config
 
 
 class Startup(Screen):

@@ -3,10 +3,9 @@ from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from core.accounts.account import Account
-from core.accounts.AccountType import AccountType
-from core.cli.utils import load_user_data, save_user_data
+from core.accounts import Account, AccountType
 from core.consts import CURRENCY_SYMBOLS
+from core.utils import load_user_data, save_user_data
 
 
 class CreateAccount(Screen):
@@ -44,13 +43,14 @@ class CreateAccount(Screen):
     def on_button_pressed(self, event: Button.Pressed):
         if event.button.id == "create-account-button":
             user = load_user_data()
-            name = self.get_widget_by_id("account-name-input").value
-            currency = self.get_widget_by_id("currency-select").value
-            balance = self.get_widget_by_id("balance-input").value
-            account_type = self.get_widget_by_id("account-type-select").value
+            name: str = self.get_widget_by_id("account-name-input").value  # type: ignore
+            currency: str = self.get_widget_by_id("currency-select").value  # type: ignore
+            balance: float = self.get_widget_by_id("balance-input").value  # type: ignore
+            account_type_name: str = self.get_widget_by_id("account-type-select").value  # type: ignore
+
             user.accounts.append(
                 Account(
-                    account_type=AccountType[account_type.upper()],
+                    account_type=AccountType[account_type_name.upper()],
                     name=name,
                     currency=currency,
                     balance=balance,
@@ -62,9 +62,9 @@ class CreateAccount(Screen):
             self.app.pop_screen()
             self.notify("Account created successfully.", title="Account Created")
 
-        if event.button.id == "cancel-button":
-            self.get_widget_by_id("account-name-input").value = ""
-            self.get_widget_by_id("balance-input").value = ""
+        elif event.button.id == "cancel-button":
+            self.get_widget_by_id("account-name-input").value = ""  # type: ignore
+            self.get_widget_by_id("balance-input").value = ""  # type: ignore
             self.app.pop_screen()
 
     def get_currency_choices(self) -> list:
