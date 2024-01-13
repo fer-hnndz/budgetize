@@ -2,4 +2,4 @@ venv/
 __pycache__
 exchange_rates.json
 .mypy_cache/
-budgetize.db
+budgetize.sqlite
