@@ -6,7 +6,7 @@ from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from core.db import Database
+from budgetize.db import Database
 
 
 class AddTransaction(Screen):

@@ -1,10 +1,18 @@
 "Module that stores constant variables for the app such like names or paths"
 
+import os
+
 APP_FOLDER_NAME = ".budgetize"
-USER_FILE_NAME = "user_data.bin"
+
+user_folder = os.path.expanduser("~")
+app_folder_path = os.path.join(user_folder, ".budgetize")
+if not os.path.exists(app_folder_path):
+    os.mkdir(app_folder_path)
+
 EXCHANGERATES_FREE_API_KEY = "9c21e1d06665202b12fb2962b75c4e35"
 VALID_EXCHANGE_TIMESTAMP = 36 * 60  # 36 hours
-DB_URL = "sqlite:///budgetize.sqlite"
+DB_FILE_NAME = "budgetize.sqlite"
+DB_URL = f"sqlite:///{os.path.join(app_folder_path, DB_FILE_NAME)}"
 CURRENCY_SYMBOLS = [
     "AED",
     "AFN",

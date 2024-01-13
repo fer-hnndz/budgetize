@@ -5,7 +5,7 @@ import os
 import requests
 from arrow import Arrow
 
-from core import consts
+from budgetize import consts
 
 
 # TODO: Improve this class so it is more user-friendly

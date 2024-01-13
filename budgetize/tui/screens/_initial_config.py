@@ -4,7 +4,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Button, Header, Input, Label, Select
 
-from core import consts
+from budgetize import consts
 
 
 class InitialConfig(Screen):

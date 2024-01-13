@@ -6,7 +6,7 @@ from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import Button, DataTable, Footer, Header, Label, Rule
 
-from core.db import Database
+from budgetize.db import Database
 
 
 class MainMenu(Screen):

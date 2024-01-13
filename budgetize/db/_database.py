@@ -6,7 +6,7 @@ from arrow import Arrow
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
-from core.consts import DB_URL
+from budgetize.consts import DB_URL
 
 from .orm import Account, Base, Transaction
 

@@ -5,9 +5,9 @@ from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from core.consts import CURRENCY_SYMBOLS
-from core.db import Database
-from core.db.orm import Account, AccountType
+from budgetize.consts import CURRENCY_SYMBOLS
+from budgetize.db import Database
+from budgetize.db.orm import Account, AccountType
 
 
 class CreateAccount(Screen):
