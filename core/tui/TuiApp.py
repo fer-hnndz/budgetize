@@ -12,4 +12,4 @@ class TuiApp(App):
         self.install_screen(MainMenu(), "main_menu")
         self.install_screen(CreateAccount(), "create_account")
         self.install_screen(AddTransaction(), "add_transaction")
-        self.push_screen("startup")
+        self.push_screen("main_screen")
