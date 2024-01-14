@@ -26,6 +26,7 @@ repos:
         language: system
         types: [python]
         args: [
+            "budgetize",
             "--fail-under=9",
             "--recursive=True",
             "--output-format=colorized"
