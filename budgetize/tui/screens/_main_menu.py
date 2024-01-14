@@ -18,7 +18,7 @@ class MainMenu(Screen):
         Binding(
             key="n,N",
             key_display="N",
-            action="push_screen('add_transaction')",
+            action="verify_add_transaction()",
             description="Add Transaction",
         ),
     ]
@@ -88,6 +88,26 @@ class MainMenu(Screen):
         """Called when the screen is now the current screen"""
         print("Main Menu is now current")
         self._update_account_tables()
+
+    def action_verify_add_transaction(self) -> None:
+        """
+        Verifies if there is atleast one account to add a transaction to.
+        If there is, it pushes the add_transaction screen.
+        If there isn't, it notifies the user.
+        """
+
+        accounts = 0
+        for account in self.DB.get_accounts():
+            accounts += 1
+        if accounts:
+            self.app.push_screen("add_transaction")
+        else:
+            print("Showing toast")
+            self.app.notify(
+                severity="warning",
+                title="Cannot add a Transaction",
+                message="You must need atleast one account to add a transaction.",
+            )
 
     def on_button_pressed(self, event: Button.Pressed):
         """Button press handler"""
