@@ -7,6 +7,7 @@ from textual.screen import Screen
 from textual.widgets import Button, DataTable, Footer, Header, Label, Rule
 
 from budgetize.db import Database
+from budgetize.tui.modals import ConfirmQuit
 
 
 class MainMenu(Screen):
@@ -15,6 +16,12 @@ class MainMenu(Screen):
     DB = Database()
     CSS_PATH = "css/main_menu.tcss"
     BINDINGS = [
+        Binding(
+            key="q,Q",
+            key_display="Q",
+            action="request_quit()",
+            description="Quit Budgetize",
+        ),
         Binding(
             key="n,N",
             key_display="N",
@@ -89,6 +96,16 @@ class MainMenu(Screen):
         print("Main Menu is now current")
         self._update_account_tables()
 
+    def on_button_pressed(self, event: Button.Pressed):
+        """Button press handler"""
+
+        if event.button.id == "create-account-button":
+            self.app.push_screen("create_account")
+        if event.button.id == "manage-accounts-button":
+            self.app.push_screen("manage_accounts")
+
+    # ==================== App Bindings ====================
+
     def action_verify_add_transaction(self) -> None:
         """
         Verifies if there is atleast one account to add a transaction to.
@@ -109,10 +126,6 @@ class MainMenu(Screen):
                 message="You must need atleast one account to add a transaction.",
             )
 
-    def on_button_pressed(self, event: Button.Pressed):
-        """Button press handler"""
-
-        if event.button.id == "create-account-button":
-            self.app.push_screen("create_account")
-        if event.button.id == "manage-accounts-button":
-            self.app.push_screen("manage_accounts")
+    def action_request_quit(self) -> None:
+        """Shows the modal to quit the app"""
+        self.app.push_screen(ConfirmQuit())

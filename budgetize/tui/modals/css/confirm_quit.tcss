@@ -1,0 +1,20 @@
+Button {
+    margin: 0 1;
+}
+
+ConfirmQuit {
+    align: center middle;
+}
+
+Label {
+    margin-top: 3;
+}
+
+#dialog {
+    height: 12;
+    width: 62;
+}
+
+Horizontal {
+    margin-top: 1;
+}
