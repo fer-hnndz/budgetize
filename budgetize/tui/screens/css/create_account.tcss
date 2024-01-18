@@ -1,0 +1,15 @@
+Grid{
+    grid-size: 2 2;
+}
+
+#balance-label {
+    margin-top: 1;
+}
+
+Button {
+    margin: 0 1;
+}
+
+Horizontal {
+    padding-top: 1;
+}

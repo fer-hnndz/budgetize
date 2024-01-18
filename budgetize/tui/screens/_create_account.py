@@ -1,6 +1,7 @@
 """Module that defines the CreateAccount screen."""
 
 from textual.binding import Binding
+from textual.containers import Center, Grid, Horizontal, VerticalScroll
 from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
@@ -13,9 +14,11 @@ from budgetize.db.orm import Account, AccountType
 class CreateAccount(Screen):
     """Screen that allows the user to create a new account."""
 
+    CSS_PATH = "css/create_account.tcss"
+
     DB = Database()
     BINDINGS = [
-        Binding(key="q,Q", key_display="Q", action="pop_screen", description="Cancel"),
+        Binding(key="c,C", key_display="C", action="pop_screen", description="Cancel"),
     ]
 
     def compose(self):
@@ -24,28 +27,40 @@ class CreateAccount(Screen):
         self.app.sub_title = "Create Account"
         yield Header()
         yield Footer()
-        yield Label("Base Currency", id="currency-label")
-        yield Select(
-            self.get_currency_choices(), id="currency-select", allow_blank=False
+
+        yield VerticalScroll(
+            Grid(
+                # Place them in this way because grids are filled in row-order
+                Label("Account Currency", id="currency-label"),
+                Label("Account Name", id="name-label"),
+                Select(
+                    self.get_currency_choices(), id="currency-select", allow_blank=False
+                ),
+                Input(placeholder="Bank Account", id="account-name-input"),
+            ),
+            Label("Starting Balance", id="balance-label"),
+            Input(
+                type="number",
+                placeholder="250",
+                id="balance-input",
+                validators=[
+                    Number(
+                        minimum=0,
+                        failure_description="Initial Balance must be atleast zero.",
+                    )
+                ],
+            ),
+            Label("Account Type", id="account-type-label"),
+            Select(
+                self.get_account_type_choices(),
+                id="account-type-select",
+                allow_blank=False,
+            ),
+            Horizontal(
+                Button.success("Create Account", id="create-account-button"),
+                Button.error("Cancel", id="cancel-button"),
+            ),
         )
-        yield Label("Account Name", id="name-label")
-        yield Input(placeholder="Bank Account", id="account-name-input")
-        yield Label("Starting Balance", id="balance-label")
-        yield Input(
-            type="number",
-            placeholder="250",
-            id="balance-input",
-            validators=[
-                Number(
-                    minimum=0,
-                    failure_description="Initial Balance must be atleast zero.",
-                )
-            ],
-        )
-        yield Label("Account Type", id="account-type-label")
-        yield Select(self.get_account_type_choices(), id="account-type-select")
-        yield Button.success("Create Account", id="create-account-button")
-        yield Button.error("Cancel", id="cancel-button")
 
     def on_button_pressed(self, event: Button.Pressed):
         """Button press handlers"""

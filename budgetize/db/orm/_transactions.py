@@ -14,9 +14,9 @@ class Transaction(Base):  # pylint: disable=too-few-public-methods
 
     id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
     account_id: Mapped[Optional[str]] = mapped_column(ForeignKey("accounts.id"))
-    currency: Mapped[str] = mapped_column(String(3), nullable=False)
-    balance: Mapped[float] = mapped_column(nullable=False)
-    datetime: Mapped[int] = mapped_column(nullable=False)
+    amount: Mapped[float] = mapped_column(nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String(255))
+    timestamp: Mapped[int] = mapped_column(nullable=False)
 
     def __repr__(self):
         return """<Transaction(

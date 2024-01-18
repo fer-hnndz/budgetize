@@ -16,4 +16,5 @@ class TuiApp(App):
         self.install_screen(MainMenu(), "main_menu")
         self.install_screen(CreateAccount(), "create_account")
         self.install_screen(AddTransaction(), "add_transaction")
+        # self.install_screen(ManageAccounts(), "manage_accounts") # Create a new instance every time it needs to be shown
         self.push_screen("main_menu")

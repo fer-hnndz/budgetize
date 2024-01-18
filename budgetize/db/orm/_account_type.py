@@ -10,3 +10,4 @@ class AccountType(Enum):
     WALLET = auto()
     CHECKING = auto()
     INVESTMENT = auto()
+    OTHER = auto()

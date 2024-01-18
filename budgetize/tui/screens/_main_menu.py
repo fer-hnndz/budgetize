@@ -8,6 +8,9 @@ from textual.widgets import Button, DataTable, Footer, Header, Label, Rule
 
 from budgetize.db import Database
 from budgetize.tui.modals import ConfirmQuit
+from budgetize.tui.screens._manage_accounts import (  # Import directly from the class file to avoid circular imports
+    ManageAccounts,
+)
 
 
 class MainMenu(Screen):
@@ -52,7 +55,7 @@ class MainMenu(Screen):
         )
         yield Horizontal(
             Button("Create Account", id="create-account-button"),
-            Button("Manage Accounts"),
+            Button("Manage Accounts", id="manage-accounts-button"),
         )
         yield Label("Recent Transactions", id="recent-transactions-label")
 
@@ -102,7 +105,15 @@ class MainMenu(Screen):
         if event.button.id == "create-account-button":
             self.app.push_screen("create_account")
         if event.button.id == "manage-accounts-button":
-            self.app.push_screen("manage_accounts")
+            accounts = self.DB.get_accounts()
+            if sum(1 for _ in accounts) > 0:  # Get the length of the generator
+                self.app.push_screen(ManageAccounts())
+            else:
+                self.app.notify(
+                    severity="warning",
+                    title="Cannot Manage Accounts",
+                    message="You must need atleast one account to manage accounts.",
+                )
 
     # ==================== App Bindings ====================
 
