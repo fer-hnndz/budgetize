@@ -8,9 +8,9 @@ from textual.widgets import Button, DataTable, Footer, Header, Label, Rule
 
 from budgetize.db import Database
 from budgetize.tui.modals import ConfirmQuit
-from budgetize.tui.screens._manage_accounts import (  # Import directly from the class file to avoid circular imports
-    ManageAccounts,
-)
+
+# Import directly from the class file to avoid circular imports
+from budgetize.tui.screens._manage_accounts import ManageAccounts
 
 
 class MainMenu(Screen):
@@ -66,7 +66,7 @@ class MainMenu(Screen):
 
         yield Rule(orientation="horizontal")
 
-    def on_mount(self):
+    def on_mount(self) -> None:
         """Called when the screen widgets are mounted"""
 
         self._update_account_tables()
@@ -100,12 +100,12 @@ class MainMenu(Screen):
                 acc.name, acc.account_type.name.capitalize(), acc.balance, acc.currency
             )
 
-    def on_screen_resume(self):
+    def on_screen_resume(self) -> None:
         """Called when the screen is now the current screen"""
         print("Main Menu is now current")
         self._update_account_tables()
 
-    def on_button_pressed(self, event: Button.Pressed):
+    def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button press handler"""
 
         if event.button.id == "create-account-button":

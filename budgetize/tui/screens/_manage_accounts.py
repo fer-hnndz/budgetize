@@ -2,28 +2,18 @@
 
 from arrow import Arrow
 from textual.app import ComposeResult
-from textual.containers import Center
+from textual.binding import Binding
 from textual.screen import Screen
-from textual.widget import Widget
-from textual.widgets import (
-    Button,
-    ContentSwitcher,
-    DataTable,
-    Footer,
-    Header,
-    Label,
-    TabbedContent,
-    TabPane,
-)
+from textual.widgets import DataTable, Footer, Header, Label, TabbedContent, TabPane
 
 from budgetize.db import Database
-from budgetize.db.orm import Account
 
 
 class ManageAccounts(Screen):
     """Screen that allows the user to manage their accounts."""
 
     DB: Database = None  # type: ignore
+    BINDINGS = [Binding("Q,q", "pop_screen", "Back to Main Menu", key_display="Q")]
 
     def __init__(self) -> None:
         """Creates a new ManageAccounts Screen"""
@@ -35,10 +25,10 @@ class ManageAccounts(Screen):
         yield Header()
         yield Footer()
 
-        with TabbedContent() as tabs:
+        with TabbedContent():
             accounts = self.DB.get_accounts()
             for acc in accounts:
-                with TabPane(acc.name, id=f"tab-{acc.name}"):
+                with TabPane(acc.name, id=f"tab-{acc.name.replace(' ', '-')}"):
                     yield Label(f"Balance: {acc.balance}")
                     yield self.get_transactions_table(acc.id)
 
@@ -62,7 +52,10 @@ class ManageAccounts(Screen):
         )
 
         for trans in transactions:
+            color = "[green]" if trans.amount > 0 else "[red]"
             date = Arrow.fromtimestamp(trans.timestamp).format("M/D/YYYY")
-            table.add_row(date, trans.amount, trans.category, trans.description)
+            table.add_row(
+                date, color + str(trans.amount), trans.category, trans.description
+            )
 
         return table

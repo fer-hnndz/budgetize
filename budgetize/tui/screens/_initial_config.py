@@ -1,3 +1,5 @@
+# type:ignore
+# TODO: Remove ignore when implemented
 """Module that defines the InitialConfig screen."""
 
 from textual.app import ComposeResult

@@ -1,7 +1,8 @@
 """Module that defines the CreateAccount screen."""
 
+from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Center, Grid, Horizontal, VerticalScroll
+from textual.containers import Grid, Horizontal, VerticalScroll
 from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
@@ -26,7 +27,7 @@ class CreateAccount(Screen):
         CreateAccount.DB = Database(self.app)
         super().__init__()
 
-    def compose(self):
+    def compose(self) -> ComposeResult:
         """Called when the screen is composed."""
 
         self.app.sub_title = "Create Account"
@@ -67,7 +68,7 @@ class CreateAccount(Screen):
             ),
         )
 
-    def on_button_pressed(self, event: Button.Pressed):
+    def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button press handlers"""
 
         if event.button.id == "create-account-button":

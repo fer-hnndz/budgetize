@@ -18,7 +18,9 @@ class Account(Base):
     currency: Mapped[str] = mapped_column(String(3), nullable=False)
     balance: Mapped[float]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """String representation of the Account object."""
+
         return (
             f"<Account(id={self.id}, name={self.name}, account_type_name={self.account_type_name}, "
             f"currency={self.currency}, balance={self.balance})>"

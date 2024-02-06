@@ -68,8 +68,10 @@ class Database:
 
     def get_account_by_id(self, account_id: int) -> Account:
         """Returns the account with the specified id"""
+
         with Session(Database.engine) as session:
-            return session.get_one(Account, account_id)
+            found_account: Account = session.get_one(Account, account_id)
+            return found_account
 
     def add_account(self, account: Account) -> None:
         """Adds a new account to the user"""
@@ -77,9 +79,60 @@ class Database:
             session.add(account)
             session.commit()
 
-    def add_transaction(self, transaction: Transaction) -> None:
+    def add_transaction(
+        self,
+        account_id: int,
+        amount: float,
+        description: str,
+        category: str,
+        timestamp: float,
+    ) -> None:
         """Registers a new transaction"""
+
+        transaction = Transaction(
+            account_id=account_id,
+            amount=amount,
+            description=description,
+            category=category,
+            timestamp=timestamp,
+        )
 
         with Session(Database.engine) as session:
             session.add(transaction)
+
+            # Update the account balance
+            account = session.get_one(Account, account_id)
+            account.balance += float(amount)
             session.commit()
+
+    def update_account_balance(self, account_id: int) -> None:
+        """Goes through all transactions and updates the account balance"""
+
+    def get_montly_income(self) -> float:
+        """Returns the total income for the current month"""
+
+        now = Arrow.now()
+
+        income = 0.0
+        for account in self.get_accounts():
+            for transaction in self.get_monthly_transactions_from_account(
+                account.id, now.format("M"), now.format("YYYY")
+            ):
+                if transaction.amount > 0:
+                    income += transaction.amount
+
+        return income
+
+    def get_monthly_expenses(self) -> float:
+        """Returns the total expenses for the current month"""
+        now = Arrow.now()
+
+        expense = 0.0
+        for account in self.get_accounts():
+            for transaction in self.get_monthly_transactions_from_account(
+                account.id, now.format("M"), now.format("YYYY")
+            ):
+                if transaction.amount < 0:
+                    expense += transaction.amount
+
+        return expense

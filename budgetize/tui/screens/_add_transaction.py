@@ -4,6 +4,7 @@ from datetime import date as date_func
 from traceback import print_exc
 
 from arrow import Arrow
+from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.screen import Screen
 from textual.validation import Number
@@ -11,7 +12,6 @@ from textual.widgets import Button, Footer, Header, Input, Label, Select
 
 from budgetize.consts import DEFAULT_CATEGORIES
 from budgetize.db import Database
-from budgetize.db.orm import Transaction
 
 
 class AddTransaction(Screen):
@@ -32,7 +32,7 @@ class AddTransaction(Screen):
         AddTransaction.DB = Database(self.app)
         super().__init__()
 
-    def compose(self):
+    def compose(self) -> ComposeResult:
         self.app.sub_title = "Add Transaction"
         yield Header()
         yield Footer()
@@ -43,13 +43,6 @@ class AddTransaction(Screen):
             id="account-select",
             allow_blank=False,
             prompt="Select an account",
-        )
-        yield Label("Transaction Type", id="transaction-type-label")
-        yield Select(
-            [("Income", "Income"), ("Expense", "Expense")],
-            id="transaction-type-select",
-            allow_blank=False,
-            prompt="Select a transaction type",
         )
         yield Label("Amount", id="amount-label")
         yield Input(
@@ -79,7 +72,7 @@ class AddTransaction(Screen):
         )
         yield Button("Add Transaction", id="add-transaction-button")
 
-    def on_button_pressed(self, event: Button.Pressed):
+    def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handles button presses"""
 
         if event.button.id == "add-transaction-button":
@@ -87,8 +80,6 @@ class AddTransaction(Screen):
             account = self.DB.get_account_by_id(account_selected)
             currency = account.currency
 
-            # This can either be Income or Expense
-            transaction_type_name = self.get_widget_by_id("transaction-type-select").value  # type: ignore # pylint: disable=line-too-long
             amount = self.get_widget_by_id("amount-input").value  # type: ignore
 
             category = self.get_widget_by_id("category-select").value  # type: ignore
@@ -114,24 +105,23 @@ class AddTransaction(Screen):
             self.get_widget_by_id("amount-input").value = ""  # type: ignore
             self.get_widget_by_id("date-input").value = ""  # type: ignore
 
-            transaction = Transaction(
+            self.DB.add_transaction(
                 account_id=account.id,
                 amount=amount,
                 description=description,
                 category=category,
                 timestamp=date.timestamp(),
             )
-            self.DB.add_transaction(transaction)
+
             self.app.pop_screen()
-            self.app.notify(
-                f"You added an {transaction_type_name} of {currency} {amount}"
-            )
+            self.app.notify(f"Sucessfully added transaction of {currency} {amount}")
 
     def _get_account_options(self) -> list[tuple[str, int]]:
         """Returns a list of tuples (name, id) for the TUI to show"""
         return [(account.name, account.id) for account in self.DB.get_accounts()]
 
     def get_category_select_options(self) -> list[tuple[str, str]]:
+        """Returns a list of tuples (name, id) for the TUI to show"""
         categories = []
         for category in DEFAULT_CATEGORIES:
             categories.append((category, category))

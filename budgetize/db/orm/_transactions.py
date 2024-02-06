@@ -1,4 +1,5 @@
 """Database ORM for transactions table."""
+
 from typing import Optional
 
 from sqlalchemy import ForeignKey, String
@@ -19,7 +20,9 @@ class Transaction(Base):  # pylint: disable=too-few-public-methods
     category: Mapped[str]
     timestamp: Mapped[float]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """String representation of the Transaction object."""
+
         return f"""<Transaction(
         id={self.id}, 
         account_id={self.account_id}, 

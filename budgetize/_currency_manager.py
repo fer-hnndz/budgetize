@@ -1,3 +1,5 @@
+# type: ignore
+# TODO: Remove this when implemented
 "Module that handles requests to the currency exchanges API"
 import json
 import os
