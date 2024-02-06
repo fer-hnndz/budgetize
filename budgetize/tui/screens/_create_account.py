@@ -7,7 +7,7 @@ from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from budgetize.consts import CURRENCY_SYMBOLS
+from budgetize.consts import CURRENCIES
 from budgetize.db import Database
 from budgetize.db.orm import Account, AccountType
 
@@ -96,8 +96,8 @@ class CreateAccount(Screen):
     def get_currency_choices(self) -> list[tuple[str, str]]:
         """Returns a list of tuples for the currency select widget"""
         res = []
-        for symbol in CURRENCY_SYMBOLS:
-            res.append((symbol, symbol))
+        for curr in CURRENCIES:
+            res.append((f"({curr[0]}) {curr[1]}", curr[0]))
 
         return res
 
