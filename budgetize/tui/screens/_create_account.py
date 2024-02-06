@@ -16,10 +16,15 @@ class CreateAccount(Screen):
 
     CSS_PATH = "css/create_account.tcss"
 
-    DB = Database()
+    DB: Database = None  # type: ignore
     BINDINGS = [
         Binding(key="c,C", key_display="C", action="pop_screen", description="Cancel"),
     ]
+
+    def __init__(self) -> None:
+        """Creates a new CreateAccount Screen"""
+        CreateAccount.DB = Database(self.app)
+        super().__init__()
 
     def compose(self):
         """Called when the screen is composed."""

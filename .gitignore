@@ -3,3 +3,4 @@ __pycache__
 exchange_rates.json
 .mypy_cache/
 budgetize.sqlite
+test_db.sqlite

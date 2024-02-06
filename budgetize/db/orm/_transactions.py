@@ -14,14 +14,16 @@ class Transaction(Base):  # pylint: disable=too-few-public-methods
 
     id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
     account_id: Mapped[Optional[str]] = mapped_column(ForeignKey("accounts.id"))
-    amount: Mapped[float] = mapped_column(nullable=False)
+    amount: Mapped[float]
     description: Mapped[Optional[str]] = mapped_column(String(255))
-    timestamp: Mapped[int] = mapped_column(nullable=False)
+    category: Mapped[str]
+    timestamp: Mapped[float]
 
     def __repr__(self):
-        return """<Transaction(
+        return f"""<Transaction(
         id={self.id}, 
         account_id={self.account_id}, 
-        currency={self.currency}, 
-        balance={self.balance}, 
-        datetime={self.datetime})>"""
+        amount={self.amount}, 
+        description={self.description}, 
+        category={self.category}
+        timestamp={self.timestamp})>"""

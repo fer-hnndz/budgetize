@@ -16,7 +16,7 @@ from budgetize.tui.screens._manage_accounts import (  # Import directly from the
 class MainMenu(Screen):
     """Screen that displays the main menu"""
 
-    DB = Database()
+    DB: Database = None  # type: ignore
     CSS_PATH = "css/main_menu.tcss"
     BINDINGS = [
         Binding(
@@ -35,6 +35,7 @@ class MainMenu(Screen):
 
     def __init__(self) -> None:
         """Creates a new MainMenu Screen"""
+        MainMenu.DB = Database(self.app)
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -75,7 +76,6 @@ class MainMenu(Screen):
         """Updates the recent transactions DataTable widget"""
 
         # TODO: Implement this method based on users' transactions
-
         table: DataTable = self.get_widget_by_id("recent-transactions-table")  # type: ignore
         table.clear(columns=True)
         table.add_columns("Account", "Amount", "Date", "Category")
@@ -84,6 +84,12 @@ class MainMenu(Screen):
 
     def _update_account_tables(self) -> None:
         """Updates the accounts DataTable widget"""
+
+        self.notify(
+            "Running in DevMode"
+            if "devtools" in self.app.features
+            else "Accounts Normal"
+        )
 
         table: DataTable = self.get_widget_by_id("accounts-table")  # type: ignore
         table.clear(columns=True)

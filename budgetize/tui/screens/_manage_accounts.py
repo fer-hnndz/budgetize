@@ -1,4 +1,5 @@
 """Screen that allows the user to manage their accounts."""
+
 from arrow import Arrow
 from textual.app import ComposeResult
 from textual.containers import Center
@@ -22,7 +23,12 @@ from budgetize.db.orm import Account
 class ManageAccounts(Screen):
     """Screen that allows the user to manage their accounts."""
 
-    DB = Database()
+    DB: Database = None  # type: ignore
+
+    def __init__(self) -> None:
+        """Creates a new ManageAccounts Screen"""
+        ManageAccounts.DB = Database(self.app)
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         self.app.sub_title = "Manage Accounts"
@@ -49,14 +55,14 @@ class ManageAccounts(Screen):
         table.add_columns("Date", "Amount", "Category", "Description")
 
         now = Arrow.now()
-        month = now.format("MM")
+        month = now.format("M")
         year = now.format("YYYY")
         transactions = self.DB.get_monthly_transactions_from_account(
             account, month=month, year=year
         )
 
         for trans in transactions:
-            date = Arrow.fromtimestamp(trans.timestamp).format("MM/DD/YYYY")
-            table.add_row(date, trans.amount, "CAT", trans.description)
+            date = Arrow.fromtimestamp(trans.timestamp).format("M/D/YYYY")
+            table.add_row(date, trans.amount, trans.category, trans.description)
 
         return table

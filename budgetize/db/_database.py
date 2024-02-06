@@ -5,8 +5,9 @@ from typing import Iterator
 from arrow import Arrow
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
+from textual.app import App
 
-from budgetize.consts import DB_URL
+from budgetize.consts import PROD_DB_URL
 
 from .orm import Account, Base, Transaction
 
@@ -14,9 +15,17 @@ from .orm import Account, Base, Transaction
 class Database:
     """Class that handles database operations"""
 
-    engine = create_engine(DB_URL)
+    engine = create_engine(PROD_DB_URL)
 
-    def __init__(self):
+    def __init__(self, app: App):
+        if app is None:
+            return
+
+        Database.engine = create_engine(
+            PROD_DB_URL
+            if not "devtools" in app.features
+            else "sqlite:///test_db.sqlite"
+        )
         Base.metadata.create_all(self.engine)
 
     def get_transactions_from_account(self, account_id: int) -> Iterator[Transaction]:
@@ -38,8 +47,15 @@ class Database:
 
         # Filter transactions by month and year
         for transaction in transactions:
-            date = Arrow.fromtimestamp(transaction.datetime)
-            if date.month == month and date.year == year:
+            date = Arrow.fromtimestamp(transaction.timestamp)
+            ar = Arrow.fromtimestamp(transaction.timestamp)
+            print("===================================")
+            print(f"Date for transaction #{transaction.id}: {ar.format('M/D/YYYY')}")
+
+            print(f"Ar m/y: {ar.format('M')} | {ar.format('YYYY')}")
+            print(f"Received: {month} | {year}")
+
+            if date.format("M") == month and date.format("YYYY") == year:
                 yield transaction
 
     def get_accounts(self) -> Iterator[Account]:
