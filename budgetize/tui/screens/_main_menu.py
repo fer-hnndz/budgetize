@@ -1,5 +1,6 @@
 """Module that defines the main menu screen"""
 
+from arrow import Arrow
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
@@ -41,6 +42,14 @@ class MainMenu(Screen):
     def compose(self) -> ComposeResult:
         """Called when screen is composed"""
 
+        monthly_income = self.DB.get_monthly_income()
+        monthly_expense = self.DB.get_monthly_expense()
+        balance = monthly_income + monthly_expense
+
+        income_color = "[green]" if monthly_income > 0 else "[red]"
+        expense_color = "[green]" if monthly_expense > 0 else "[red]"
+        balance_color = "[green]" if balance >= 0 else "[red]"
+
         self.app.sub_title = "Main Menu"
         yield Header()
         yield Footer()
@@ -48,10 +57,11 @@ class MainMenu(Screen):
         yield Rule(orientation="horizontal", line_style="heavy")
         yield Horizontal(
             DataTable(id="accounts-table"),
+            # TODO: Convert all other currencies to main currency
             Vertical(
-                Label("Income this Month\n[green]L. 250.00[/green]"),
-                Label("Balance\n[green]L. 250.00[/green]"),
-                Label("Expenses this Month\n[red]L. 250.00[/red]"),
+                Label(f"Income this Month\n{income_color}{monthly_income}"),
+                Label(f"Balance\n{balance_color}{balance}"),
+                Label(f"Expenses this Month\n{expense_color}{monthly_expense}"),
             ),
         )
         yield Horizontal(
@@ -75,21 +85,26 @@ class MainMenu(Screen):
     def _update_recent_transactions_table(self) -> None:
         """Updates the recent transactions DataTable widget"""
 
-        # TODO: Implement this method based on users' transactions
+        recent_transactions = self.DB.get_all_recent_transactions()
         table: DataTable = self.get_widget_by_id("recent-transactions-table")  # type: ignore
         table.clear(columns=True)
-        table.add_columns("Account", "Amount", "Date", "Category")
-        table.add_row("Wallet", "[red] HNL 250.00", "2021-01-01", "Food")
-        table.add_row("Wallet", "[green] HNL 250.00", "2021-01-01", "Income")
+        table.add_columns("Account", "Amount", "Date", "Category", "Description")
+
+        for trans in recent_transactions:
+            account = self.DB.get_account_by_id(trans.account_id)
+            color = "[green]" if trans.amount > 0 else "[red]"
+            date = Arrow.fromtimestamp(trans.timestamp).format("MM/DD/YYYY")
+
+            table.add_row(
+                account.name,
+                f"{color}{account.currency} {str(trans.amount)}",
+                date,
+                trans.category,
+                trans.description,
+            )
 
     def _update_account_tables(self) -> None:
         """Updates the accounts DataTable widget"""
-
-        self.notify(
-            "Running in DevMode"
-            if "devtools" in self.app.features
-            else "Accounts Normal"
-        )
 
         table: DataTable = self.get_widget_by_id("accounts-table")  # type: ignore
         table.clear(columns=True)

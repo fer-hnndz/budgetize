@@ -105,10 +105,15 @@ class Database:
             account.balance += float(amount)
             session.commit()
 
-    def update_account_balance(self, account_id: int) -> None:
-        """Goes through all transactions and updates the account balance"""
+    def get_all_recent_transactions(self) -> list[Transaction]:
+        """Returns a list with the last 5 transactions saved across all accounts."""
 
-    def get_montly_income(self) -> float:
+        with Session(Database.engine) as session:
+            stmt = select(Transaction).order_by(Transaction.timestamp.desc()).limit(5)
+            transactions: list[Transaction] = session.execute(stmt).scalars().all()
+            return transactions
+
+    def get_monthly_income(self) -> float:
         """Returns the total income for the current month"""
 
         now = Arrow.now()
@@ -123,7 +128,7 @@ class Database:
 
         return income
 
-    def get_monthly_expenses(self) -> float:
+    def get_monthly_expense(self) -> float:
         """Returns the total expenses for the current month"""
         now = Arrow.now()
 
