@@ -59,9 +59,15 @@ class MainMenu(Screen):
             DataTable(id="accounts-table"),
             # TODO: Convert all other currencies to main currency
             Vertical(
-                Label(f"Income this Month\n{income_color}{monthly_income}"),
-                Label(f"Balance\n{balance_color}{balance}"),
-                Label(f"Expenses this Month\n{expense_color}{monthly_expense}"),
+                Label(
+                    f"Income this Month\n{income_color}{monthly_income}",
+                    id="monthly-income",
+                ),
+                Label(f"Balance\n{balance_color}{balance}", id="monthly-balance"),
+                Label(
+                    f"Expenses this Month\n{expense_color}{monthly_expense}",
+                    id="monthly-expense",
+                ),
             ),
         )
         yield Horizontal(
@@ -115,10 +121,40 @@ class MainMenu(Screen):
                 acc.name, acc.account_type.name.capitalize(), acc.balance, acc.currency
             )
 
+    def _update_balance_labels(self) -> None:
+        """Updates monthly income/balance/expense labels"""
+        monthly_income = self.DB.get_monthly_income()
+        monthly_expense = self.DB.get_monthly_expense()
+        balance = monthly_income + monthly_expense
+
+        income_color = "[green]" if monthly_income > 0 else "[red]"
+        expense_color = "[green]" if monthly_expense > 0 else "[red]"
+        balance_color = "[green]" if balance >= 0 else "[red]"
+
+        monthly_income_label: Label = self.get_widget_by_id(
+            "monthly-income"
+        )  # type:ignore
+        monthly_balance_label: Label = self.get_widget_by_id(
+            "monthly-balance"
+        )  # type:ignore
+        monthly_expense_label: Label = self.get_widget_by_id(
+            "monthly-expense"
+        )  # type:ignore
+
+        monthly_income_label.update(
+            f"Income this Month\n{income_color}{monthly_income}"
+        )
+        monthly_balance_label.update(f"Balance\n{balance_color}{balance}")
+        monthly_expense_label.update(
+            f"Expenses this Month\n{expense_color}{monthly_expense}"
+        )
+
     def on_screen_resume(self) -> None:
         """Called when the screen is now the current screen"""
         print("Main Menu is now current")
         self._update_account_tables()
+        self._update_recent_transactions_table()
+        self._update_balance_labels()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button press handler"""

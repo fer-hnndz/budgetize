@@ -110,7 +110,7 @@ class Database:
 
         with Session(Database.engine) as session:
             stmt = select(Transaction).order_by(Transaction.timestamp.desc()).limit(5)
-            transactions: list[Transaction] = session.execute(stmt).scalars().all()
+            transactions: list[Transaction] = session.execute(stmt).scalars().all()  # type: ignore
             return transactions
 
     def get_monthly_income(self) -> float:
@@ -127,6 +127,33 @@ class Database:
                     income += transaction.amount
 
         return income
+
+    def delete_account(self, account_id: int) -> None:
+        """Deletes the specified account from the database."""
+        stmt = select(Account).where(Account.id == account_id)
+
+        with Session(Database.engine) as session:
+            res = session.execute(stmt)
+
+            row = res.fetchone()
+            if row is None:
+                return
+
+            acc = row.tuple()[0]
+            session.delete(acc)
+
+            # Delete transactions from the account
+
+            transaction_stmt = select(Transaction).where(
+                Transaction.account_id == account_id
+            )
+            rows = session.execute(transaction_stmt).fetchall()
+
+            for row in rows:
+                transaction = row.tuple()[0]
+                session.delete(transaction)
+
+            session.commit()
 
     def get_monthly_expense(self) -> float:
         """Returns the total expenses for the current month"""
