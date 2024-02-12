@@ -1,4 +1,4 @@
-Button {
+#yes-button #no-button {
     margin: 0 1;
 }
 
@@ -6,7 +6,7 @@ ConfirmQuit {
     align: center middle;
 }
 
-Label {
+#question {
     margin-top: 3;
 }
 

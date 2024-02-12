@@ -8,7 +8,7 @@ from textual.screen import Screen
 from textual.widgets import Button, DataTable, Footer, Header, Label, Rule
 
 from budgetize.db import Database
-from budgetize.tui.modals import ConfirmQuit
+from budgetize.tui.modals import ConfirmQuit, TransactionDetails
 
 # Import directly from the class file to avoid circular imports
 from budgetize.tui.screens._manage_accounts import ManageAccounts
@@ -82,6 +82,17 @@ class MainMenu(Screen):
 
         yield Rule(orientation="horizontal")
 
+    def on_data_table_cell_selected(self, event: DataTable.CellSelected) -> None:
+        """Called when a cell in the DataTable is selected"""
+
+        if event.data_table.id == "recent-transactions-table":
+            row_pos = event.coordinate.row
+            for n, row_key in enumerate(event.data_table.rows):
+                if (n == row_pos) and (row_key.value is not None):
+                    details_screen = TransactionDetails(int(row_key.value))
+                    self.app.push_screen(details_screen)
+                    # details_screen.set_transaction(row_key.value)
+
     def on_mount(self) -> None:
         """Called when the screen widgets are mounted"""
 
@@ -107,6 +118,7 @@ class MainMenu(Screen):
                 date,
                 trans.category,
                 trans.description,
+                key=str(trans.id),
             )
 
     def _update_account_tables(self) -> None:

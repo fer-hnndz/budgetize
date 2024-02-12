@@ -15,7 +15,7 @@ class ConfirmQuit(ModalScreen):
         """Called when screen is composed"""
 
         yield Center(
-            Label("Are you sure you want to quit?"),
+            Label("Are you sure you want to quit?", id="question"),
             Horizontal(
                 Button.error("Yes", id="yes-button"),
                 Button("No", id="no-button", variant="primary"),

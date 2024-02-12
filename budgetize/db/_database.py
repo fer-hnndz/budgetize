@@ -73,6 +73,15 @@ class Database:
             found_account: Account = session.get_one(Account, account_id)
             return found_account
 
+    def get_transaction_by_id(self, transaction_id: int) -> Transaction:
+        """Returns the transaction with the specified id"""
+
+        with Session(Database.engine) as session:
+            found_transaction: Transaction = session.get_one(
+                Transaction, transaction_id
+            )
+            return found_transaction
+
     def add_account(self, account: Account) -> None:
         """Adds a new account to the user"""
         with Session(Database.engine) as session:
