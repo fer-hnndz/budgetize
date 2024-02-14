@@ -59,7 +59,7 @@ class ManageAccounts(Screen):
     def get_transactions_table(self, account: int) -> DataTable:
         """Returns the data table containing the transactions for an account."""
 
-        table: DataTable = DataTable()  # type: ignore
+        table: DataTable = DataTable(id=f"management-table-{str(account)}")  # type: ignore
         table.add_columns("Date", "Amount", "Category", "Description")
 
         now = Arrow.now()
@@ -89,7 +89,9 @@ class ManageAccounts(Screen):
         current_row = 0
         for row in event.data_table.rows:
             if current_row == selected_cell and row.value is not None:
-                details_screen = TransactionDetails(int(row.value))
+                details_screen = TransactionDetails(
+                    int(row.value), from_manage_accounts=True
+                )
                 self.app.push_screen(details_screen)
                 break
             current_row += 1

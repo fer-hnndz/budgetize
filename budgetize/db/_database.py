@@ -177,3 +177,16 @@ class Database:
                     expense += transaction.amount
 
         return expense
+
+    def delete_transaction(self, transaction_id: int) -> Transaction:
+        """Deletes the specified transaction from the DB and returns it."""
+
+        stmt = select(Transaction).where(Transaction.id == transaction_id)
+        with Session(Database.engine) as session:
+            res = session.execute(stmt)
+            row = res.fetchone()
+
+            selected_transaction: Transaction = row.tuple()[0]  # type: ignore
+            session.delete(selected_transaction)
+            session.commit()
+            return selected_transaction
