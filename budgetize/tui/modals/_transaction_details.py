@@ -6,6 +6,7 @@ from textual.widgets import Button, Label
 
 from budgetize.db import Database
 from budgetize.db.orm import Transaction
+from budgetize.tui.screens import AddTransaction
 
 
 class TransactionDetails(ModalScreen):
@@ -19,11 +20,11 @@ class TransactionDetails(ModalScreen):
         TransactionDetails.DB = Database(self.app)
         self.transaction = self.DB.get_transaction_by_id(transaction_id)
         self.from_manage_accounts = from_manage_accounts
+
         super().__init__()
 
     def compose(self) -> ComposeResult:
         """Called when modal needs to be composed."""
-
         date_str = Arrow.fromtimestamp(self.transaction.timestamp).format("MM/DD/YYYY")
 
         with Center(id="dialog"):
@@ -57,3 +58,7 @@ class TransactionDetails(ModalScreen):
                 "The transaction has been successfully deleted.",
                 title="Transaction Deleted",
             )
+
+        if event.button.id == "edit-button":
+            self.app.pop_screen()
+            self.app.push_screen(AddTransaction(self.transaction))

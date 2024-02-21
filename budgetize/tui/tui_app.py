@@ -14,5 +14,4 @@ class TuiApp(App):
         self.install_screen(Startup(), "startup")
         self.install_screen(MainMenu(), "main_menu")
         self.install_screen(CreateAccount(), "create_account")
-        self.install_screen(AddTransaction(), "add_transaction")
         self.push_screen("main_menu")

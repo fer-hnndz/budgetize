@@ -9,6 +9,7 @@ from textual.widgets import Button, DataTable, Footer, Header, Label, Rule
 
 from budgetize.db import Database
 from budgetize.tui.modals import ConfirmQuit, TransactionDetails
+from budgetize.tui.screens import AddTransaction
 
 # Import directly from the class file to avoid circular imports
 from budgetize.tui.screens._manage_accounts import ManageAccounts
@@ -197,7 +198,7 @@ class MainMenu(Screen):
         for _ in self.DB.get_accounts():
             accounts += 1
         if accounts:
-            self.app.push_screen("add_transaction")
+            self.app.push_screen(AddTransaction())
         else:
             print("Showing toast")
             self.app.notify(

@@ -3,7 +3,7 @@
 from typing import Iterator
 
 from arrow import Arrow
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, select, update
 from sqlalchemy.orm import Session
 from textual.app import App
 
@@ -112,6 +112,34 @@ class Database:
             # Update the account balance
             account = session.get_one(Account, account_id)
             account.balance += float(amount)
+            session.commit()
+
+    def update_transaction(
+        self,
+        transaction_id: int,
+        account_id: int,
+        amount: float,
+        description: str,
+        category: str,
+        timestamp: float,
+    ) -> None:
+        """Updates the specified transaction in the database"""
+
+        values = {
+            "account_id": account_id,
+            "amount": amount,
+            "description": description,
+            "category": category,
+            "timestamp": timestamp,
+        }
+
+        with Session(Database.engine) as session:
+            upd = (
+                update(Transaction)
+                .values(values)
+                .where(Transaction.id == transaction_id)
+            )
+            session.execute(upd)
             session.commit()
 
     def get_all_recent_transactions(self) -> list[Transaction]:
