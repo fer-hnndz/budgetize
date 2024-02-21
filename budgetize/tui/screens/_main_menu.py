@@ -8,7 +8,8 @@ from textual.screen import Screen
 from textual.widgets import Button, DataTable, Footer, Header, Label, Rule
 
 from budgetize.db import Database
-from budgetize.tui.modals import ConfirmQuit
+from budgetize.tui.modals import ConfirmQuit, TransactionDetails
+from budgetize.tui.screens import AddTransaction
 
 # Import directly from the class file to avoid circular imports
 from budgetize.tui.screens._manage_accounts import ManageAccounts
@@ -59,9 +60,15 @@ class MainMenu(Screen):
             DataTable(id="accounts-table"),
             # TODO: Convert all other currencies to main currency
             Vertical(
-                Label(f"Income this Month\n{income_color}{monthly_income}"),
-                Label(f"Balance\n{balance_color}{balance}"),
-                Label(f"Expenses this Month\n{expense_color}{monthly_expense}"),
+                Label(
+                    f"Income this Month\n{income_color}{monthly_income}",
+                    id="monthly-income",
+                ),
+                Label(f"Balance\n{balance_color}{balance}", id="monthly-balance"),
+                Label(
+                    f"Expenses this Month\n{expense_color}{monthly_expense}",
+                    id="monthly-expense",
+                ),
             ),
         )
         yield Horizontal(
@@ -75,6 +82,17 @@ class MainMenu(Screen):
         yield DataTable(id="recent-transactions-table")
 
         yield Rule(orientation="horizontal")
+
+    def on_data_table_cell_selected(self, event: DataTable.CellSelected) -> None:
+        """Called when a cell in the DataTable is selected"""
+
+        if event.data_table.id == "recent-transactions-table":
+            row_pos = event.coordinate.row
+            for n, row_key in enumerate(event.data_table.rows):
+                if (n == row_pos) and (row_key.value is not None):
+                    details_screen = TransactionDetails(int(row_key.value))
+                    self.app.push_screen(details_screen)
+                    # details_screen.set_transaction(row_key.value)
 
     def on_mount(self) -> None:
         """Called when the screen widgets are mounted"""
@@ -101,6 +119,7 @@ class MainMenu(Screen):
                 date,
                 trans.category,
                 trans.description,
+                key=str(trans.id),
             )
 
     def _update_account_tables(self) -> None:
@@ -115,10 +134,40 @@ class MainMenu(Screen):
                 acc.name, acc.account_type.name.capitalize(), acc.balance, acc.currency
             )
 
+    def _update_balance_labels(self) -> None:
+        """Updates monthly income/balance/expense labels"""
+        monthly_income = self.DB.get_monthly_income()
+        monthly_expense = self.DB.get_monthly_expense()
+        balance = monthly_income + monthly_expense
+
+        income_color = "[green]" if monthly_income > 0 else "[red]"
+        expense_color = "[green]" if monthly_expense > 0 else "[red]"
+        balance_color = "[green]" if balance >= 0 else "[red]"
+
+        monthly_income_label: Label = self.get_widget_by_id(
+            "monthly-income"
+        )  # type:ignore
+        monthly_balance_label: Label = self.get_widget_by_id(
+            "monthly-balance"
+        )  # type:ignore
+        monthly_expense_label: Label = self.get_widget_by_id(
+            "monthly-expense"
+        )  # type:ignore
+
+        monthly_income_label.update(
+            f"Income this Month\n{income_color}{monthly_income}"
+        )
+        monthly_balance_label.update(f"Balance\n{balance_color}{balance}")
+        monthly_expense_label.update(
+            f"Expenses this Month\n{expense_color}{monthly_expense}"
+        )
+
     def on_screen_resume(self) -> None:
         """Called when the screen is now the current screen"""
         print("Main Menu is now current")
         self._update_account_tables()
+        self._update_recent_transactions_table()
+        self._update_balance_labels()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button press handler"""
@@ -149,7 +198,7 @@ class MainMenu(Screen):
         for _ in self.DB.get_accounts():
             accounts += 1
         if accounts:
-            self.app.push_screen("add_transaction")
+            self.app.push_screen(AddTransaction())
         else:
             print("Showing toast")
             self.app.notify(

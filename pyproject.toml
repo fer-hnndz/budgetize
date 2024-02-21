@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "budgetize"
+version = "0.0.2"
+authors = [
+  { name = "Jorge Hernández", email = "jfernandohernandez28@gmail.com" },
+]
+description = "A Terminal User Interface (TUI) to create budgets, track your incomes/expenses and manage your finances."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Intended Audience :: End Users/Desktop",
+  "Programming Language :: Python :: 3",
+]
+dependencies = ["textual", "sqlalchemy", "requests", "arrow"]
+
+[project.scripts]
+budgetize = "budgetize._entry_point:main"
+
+[project.urls]
+Homepage = "https://github.com/fer-hnndz/budgetize"
+Issues = "https://github.com/fer-hnndz/budgetize/issues"

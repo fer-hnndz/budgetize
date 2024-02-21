@@ -3,7 +3,7 @@
 from typing import Iterator
 
 from arrow import Arrow
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, select, update
 from sqlalchemy.orm import Session
 from textual.app import App
 
@@ -73,6 +73,15 @@ class Database:
             found_account: Account = session.get_one(Account, account_id)
             return found_account
 
+    def get_transaction_by_id(self, transaction_id: int) -> Transaction:
+        """Returns the transaction with the specified id"""
+
+        with Session(Database.engine) as session:
+            found_transaction: Transaction = session.get_one(
+                Transaction, transaction_id
+            )
+            return found_transaction
+
     def add_account(self, account: Account) -> None:
         """Adds a new account to the user"""
         with Session(Database.engine) as session:
@@ -105,12 +114,40 @@ class Database:
             account.balance += float(amount)
             session.commit()
 
+    def update_transaction(
+        self,
+        transaction_id: int,
+        account_id: int,
+        amount: float,
+        description: str,
+        category: str,
+        timestamp: float,
+    ) -> None:
+        """Updates the specified transaction in the database"""
+
+        values = {
+            "account_id": account_id,
+            "amount": amount,
+            "description": description,
+            "category": category,
+            "timestamp": timestamp,
+        }
+
+        with Session(Database.engine) as session:
+            upd = (
+                update(Transaction)
+                .values(values)
+                .where(Transaction.id == transaction_id)
+            )
+            session.execute(upd)
+            session.commit()
+
     def get_all_recent_transactions(self) -> list[Transaction]:
         """Returns a list with the last 5 transactions saved across all accounts."""
 
         with Session(Database.engine) as session:
             stmt = select(Transaction).order_by(Transaction.timestamp.desc()).limit(5)
-            transactions: list[Transaction] = session.execute(stmt).scalars().all()
+            transactions: list[Transaction] = session.execute(stmt).scalars().all()  # type: ignore
             return transactions
 
     def get_monthly_income(self) -> float:
@@ -128,6 +165,33 @@ class Database:
 
         return income
 
+    def delete_account(self, account_id: int) -> None:
+        """Deletes the specified account from the database."""
+        stmt = select(Account).where(Account.id == account_id)
+
+        with Session(Database.engine) as session:
+            res = session.execute(stmt)
+
+            row = res.fetchone()
+            if row is None:
+                return
+
+            acc = row.tuple()[0]
+            session.delete(acc)
+
+            # Delete transactions from the account
+
+            transaction_stmt = select(Transaction).where(
+                Transaction.account_id == account_id
+            )
+            rows = session.execute(transaction_stmt).fetchall()
+
+            for row in rows:
+                transaction = row.tuple()[0]
+                session.delete(transaction)
+
+            session.commit()
+
     def get_monthly_expense(self) -> float:
         """Returns the total expenses for the current month"""
         now = Arrow.now()
@@ -141,3 +205,16 @@ class Database:
                     expense += transaction.amount
 
         return expense
+
+    def delete_transaction(self, transaction_id: int) -> Transaction:
+        """Deletes the specified transaction from the DB and returns it."""
+
+        stmt = select(Transaction).where(Transaction.id == transaction_id)
+        with Session(Database.engine) as session:
+            res = session.execute(stmt)
+            row = res.fetchone()
+
+            selected_transaction: Transaction = row.tuple()[0]  # type: ignore
+            session.delete(selected_transaction)
+            session.commit()
+            return selected_transaction
