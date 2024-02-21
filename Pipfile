@@ -8,6 +8,7 @@ textual = "*"
 sqlalchemy = "*"
 requests = "*"
 arrow = "*"
+pipfile = "*"
 
 [dev-packages]
 black = "*"
