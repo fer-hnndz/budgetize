@@ -1,0 +1,16 @@
+TransactionDetails {
+    align: center middle;
+}
+
+#dialog {
+    height: 12;
+    width: 95;
+}
+
+#buttons {
+}
+
+#title {
+    margin-top: 1;
+    margin-bottom:1;
+}

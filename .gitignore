@@ -4,3 +4,5 @@ exchange_rates.json
 .mypy_cache/
 budgetize.sqlite
 test_db.sqlite
+dist/
+Pipfile.lock

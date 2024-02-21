@@ -8,25 +8,12 @@ A Terminal User Interface (TUI) that allows you to manage your finances.
 
 # ⚙ Installation
 
-Currently, Budgetize is not being distributed with binaries.\
-The only way for now to run it is with the source code.
+There's plans in the future to distribute Budgetize as compiled binaries.\
+For now, you can install Budgetize from PyPi:
 
-### 👨‍💻 Installing from Source
-
-1. Clone the repository
 ```bash
-git clone https://github.com/fer-hnndz/budgetize.git
-```
-2. Install dependencies
-```bash
-pip install -r requirements.txt
-```
-***NOTE: It is recommended to create a virtual environment***\
-3. Start Budgetize
-```bash
-python main.py
-# Or you can run it with the textual module
-textual run main.py
+pip install budgetize
+budgetize
 ```
 
 # 🗺 Roadmap
@@ -35,7 +22,7 @@ You may check the project's roadmap in the open projects.\
 
 # Contributing
 
-TO-DO
+You may check the contributing guide [here](docs/CONTRIBUTING.md)
 
 # License
 Budgetize uses the [General Public License v3](LICENSE)
