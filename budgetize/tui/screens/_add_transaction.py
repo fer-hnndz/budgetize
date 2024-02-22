@@ -1,5 +1,6 @@
 """Module that defines the AddTransaction screen"""
 
+import gettext
 from datetime import date as date_func
 from traceback import print_exc
 from typing import Optional
@@ -16,6 +17,11 @@ from budgetize.consts import DEFAULT_CATEGORIES
 from budgetize.db import Database
 from budgetize.db.orm import Transaction
 
+t = gettext.translation(
+    "Budgetize", localedir="./budgetize/translations", languages=["es"]
+)
+_ = t.gettext
+
 
 class AddTransaction(Screen):
     """Screen that handles adding a new transaction"""
@@ -26,7 +32,7 @@ class AddTransaction(Screen):
             key="q,Q",
             key_display="Q",
             action="pop_screen",
-            description="Cancel Transaction",
+            description=_("Cancel Transaction"),
         ),
     ]
 
@@ -132,7 +138,7 @@ class AddTransaction(Screen):
                 timestamp=date.timestamp(),
             )
             self.app.pop_screen()
-            self.app.notify(f"Sucessfully updated transaction!")
+            self.app.notify(_("Sucessfully updated transaction!"))
             return
 
         self.DB.add_transaction(
@@ -144,7 +150,11 @@ class AddTransaction(Screen):
         )
 
         self.app.pop_screen()
-        self.app.notify(f"Sucessfully added transaction of {currency} {amount}")
+        self.app.notify(
+            _("Sucessfully added transaction of {currency} {amount}").format(
+                currency=currency, amount=amount
+            )
+        )
 
     def _get_account_options(self) -> list[tuple[str, int]]:
         """Returns a list of tuples (name, id) for the TUI to show"""

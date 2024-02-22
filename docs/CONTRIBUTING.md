@@ -3,6 +3,12 @@ Thanks for you interest in contributing to Budgetize.\
 Contributing is simple and straightforward.\
 You may choose on of the cards in the project's roadmap, fix an issue or add a feature you developed and if it passes all the reviews, it's going to merged.
 
+**Table of Contents**\
+1. [💻 Preparing the Development Environment](#💻-preparing-the-development-environment)
+    - [⚙ Setting up dependencies](#⚙-setting-up-dependencies)
+    - [✍ Git Workflow](#✍-git-workflow)
+2. [🌎 Translating](#🌎-translating)
+
 # 💻 Preparing the Development Environment
 ## ⚙ Setting up dependencies
 
@@ -38,3 +44,24 @@ For contributing, just follow these steps:
 4. Be sure to use present tense in commit messages. Example: **"Add/Solve feature x"** instead of **"Added/Solved feature x"**
 
 When submitting your pull request make sure to name it accordingly and explain in detail what you changed. Thanks for contributing!
+
+# 🌎 Translating
+**NOTE: This section needs to be improved. And commands checked**
+Create a folder with the locale you want to translate.
+
+Commands:
+To create a new translation
+
+```bash
+pipenv run pybabel init -D budgetize -i ./budgetize/translations/TRANSLATION_TEMPLATE.po -o {path_to_your_locale}.po -l {locale}
+```
+
+Create a folder called `LC_MESSAGES`
+Compilation:
+```bash
+pipenv run pybabel compile -D budgetize -l {locale} -i {your_translation}.po -d ./budgetize/translations/{locale}
+```
+Updating Translations:
+```bash
+pipenv run pybabel update -i .\budgetize\translations\TRANSLATION_TEMPLATE.po -o .\budgetize\translations\es\es.po -l es --previous --update-header-comment -D budgetize
+```

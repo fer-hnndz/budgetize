@@ -1,0 +1,246 @@
+# Spanish translations for Budgetize.
+# Copyright (C) 2024 Jorge Hernandez (fer-hnndz)
+# This file is distributed under the same license as the Budgetize project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2024-02-22 08:48-0600\n"
+"PO-Revision-Date: 2024-02-21 12:20-0600\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: es\n"
+"Language-Team: es <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.14.0\n"
+
+#: budgetize/tui/modals/_confirm_quit.py:25
+msgid "Are you sure you want to quit?"
+msgstr "¿Estás seguro que quieres salir?"
+
+#: budgetize/tui/modals/_confirm_quit.py:27
+msgid "Exit"
+msgstr "Salir"
+
+#: budgetize/tui/modals/_confirm_quit.py:28
+#: budgetize/tui/screens/_create_account.py:30
+#: budgetize/tui/screens/_create_account.py:77
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: budgetize/tui/modals/_transaction_details.py:38
+msgid "Transaction #{transaction_id} Details"
+msgstr "Detalle de Transacción #{transaction_id}"
+
+#: budgetize/tui/modals/_transaction_details.py:43
+msgid "Date: {date_str}"
+msgstr "Fecha: {date_str}"
+
+#: budgetize/tui/modals/_transaction_details.py:45
+msgid "Account: {account_name}"
+msgstr "Cuenta: {account_name}"
+
+#: budgetize/tui/modals/_transaction_details.py:51
+msgid "Amount: {amt}"
+msgstr "Cantidad: {amt}"
+
+#: budgetize/tui/modals/_transaction_details.py:53
+msgid "Description: {desc}"
+msgstr "Descripción: {desc}"
+
+#: budgetize/tui/modals/_transaction_details.py:56
+msgid "Category: {category}"
+msgstr "Categoría: {category}"
+
+#: budgetize/tui/modals/_transaction_details.py:59
+msgid "Close"
+msgstr "Cerrar"
+
+#: budgetize/tui/modals/_transaction_details.py:60
+msgid "Edit"
+msgstr "Editar"
+
+#: budgetize/tui/modals/_transaction_details.py:61
+msgid "Delete"
+msgstr "Eliminar"
+
+#: budgetize/tui/modals/_transaction_details.py:77
+msgid "The transaction has been successfully deleted."
+msgstr "La transacción ha sido eliminada exitosamente."
+
+#: budgetize/tui/modals/_transaction_details.py:78
+msgid "Transaction Deleted"
+msgstr "Transacción Eliminada"
+
+#: budgetize/tui/screens/_add_transaction.py:35
+msgid "Cancel Transaction"
+msgstr "Cancelar Transacción"
+
+#: budgetize/tui/screens/_add_transaction.py:141
+#| msgid "Cancel Transaction"
+msgstr "Cancelar Transacción"
+
+msgid "Sucessfully updated transaction!"
+msgstr "¡Se actualizó la transacción exitosamente!"
+
+#: budgetize/tui/screens/_add_transaction.py:154
+msgid "Sucessfully added transaction of {currency} {amount}"
+msgstr "Se agregó exitosamente la transacción de {currency} {amount}"
+
+#: budgetize/tui/screens/_create_account.py:42
+#: budgetize/tui/screens/_create_account.py:76
+#: budgetize/tui/screens/_main_menu.py:91
+msgid "Create Account"
+msgstr "Crear Cuenta"
+
+#: budgetize/tui/screens/_create_account.py:49
+msgid "Account Currency"
+msgstr "Moneda de la Cuenta"
+
+#: budgetize/tui/screens/_create_account.py:50
+#: budgetize/tui/screens/_main_menu.py:149
+msgid "Account Name"
+msgstr "Nombre de la Cuenta"
+
+#: budgetize/tui/screens/_create_account.py:54
+msgid "Bank Account"
+msgstr "Cuenta de Banco"
+
+#: budgetize/tui/screens/_create_account.py:56
+msgid "Starting Balance"
+msgstr "Balance Inicial"
+
+#: budgetize/tui/screens/_create_account.py:64
+msgid "Initial Balance must be atleast zero."
+msgstr "El balance inicial debe ser al menos cero."
+
+#: budgetize/tui/screens/_create_account.py:68
+#: budgetize/tui/screens/_main_menu.py:149
+msgid "Account Type"
+msgstr "Tipo de Cuenta"
+
+#: budgetize/tui/screens/_create_account.py:99
+msgid "Account created successfully."
+msgstr "Cuenta creada exitosamente."
+
+#: budgetize/tui/screens/_main_menu.py:35
+msgid "Quit Budgetize"
+msgstr "Salir de Budgetize"
+
+#: budgetize/tui/screens/_main_menu.py:41
+msgid "Add Transaction"
+msgstr "Agregar Transacción"
+
+#: budgetize/tui/screens/_main_menu.py:61
+msgid "Main Menu"
+msgstr "Menú Principal"
+
+#: budgetize/tui/screens/_main_menu.py:71
+#: budgetize/tui/screens/_main_menu.py:178
+msgid ""
+"Income this Month\n"
+"{income_color}{monthly_income}"
+msgstr ""
+"Ingresos este Mes\n"
+"{income_color}{monthly_income}"
+
+#: budgetize/tui/screens/_main_menu.py:77
+#: budgetize/tui/screens/_main_menu.py:183
+msgid ""
+"Balance\n"
+"{balance_color}{balance}"
+msgstr ""
+"Balance\n"
+"{balance_color}{balance}"
+
+#: budgetize/tui/screens/_main_menu.py:83
+#: budgetize/tui/screens/_main_menu.py:188
+msgid ""
+"Expenses this Month\n"
+"{expense_color}{monthly_expense}"
+msgstr ""
+"Gastos este Mes\n"
+"{expense_color}{monthly_expense}"
+
+#: budgetize/tui/screens/_main_menu.py:92
+#: budgetize/tui/screens/_manage_accounts.py:41
+msgid "Manage Accounts"
+msgstr "Administrar Cuentas"
+
+#: budgetize/tui/screens/_main_menu.py:94
+msgid "Recent Transactions"
+msgstr "Transacciones Recientes"
+
+#: budgetize/tui/screens/_main_menu.py:126
+msgid "Account"
+msgstr "Cuenta"
+
+#: budgetize/tui/screens/_main_menu.py:126
+#: budgetize/tui/screens/_manage_accounts.py:69
+msgid "Amount"
+msgstr "Cantidad"
+
+#: budgetize/tui/screens/_main_menu.py:126
+#: budgetize/tui/screens/_manage_accounts.py:69
+msgid "Date"
+msgstr "Fecha"
+
+#: budgetize/tui/screens/_main_menu.py:126
+#: budgetize/tui/screens/_manage_accounts.py:69
+msgid "Category"
+msgstr "Categoría"
+
+#: budgetize/tui/screens/_main_menu.py:126
+#: budgetize/tui/screens/_manage_accounts.py:69
+msgid "Description"
+msgstr "Descripción"
+
+#: budgetize/tui/screens/_main_menu.py:149
+msgid "Balance"
+msgstr "Balance"
+
+#: budgetize/tui/screens/_main_menu.py:149
+msgid "Currency"
+msgstr "Moneda"
+
+#: budgetize/tui/screens/_main_menu.py:211
+msgid "Cannot Manage Accounts"
+msgstr "No se puede administrar las cuentas"
+
+#: budgetize/tui/screens/_main_menu.py:212
+msgid "You must need atleast one account to manage accounts."
+msgstr "Necesitas almenos una cuenta para administrar cuentas."
+
+#: budgetize/tui/screens/_main_menu.py:233
+msgid "Cannot add a Transaction"
+msgstr "No se puede agregar una Transacción"
+
+#: budgetize/tui/screens/_main_menu.py:234
+msgid "You must need atleast one account to add a transaction."
+msgstr "Necesitas almenos una cuenta para agregar una transacción."
+
+#: budgetize/tui/screens/_manage_accounts.py:33
+msgid "Back to Main Menu"
+msgstr "Regresar al Menú Principal."
+
+#: budgetize/tui/screens/_manage_accounts.py:49
+#: budgetize/tui/screens/_manage_accounts.py:60
+msgid "Balance: {balance}"
+msgstr "Balance: {balance}"
+
+#: budgetize/tui/screens/_manage_accounts.py:51
+#: budgetize/tui/screens/_manage_accounts.py:62
+msgid "Delete Account"
+msgstr "Eliminar Cuenta"
+
+#: budgetize/tui/screens/_manage_accounts.py:118
+msgid "{account_name} has been deleted."
+msgstr "{account_name} ha sido eliminada."
+
+#: budgetize/tui/screens/_manage_accounts.py:119
+msgid "Account Deleted"
+msgstr "Cuenta Eliminada"
