@@ -38,3 +38,20 @@ For contributing, just follow these steps:
 4. Be sure to use present tense in commit messages. Example: **"Add/Solve feature x"** instead of **"Added/Solved feature x"**
 
 When submitting your pull request make sure to name it accordingly and explain in detail what you changed. Thanks for contributing!
+
+# Translating
+**NOTE: This section needs to be improved. And commands checked**
+Create a folder with the locale you want to translate.
+
+Commands:\
+To create a new translation
+
+```bash
+pipenv run pybabel init -D budgetize -i ./budgetize/translations/TRANSLATION_TEMPLATE.po -o {path_to_your_locale}.po -l {locale}
+```
+
+Create a folder called `LC_MESSAGES`
+Compilation:\
+```bash
+pipenv run pybabel compile -D budgetize -l {locale} -i {your_translation}.po -d ./budgetize/translations/{locale}
+```

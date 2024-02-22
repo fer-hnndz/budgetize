@@ -1,5 +1,6 @@
 """Module that defines the AddTransaction screen"""
 
+import gettext
 from datetime import date as date_func
 from traceback import print_exc
 from typing import Optional
@@ -16,6 +17,11 @@ from budgetize.consts import DEFAULT_CATEGORIES
 from budgetize.db import Database
 from budgetize.db.orm import Transaction
 
+t = gettext.translation(
+    "Budgetize", localedir="./budgetize/translations", languages=["es"]
+)
+_ = t.gettext
+
 
 class AddTransaction(Screen):
     """Screen that handles adding a new transaction"""
@@ -26,7 +32,7 @@ class AddTransaction(Screen):
             key="q,Q",
             key_display="Q",
             action="pop_screen",
-            description="Cancel Transaction",
+            description=_("Cancel Transaction"),
         ),
     ]
 

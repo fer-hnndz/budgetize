@@ -2,6 +2,13 @@
 
 import os
 
+# ExchangeRates API
+
+EXCHANGERATES_FREE_API_KEY = "9c21e1d06665202b12fb2962b75c4e35"
+VALID_EXCHANGE_TIMESTAMP = 36 * 60  # 36 hours
+
+# Database
+
 APP_FOLDER_NAME = ".budgetize"
 
 user_folder = os.path.expanduser("~")
@@ -9,11 +16,10 @@ app_folder_path = os.path.join(user_folder, ".budgetize")
 if not os.path.exists(app_folder_path):
     os.mkdir(app_folder_path)
 
-EXCHANGERATES_FREE_API_KEY = "9c21e1d06665202b12fb2962b75c4e35"
-VALID_EXCHANGE_TIMESTAMP = 36 * 60  # 36 hours
 DB_FILE_NAME = "budgetize.sqlite"
 PROD_DB_URL = f"sqlite:///{os.path.join(app_folder_path, DB_FILE_NAME)}"
-DEFAULT_CATEGORIES = {
+
+DEFAULT_CATEGORIES = [
     "Income",
     "Food",
     "Groceries",
@@ -22,7 +28,14 @@ DEFAULT_CATEGORIES = {
     "Gifts",
     "Investment",
     "Entertainment",
+]
+
+# Settings
+DEFAULT_SETTINGS = {
+    "language": "en",
 }
+
+
 CURRENCIES: list[tuple[str, str]] = [
     ("AED", "United Arab Emirates Dirham"),
     ("AFN", "Afghan Afghani"),

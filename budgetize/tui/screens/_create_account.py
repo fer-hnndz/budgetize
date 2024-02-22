@@ -1,5 +1,7 @@
 """Module that defines the CreateAccount screen."""
 
+import gettext
+
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Grid, Horizontal, VerticalScroll
@@ -11,6 +13,11 @@ from budgetize.consts import CURRENCIES
 from budgetize.db import Database
 from budgetize.db.orm import Account, AccountType
 
+t = gettext.translation(
+    "budgetize", localedir="./budgetize/translations", languages=["es"]
+)
+_ = t.gettext
+
 
 class CreateAccount(Screen):
     """Screen that allows the user to create a new account."""
@@ -19,7 +26,9 @@ class CreateAccount(Screen):
 
     DB: Database = None  # type: ignore
     BINDINGS = [
-        Binding(key="c,C", key_display="C", action="pop_screen", description="Cancel"),
+        Binding(
+            key="c,C", key_display="C", action="pop_screen", description=_("Cancel")
+        ),
     ]
 
     def __init__(self) -> None:
@@ -30,21 +39,21 @@ class CreateAccount(Screen):
     def compose(self) -> ComposeResult:
         """Called when the screen is composed."""
 
-        self.app.sub_title = "Create Account"
+        self.app.sub_title = _("Create Account")
         yield Header()
         yield Footer()
 
         yield VerticalScroll(
             Grid(
                 # Place them in this way because grids are filled in row-order
-                Label("Account Currency", id="currency-label"),
-                Label("Account Name", id="name-label"),
+                Label(_("Account Currency"), id="currency-label"),
+                Label(_("Account Name"), id="name-label"),
                 Select(
                     self.get_currency_choices(), id="currency-select", allow_blank=False
                 ),
-                Input(placeholder="Bank Account", id="account-name-input"),
+                Input(placeholder=_("Bank Account"), id="account-name-input"),
             ),
-            Label("Starting Balance", id="balance-label"),
+            Label(_("Starting Balance"), id="balance-label"),
             Input(
                 type="number",
                 placeholder="250",
@@ -52,19 +61,20 @@ class CreateAccount(Screen):
                 validators=[
                     Number(
                         minimum=0,
-                        failure_description="Initial Balance must be atleast zero.",
+                        failure_description=_("Initial Balance must be atleast zero."),
                     )
                 ],
             ),
-            Label("Account Type", id="account-type-label"),
+            Label(_("Account Type"), id="account-type-label"),
             Select(
+                # TODO: Localize this
                 self.get_account_type_choices(),
                 id="account-type-select",
                 allow_blank=False,
             ),
             Horizontal(
-                Button.success("Create Account", id="create-account-button"),
-                Button.error("Cancel", id="cancel-button"),
+                Button.success(_("Create Account"), id="create-account-button"),
+                Button.error(_("Cancel"), id="cancel-button"),
             ),
         )
 
@@ -86,7 +96,7 @@ class CreateAccount(Screen):
 
             self.DB.add_account(new_account)
             self.app.pop_screen()
-            self.notify("Account created successfully.", title="Account Created")
+            self.notify(_("Account created successfully."), title="Account Created")
 
         elif event.button.id == "cancel-button":
             self.get_widget_by_id("account-name-input").value = ""  # type: ignore

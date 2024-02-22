@@ -1,3 +1,5 @@
+import gettext
+
 from arrow import Arrow
 from textual.app import ComposeResult
 from textual.containers import Center, Horizontal
@@ -7,6 +9,11 @@ from textual.widgets import Button, Label
 from budgetize.db import Database
 from budgetize.db.orm import Transaction
 from budgetize.tui.screens import AddTransaction
+
+t = gettext.translation(
+    "budgetize", localedir="./budgetize/translations", fallback=True
+)
+_ = t.gettext
 
 
 class TransactionDetails(ModalScreen):
@@ -28,18 +35,31 @@ class TransactionDetails(ModalScreen):
         date_str = Arrow.fromtimestamp(self.transaction.timestamp).format("MM/DD/YYYY")
 
         with Center(id="dialog"):
-            yield Label(f"Transaction #{self.transaction.id} Details", id="title")
-            yield Label(f"Date: {date_str}")
             yield Label(
-                f"Account: {self.DB.get_account_by_id(int(self.transaction.account_id)).name}"
+                _("Transaction #{transaction_id} Details").format(
+                    transaction_id=self.transaction.id
+                ),
+                id="title",
             )
-            yield Label(f"Amount: {self.transaction.amount}")
-            yield Label(f"Description: {self.transaction.description}")
-            yield Label(f"Category: {self.transaction.category}")
+            yield Label(_("Date: {date_str}").format(date_str=date_str))
+            yield Label(
+                _("Account: {account_name}").format(
+                    account_name=self.DB.get_account_by_id(
+                        int(self.transaction.account_id)
+                    ).name
+                )
+            )
+            yield Label(_("Amount: {amt}").format(amt=self.transaction.amount))
+            yield Label(
+                _("Description: {desc}").format(desc=self.transaction.description)
+            )
+            yield Label(
+                _("Category: {category}").format(category=self.transaction.category)
+            )
             with Horizontal(id="buttons"):
-                yield Button("Close", id="close-button")
-                yield Button("Edit", id="edit-button", variant="primary")
-                yield Button.error("Delete", id="delete-button")
+                yield Button(_("Close"), id="close-button")
+                yield Button(_("Edit"), id="edit-button", variant="primary")
+                yield Button.error(_("Delete"), id="delete-button")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button handler"""
@@ -55,8 +75,8 @@ class TransactionDetails(ModalScreen):
                 self.app.pop_screen()
 
             self.notify(
-                "The transaction has been successfully deleted.",
-                title="Transaction Deleted",
+                _("The transaction has been successfully deleted."),
+                title=_("Transaction Deleted"),
             )
 
         if event.button.id == "edit-button":

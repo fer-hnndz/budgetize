@@ -1,9 +1,16 @@
 """Module that defines the ConfirmQuit modal"""
 
+import gettext
+
 from textual.app import ComposeResult
 from textual.containers import Center, Horizontal
 from textual.screen import ModalScreen
 from textual.widgets import Button, Label
+
+t = gettext.translation(
+    "budgetize", localedir="./budgetize/translations", fallback=True
+)
+_ = t.gettext
 
 
 class ConfirmQuit(ModalScreen):
@@ -15,10 +22,10 @@ class ConfirmQuit(ModalScreen):
         """Called when screen is composed"""
 
         yield Center(
-            Label("Are you sure you want to quit?", id="question"),
+            Label(_("Are you sure you want to quit?"), id="question"),
             Horizontal(
-                Button.error("Yes", id="yes-button"),
-                Button("No", id="no-button", variant="primary"),
+                Button.error(_("Exit"), id="yes-button"),
+                Button(_("Cancel"), id="no-button", variant="primary"),
             ),
             id="dialog",
         )

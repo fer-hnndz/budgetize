@@ -1,5 +1,7 @@
 """Module that defines the main menu screen"""
 
+import gettext
+
 from arrow import Arrow
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -14,6 +16,11 @@ from budgetize.tui.screens import AddTransaction
 # Import directly from the class file to avoid circular imports
 from budgetize.tui.screens._manage_accounts import ManageAccounts
 
+t = gettext.translation(
+    "budgetize", localedir="./budgetize/translations", languages=["es"]
+)
+_ = t.gettext
+
 
 class MainMenu(Screen):
     """Screen that displays the main menu"""
@@ -25,13 +32,13 @@ class MainMenu(Screen):
             key="q,Q",
             key_display="Q",
             action="request_quit()",
-            description="Quit Budgetize",
+            description=_("Quit Budgetize"),
         ),
         Binding(
             key="n,N",
             key_display="N",
             action="verify_add_transaction()",
-            description="Add Transaction",
+            description=_("Add Transaction"),
         ),
     ]
 
@@ -51,7 +58,7 @@ class MainMenu(Screen):
         expense_color = "[green]" if monthly_expense > 0 else "[red]"
         balance_color = "[green]" if balance >= 0 else "[red]"
 
-        self.app.sub_title = "Main Menu"
+        self.app.sub_title = _("Main Menu")
         yield Header()
         yield Footer()
         yield Label("Accounts", id="accounts-label")
@@ -61,21 +68,30 @@ class MainMenu(Screen):
             # TODO: Convert all other currencies to main currency
             Vertical(
                 Label(
-                    f"Income this Month\n{income_color}{monthly_income}",
+                    _("Income this Month\n{income_color}{monthly_income}").format(
+                        income_color=income_color, monthly_income=monthly_income
+                    ),
                     id="monthly-income",
                 ),
-                Label(f"Balance\n{balance_color}{balance}", id="monthly-balance"),
                 Label(
-                    f"Expenses this Month\n{expense_color}{monthly_expense}",
+                    _("Balance\n{balance_color}{balance}").format(
+                        balance_color=balance_color, balance=balance
+                    ),
+                    id="monthly-balance",
+                ),
+                Label(
+                    _("Expenses this Month\n{expense_color}{monthly_expense}").format(
+                        expense_color=expense_color, monthly_expense=monthly_expense
+                    ),
                     id="monthly-expense",
                 ),
             ),
         )
         yield Horizontal(
-            Button("Create Account", id="create-account-button"),
-            Button("Manage Accounts", id="manage-accounts-button"),
+            Button(_("Create Account"), id="create-account-button"),
+            Button(_("Manage Accounts"), id="manage-accounts-button"),
         )
-        yield Label("Recent Transactions", id="recent-transactions-label")
+        yield Label(_("Recent Transactions"), id="recent-transactions-label")
 
         # Generate last 5 transactions
         # TODO: Replace the place holders
@@ -106,7 +122,9 @@ class MainMenu(Screen):
         recent_transactions = self.DB.get_all_recent_transactions()
         table: DataTable = self.get_widget_by_id("recent-transactions-table")  # type: ignore
         table.clear(columns=True)
-        table.add_columns("Account", "Amount", "Date", "Category", "Description")
+        table.add_columns(
+            _("Account"), _("Amount"), _("Date"), _("Category"), _("Description")
+        )
 
         for trans in recent_transactions:
             account = self.DB.get_account_by_id(trans.account_id)
@@ -127,7 +145,9 @@ class MainMenu(Screen):
 
         table: DataTable = self.get_widget_by_id("accounts-table")  # type: ignore
         table.clear(columns=True)
-        table.add_columns("Account Name", "Account Type", "Balance", "Currency")
+        table.add_columns(
+            _("Account Name"), _("Account Type"), _("Balance"), _("Currency")
+        )
 
         for acc in self.DB.get_accounts():
             table.add_row(
@@ -155,16 +175,23 @@ class MainMenu(Screen):
         )  # type:ignore
 
         monthly_income_label.update(
-            f"Income this Month\n{income_color}{monthly_income}"
+            _("Income this Month\n{income_color}{monthly_income}").format(
+                income_color=income_color, monthly_income=monthly_income
+            )
         )
-        monthly_balance_label.update(f"Balance\n{balance_color}{balance}")
+        monthly_balance_label.update(
+            _("Balance\n{balance_color}{balance}").format(
+                balance_color=balance_color, balance=balance
+            )
+        )
         monthly_expense_label.update(
-            f"Expenses this Month\n{expense_color}{monthly_expense}"
+            _("Expenses this Month\n{expense_color}{monthly_expense}").format(
+                expense_color=expense_color, monthly_expense=monthly_expense
+            )
         )
 
     def on_screen_resume(self) -> None:
         """Called when the screen is now the current screen"""
-        print("Main Menu is now current")
         self._update_account_tables()
         self._update_recent_transactions_table()
         self._update_balance_labels()
@@ -181,8 +208,8 @@ class MainMenu(Screen):
             else:
                 self.app.notify(
                     severity="warning",
-                    title="Cannot Manage Accounts",
-                    message="You must need atleast one account to manage accounts.",
+                    title=_("Cannot Manage Accounts"),
+                    message=_("You must need atleast one account to manage accounts."),
                 )
 
     # ==================== App Bindings ====================
@@ -203,8 +230,8 @@ class MainMenu(Screen):
             print("Showing toast")
             self.app.notify(
                 severity="warning",
-                title="Cannot add a Transaction",
-                message="You must need atleast one account to add a transaction.",
+                title=_("Cannot add a Transaction"),
+                message=_("You must need atleast one account to add a transaction."),
             )
 
     def action_request_quit(self) -> None:
