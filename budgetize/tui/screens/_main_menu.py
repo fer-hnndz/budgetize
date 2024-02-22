@@ -15,6 +15,7 @@ from budgetize.tui.screens import AddTransaction
 
 # Import directly from the class file to avoid circular imports
 from budgetize.tui.screens._manage_accounts import ManageAccounts
+from budgetize.tui.screens._settings import Settings
 
 t = gettext.translation(
     "budgetize", localedir="./budgetize/translations", languages=["es"]
@@ -39,6 +40,12 @@ class MainMenu(Screen):
             key_display="N",
             action="verify_add_transaction()",
             description=_("Add Transaction"),
+        ),
+        Binding(
+            key="i,I",
+            key_display="I",
+            action="show_settings()",
+            description=_("Open Settings"),
         ),
     ]
 
@@ -237,3 +244,7 @@ class MainMenu(Screen):
     def action_request_quit(self) -> None:
         """Shows the modal to quit the app"""
         self.app.push_screen(ConfirmQuit())
+
+    def action_show_settings(self) -> None:
+        """Opens the settings."""
+        self.app.push_screen(Settings())
