@@ -7,8 +7,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, Label
 
 from budgetize.db import Database
-from budgetize.db.orm import Transaction
-from budgetize.tui.screens import AddTransaction
+from budgetize.tui.screens._add_transaction import AddTransaction
 
 t = gettext.translation(
     "budgetize", localedir="./budgetize/translations", fallback=True

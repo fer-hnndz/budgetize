@@ -138,7 +138,7 @@ class AddTransaction(Screen):
                 timestamp=date.timestamp(),
             )
             self.app.pop_screen()
-            self.app.notify(f"Sucessfully updated transaction!")
+            self.app.notify(_("Sucessfully updated transaction!"))
             return
 
         self.DB.add_transaction(
@@ -150,7 +150,11 @@ class AddTransaction(Screen):
         )
 
         self.app.pop_screen()
-        self.app.notify(f"Sucessfully added transaction of {currency} {amount}")
+        self.app.notify(
+            _("Sucessfully added transaction of {currency} {amount}").format(
+                currency=currency, amount=amount
+            )
+        )
 
     def _get_account_options(self) -> list[tuple[str, int]]:
         """Returns a list of tuples (name, id) for the TUI to show"""
