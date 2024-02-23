@@ -12,9 +12,7 @@ from textual.widgets import Button, Footer, Header, Input, Label, Select
 from budgetize.consts import CURRENCIES, TRANSLATIONS_PATH
 from budgetize.db import Database
 from budgetize.db.orm import Account, AccountType
-
-t = gettext.translation("budgetize", localedir=TRANSLATIONS_PATH, languages=["es"])
-_ = t.gettext
+from budgetize.utils import _
 
 
 class CreateAccount(Screen):

@@ -16,9 +16,7 @@ from textual.widgets import Button, Footer, Header, Input, Label, Select
 from budgetize.consts import DEFAULT_CATEGORIES, TRANSLATIONS_PATH
 from budgetize.db import Database
 from budgetize.db.orm import Transaction
-
-t = gettext.translation("Budgetize", localedir=TRANSLATIONS_PATH, languages=["es"])
-_ = t.gettext
+from budgetize.utils import _
 
 
 class AddTransaction(Screen):
@@ -41,14 +39,13 @@ class AddTransaction(Screen):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        # self.app.sub_title = (
-        #     "Edit Transaction" if self.transaction else "Add Transaction"
-        # )
-        self.app.sub_title = TRANSLATIONS_PATH
+        self.app.sub_title = (
+            "Edit Transaction" if self.transaction else "Add Transaction"
+        )
         yield Header()
         yield Footer()
 
-        yield Label("Account", id="account-label")
+        yield Label(_("Account"), id="account-label")
         yield Select(
             self._get_account_options(),
             id="account-select",
@@ -56,7 +53,7 @@ class AddTransaction(Screen):
             value=self.transaction.account_id if self.transaction else Select.BLANK,
             prompt="Select an account",
         )
-        yield Label("Amount", id="amount-label")
+        yield Label(_("Amount"), id="amount-label")
         yield Input(
             type="number",
             placeholder="250",
@@ -73,7 +70,7 @@ class AddTransaction(Screen):
             else today
         )
         # TODO: Implement a day and a time picker
-        yield Label("Date", id="date-label")
+        yield Label(_("Date"), id="date-label")
         yield Input(
             placeholder=today.format("M/D/YYYY"),
             id="date-input",
@@ -84,7 +81,7 @@ class AddTransaction(Screen):
             self.get_category_select_options(), allow_blank=False, id="category-select"
         )
 
-        yield Label("Description", id="description-label")
+        yield Label(_("Description"), id="description-label")
         yield Input(
             max_length=255,
             placeholder="Description for your income/expense",
@@ -92,7 +89,7 @@ class AddTransaction(Screen):
             value=self.transaction.description if self.transaction else "",
         )
 
-        lbl = "Update Transaction" if self.transaction else "Add Transaction"
+        lbl = _("Update Transaction") if self.transaction else _("Add Transaction")
         yield Button(lbl, id="add-transaction-button")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:

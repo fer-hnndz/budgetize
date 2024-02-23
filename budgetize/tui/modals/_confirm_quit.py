@@ -7,10 +7,7 @@ from textual.containers import Center, Horizontal
 from textual.screen import ModalScreen
 from textual.widgets import Button, Label
 
-t = gettext.translation(
-    "budgetize", localedir="./budgetize/translations", fallback=True
-)
-_ = t.gettext
+from budgetize.utils import _
 
 
 class ConfirmQuit(ModalScreen):

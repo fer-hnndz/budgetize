@@ -32,6 +32,8 @@ DEFAULT_CATEGORIES = [
 # Settings
 DEFAULT_SETTINGS = {
     "language": "en",
+    "categories": DEFAULT_CATEGORIES,
+    "base_currency": "",
 }
 
 

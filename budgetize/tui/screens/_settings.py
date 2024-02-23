@@ -7,9 +7,7 @@ from textual.widgets import Footer, Header, Label, Select, Switch
 
 from budgetize.consts import TRANSLATIONS_PATH
 from budgetize.db import Database
-
-t = gettext.translation("budgetize", localedir=TRANSLATIONS_PATH, fallback=True)
-_ = t.gettext
+from budgetize.utils import _
 
 
 class Settings(Screen):

@@ -17,9 +17,7 @@ from budgetize.tui.screens import AddTransaction
 # Import directly from the class file to avoid circular imports
 from budgetize.tui.screens._manage_accounts import ManageAccounts
 from budgetize.tui.screens._settings import Settings
-
-t = gettext.translation("budgetize", localedir=TRANSLATIONS_PATH, languages=["es"])
-_ = t.gettext
+from budgetize.utils import _
 
 
 class MainMenu(Screen):
@@ -198,6 +196,7 @@ class MainMenu(Screen):
 
     def on_screen_resume(self) -> None:
         """Called when the screen is now the current screen"""
+        self.app.sub_title = _("Main Menu")
         self._update_account_tables()
         self._update_recent_transactions_table()
         self._update_balance_labels()
