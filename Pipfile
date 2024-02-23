@@ -19,6 +19,8 @@ pre-commit = "*"
 build = "*"
 twine = "*"
 textual-dev = "*"
+setuptools = "*"
+types-setuptools = "*"
 
 [requires]
 python_version = "3.10"

@@ -2,6 +2,8 @@
 
 import os
 
+import pkg_resources
+
 # ExchangeRates API
 
 EXCHANGERATES_FREE_API_KEY = "9c21e1d06665202b12fb2962b75c4e35"
@@ -12,13 +14,10 @@ VALID_EXCHANGE_TIMESTAMP = 36 * 60  # 36 hours
 APP_FOLDER_NAME = ".budgetize"
 
 user_folder = os.path.expanduser("~")
-app_folder_path = os.path.join(user_folder, ".budgetize")
-if not os.path.exists(app_folder_path):
-    os.mkdir(app_folder_path)
-
+APP_FOLDER_PATH = os.path.join(user_folder, ".budgetize")
 DB_FILE_NAME = "budgetize.sqlite"
-PROD_DB_URL = f"sqlite:///{os.path.join(app_folder_path, DB_FILE_NAME)}"
-
+PROD_DB_URL = f"sqlite:///{os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)}"
+TRANSLATIONS_PATH = pkg_resources.resource_filename("budgetize", "translations")
 DEFAULT_CATEGORIES = [
     "Income",
     "Food",

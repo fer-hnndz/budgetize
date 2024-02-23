@@ -18,7 +18,14 @@ classifiers = [
   "Intended Audience :: End Users/Desktop",
   "Programming Language :: Python :: 3",
 ]
-dependencies = ["textual", "sqlalchemy", "requests", "arrow", "babel"]
+dependencies = [
+  "textual",
+  "sqlalchemy",
+  "requests",
+  "arrow",
+  "babel",
+  "types-setuptools",
+]
 
 [project.scripts]
 budgetize = "budgetize._entry_point:main"

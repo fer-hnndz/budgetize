@@ -9,6 +9,7 @@ from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import Button, DataTable, Footer, Header, Label, Rule
 
+from budgetize.consts import TRANSLATIONS_PATH
 from budgetize.db import Database
 from budgetize.tui.modals import ConfirmQuit, TransactionDetails
 from budgetize.tui.screens import AddTransaction
@@ -17,9 +18,7 @@ from budgetize.tui.screens import AddTransaction
 from budgetize.tui.screens._manage_accounts import ManageAccounts
 from budgetize.tui.screens._settings import Settings
 
-t = gettext.translation(
-    "budgetize", localedir="./budgetize/translations", languages=["es"]
-)
+t = gettext.translation("budgetize", localedir=TRANSLATIONS_PATH, languages=["es"])
 _ = t.gettext
 
 

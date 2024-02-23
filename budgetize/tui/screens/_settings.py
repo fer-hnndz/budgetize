@@ -5,9 +5,10 @@ from textual.binding import Binding
 from textual.screen import Screen
 from textual.widgets import Footer, Header, Label, Select, Switch
 
+from budgetize.consts import TRANSLATIONS_PATH
 from budgetize.db import Database
 
-t = gettext.translation("budgetize", "./budgetize/translations", fallback=True)
+t = gettext.translation("budgetize", localedir=TRANSLATIONS_PATH, fallback=True)
 _ = t.gettext
 
 

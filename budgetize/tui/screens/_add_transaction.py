@@ -13,13 +13,11 @@ from textual.types import NoSelection
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from budgetize.consts import DEFAULT_CATEGORIES
+from budgetize.consts import DEFAULT_CATEGORIES, TRANSLATIONS_PATH
 from budgetize.db import Database
 from budgetize.db.orm import Transaction
 
-t = gettext.translation(
-    "Budgetize", localedir="./budgetize/translations", languages=["es"]
-)
+t = gettext.translation("Budgetize", localedir=TRANSLATIONS_PATH, languages=["es"])
 _ = t.gettext
 
 
@@ -43,9 +41,10 @@ class AddTransaction(Screen):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        self.app.sub_title = (
-            "Edit Transaction" if self.transaction else "Add Transaction"
-        )
+        # self.app.sub_title = (
+        #     "Edit Transaction" if self.transaction else "Add Transaction"
+        # )
+        self.app.sub_title = TRANSLATIONS_PATH
         yield Header()
         yield Footer()
 
