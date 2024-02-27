@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import TypedDict
 
-import babel
+from babel import Locale
 
 from budgetize.consts import APP_FOLDER_PATH, DEFAULT_SETTINGS
 
@@ -49,3 +49,7 @@ class SettingsManager:
     def get_language(self) -> str:
         """Returns the user's language code for the app."""
         return self.settings["language"]
+
+    def get_locale(self) -> Locale:
+        """Returns a Locale object based from the user's selected language."""
+        return Locale(self.settings["language"])

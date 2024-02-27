@@ -9,7 +9,7 @@ from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from budgetize.consts import CURRENCIES, TRANSLATIONS_PATH
+from budgetize.consts import CURRENCIES
 from budgetize.db import Database
 from budgetize.db.orm import Account, AccountType
 from budgetize.utils import _
