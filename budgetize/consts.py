@@ -34,8 +34,14 @@ DEFAULT_CATEGORIES = [
 
 AVAILABLE_LANGUAGES: list[tuple[str, str]] = [
     (Locale("en").display_name, "en"),
-    (Locale("es").display_name, "es"),
 ]
+
+locale_dirs = os.listdir(TRANSLATIONS_PATH)
+for locale_dir in locale_dirs:
+    if os.path.isdir(os.path.join(TRANSLATIONS_PATH, locale_dir)):
+        AVAILABLE_LANGUAGES.append(
+            (Locale(locale_dir).display_name.title(), locale_dir)
+        )
 
 # Settings
 DEFAULT_SETTINGS = {

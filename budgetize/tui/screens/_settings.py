@@ -5,7 +5,7 @@ from textual.binding import Binding
 from textual.screen import Screen
 from textual.widgets import Footer, Header, Label, Select, Switch
 
-from budgetize.consts import TRANSLATIONS_PATH
+from budgetize.consts import AVAILABLE_LANGUAGES, TRANSLATIONS_PATH
 from budgetize.db import Database
 from budgetize.utils import _
 
@@ -39,4 +39,4 @@ class Settings(Screen):
         yield Footer()
 
         yield Label(_("Language"))
-        yield Select(options=[("English", "us"), ("Español", "es")])
+        yield Select(options=AVAILABLE_LANGUAGES)

@@ -226,7 +226,7 @@ class MainMenu(Screen):
         """
 
         accounts = 0
-        for _ in self.DB.get_accounts():
+        for acc in self.DB.get_accounts():
             accounts += 1
         if accounts:
             self.app.push_screen(AddTransaction())
