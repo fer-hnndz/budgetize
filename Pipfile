@@ -10,6 +10,7 @@ requests = "*"
 arrow = "*"
 pipfile = "*"
 babel = "*"
+beautifulsoup4 = "*"
 
 [dev-packages]
 black = "*"
@@ -21,6 +22,8 @@ twine = "*"
 textual-dev = "*"
 setuptools = "*"
 types-setuptools = "*"
+types-requests = "*"
+types-beautifulsoup4 = "*"
 
 [requires]
 python_version = "3.10"

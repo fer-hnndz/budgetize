@@ -1,107 +1,126 @@
-# type: ignore
-# TODO: Remove this when implemented
 "Module that handles requests to the currency exchanges API"
 import json
 import os
+from typing import TypedDict
 
 import requests
 from arrow import Arrow
+from bs4 import BeautifulSoup
 
-from budgetize import consts
+from budgetize.consts import APP_FOLDER_PATH, VALID_EXCHANGE_TIMESTAMP
 
 
-# TODO: Improve this class so it is more user-friendly
+class RatesData(TypedDict):
+    retrieve_timestamp: int
+    rate: float
+
+
 class CurrencyManager:
     """Class that handles requests to the currency exchanges API and saves it to disk"""
 
     def __init__(self, base_currency: str):
         """
         Creates a new CurrencyManager object.
-        By default, it uses a free API key from https://exchangeratesapi.io/.
 
-        If you wish to use a different API key,
-        create a new file called "exchangeratesapi.txt" in `.budgetize` folder
-        located in your user folder.
+        Retrieves currency exchanges using requests with Google search
         """
 
         self.base_currency = base_currency
-        self.key = self._get_api_key()
 
-    def _get_api_key(self):
-        app_folder = os.path.join(os.path.expanduser("~"), ".budgetize")
-        api_key_file = os.path.join(app_folder, "exchangeratesapi.txt")
-
-        if not os.path.exists(api_key_file):
-            return consts.EXCHANGERATES_FREE_API_KEY
-
-        with open(api_key_file, "r", encoding="utf-8") as f:
-            return f.read().strip()
-
-    def _retrieve_exchange_rates(self) -> bool:
+    def request_exchange(self, currency: str) -> float:
         """
-        Retrieves exchange rates from the API
-        and saves it to exchange_rates.json file.
+        Retrieves the exchange rate between the base currency and the given currency.
 
-        Returns `True` if request was successful.
+        Args:
+            currency (str): The currency to convert to
+
+        Returns:
+            float: The exchange rate
         """
+        url = f"https://www.xe.com/currencyconverter/convert/?Amount=1&From={self.base_currency.upper()}&To={currency.upper()}"
+        r = requests.get(url)
+        soup = BeautifulSoup(r.text, "html.parser")
 
-        base_url: str = (
-            f"http://api.exchangeratesapi.io/v1/latest?access_key={self.key}"
-        )
-        headers = {"Content-Type": "application/json"}
-        print("Requesting with url: " + base_url)
+        a = soup.find("p", class_="result__BigRate-sc-1bsijpp-1 dPdXSB")
+        rate: float = float(a.text.split(" ")[0])  # type: ignore
 
-        response = requests.get(base_url, headers=headers, timeout=5)
-        print(response.text)
+        return rate
 
-        if response.status_code != 200:
-            return False
-
-        data = response.json()
-        with open("exchange_rates.json", "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4)
-
-        return True
-
-    def get_all_exchanges(self) -> dict:
+    def get_local_rates(self) -> dict[str, dict[str, RatesData]]:
         """
-        Gets all exchange rates.
-        If the data is older than the constant `VALID_EXCHANGE_TIMESTAMP`,
-        it will retrieve new data.
+        Retrieves the exchange rates from a local file.
+
+        Returns:
+            dict: The exchange rates
         """
 
-        # Check if exchange file exists
-        app_folder = os.path.join(os.path.expanduser("~"), ".budgetize")
+        file_path = os.path.join(APP_FOLDER_PATH, "currency_exchanges.json")
+        with open(file_path, "r") as f:
+            rates: dict[str, dict[str, RatesData]] = json.load(f)
 
-        exchange_file = os.path.join(
-            os.path.expanduser("~"), ".budgetize", "exchange_rates.json"
-        )
+        return rates
 
-        if not os.path.exists(app_folder):
-            os.mkdir(app_folder)
+    def get_exchange(self, currency: str) -> float:
+        """
+        Retrieves the exchange rate between the base currency and the given currency.
 
-        # Retrive data
-        if os.path.exists(exchange_file):
-            data = None
+        Args:
+            currency (str): The currency to convert to
 
-            with open("exchange_rates.json", "r", encoding="utf-8") as f:
-                data = json.load(f)
+        Returns:
+            float: The exchange rate
+        """
 
-            last_retrieved_timestamp = data["timestamp"]
+        rates = self.get_local_rates()
 
-            # If the data is older than 36 hours, retrieve new data
-            if (
-                Arrow.now().timestamp - last_retrieved_timestamp
-                > consts.VALID_EXCHANGE_TIMESTAMP
-            ):
-                self._retrieve_exchange_rates()
-        else:  # If file does not exist, retrive new data
-            self._retrieve_exchange_rates()
+        if self.base_currency not in rates or currency not in rates[self.base_currency]:
+            exchange = self.request_exchange(currency)
+            self._save_exchange(self.base_currency, currency, exchange)
+            return exchange
 
-        # Load data
+        rate_data = rates[self.base_currency][currency]
 
-        file_data = None
-        with open("exchange_rates.json", "r", encoding="utf-8") as f:
-            file_data = json.load(f)
+        # If the exchange rate is older than 1 week, retrieve it again
+        if (
+            rate_data["retrieve_timestamp"]
+            < Arrow.now().timestamp() - VALID_EXCHANGE_TIMESTAMP
+        ):
+            exchange = self.request_exchange(currency)
+            self._save_exchange(self.base_currency, currency, exchange)
+            return exchange
 
-        return file_data["rates"]
+        return rates[self.base_currency][currency]["rate"]
+
+    def _save_local_rates(self, rates: dict) -> None:
+        """
+        Saves the exchange rates to a local file.
+
+        Args:
+            rates (dict): The exchange rates
+        """
+
+        file_path = os.path.join(APP_FOLDER_PATH, "currency_exchanges.json")
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(rates, f, indent=4)
+
+    def _save_exchange(
+        self, base_currency: str, currency: str, exchange: float
+    ) -> None:
+        """
+        Saves the exchange rate between the base currency and the given currency to disk.
+
+        Args:
+            base_currency (str): The base currency
+            currency (str): The currency to convert to
+            exchange (float): The exchange rate
+        """
+
+        rates = self.get_local_rates()
+
+        if base_currency not in rates:
+            rates[base_currency] = {}
+
+        rates[base_currency][currency] = {
+            "retrieve_timestamp": round(Arrow.now().timestamp()),
+            "rate": exchange,
+        }

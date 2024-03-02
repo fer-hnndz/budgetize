@@ -5,10 +5,7 @@ import os
 import pkg_resources
 from babel import Locale
 
-# ExchangeRates API
-
-EXCHANGERATES_FREE_API_KEY = "9c21e1d06665202b12fb2962b75c4e35"
-VALID_EXCHANGE_TIMESTAMP = 36 * 60  # 36 hours
+VALID_EXCHANGE_TIMESTAMP = 7 * 24 * 60 * 60  # 1 week in seconds
 
 # Database
 
