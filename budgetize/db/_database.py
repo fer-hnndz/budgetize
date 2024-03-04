@@ -207,13 +207,18 @@ class Database:
 
         expense = 0.0
         for account in self.get_accounts():
+            rate = 1.0
+            if account.currency != self.settings.get_base_currency():
+                rate = CurrencyManager(self.settings.get_base_currency()).get_exchange(
+                    account.currency
+                )
             for transaction in self.get_monthly_transactions_from_account(
                 account.id, now.format("M"), now.format("YYYY")
             ):
                 if transaction.amount < 0:
-                    expense += transaction.amount
+                    expense += transaction.amount / rate
 
-        return expense
+        return round(expense, 2)
 
     def delete_transaction(self, transaction_id: int) -> Transaction:
         """Deletes the specified transaction from the DB and returns it."""

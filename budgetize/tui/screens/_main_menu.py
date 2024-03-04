@@ -161,7 +161,7 @@ class MainMenu(Screen):
         """Updates monthly income/balance/expense labels"""
         monthly_income = self.DB.get_monthly_income()
         monthly_expense = self.DB.get_monthly_expense()
-        balance = monthly_income + monthly_expense
+        balance = round(monthly_income + monthly_expense, 2)
 
         income_color = "[green]" if monthly_income > 0 else "[red]"
         expense_color = "[green]" if monthly_expense > 0 else "[red]"
