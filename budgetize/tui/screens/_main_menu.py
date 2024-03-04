@@ -1,14 +1,14 @@
 """Module that defines the main menu screen"""
 
-import gettext
-
 from arrow import Arrow
+from babel.numbers import format_currency
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import Button, DataTable, Footer, Header, Label, Rule
 
+from budgetize import SettingsManager
 from budgetize.db import Database
 from budgetize.tui.modals import ConfirmQuit, TransactionDetails
 from budgetize.tui.screens import AddTransaction
@@ -118,6 +118,7 @@ class MainMenu(Screen):
 
         self._update_account_tables()
         self._update_recent_transactions_table()
+        self._update_balance_labels()
 
     def _update_recent_transactions_table(self) -> None:
         """Updates the recent transactions DataTable widget"""
@@ -162,10 +163,13 @@ class MainMenu(Screen):
         monthly_income = self.DB.get_monthly_income()
         monthly_expense = self.DB.get_monthly_expense()
         balance = round(monthly_income + monthly_expense, 2)
+        main_currency = SettingsManager().get_base_currency()
 
         income_color = "[green]" if monthly_income > 0 else "[red]"
         expense_color = "[green]" if monthly_expense > 0 else "[red]"
         balance_color = "[green]" if balance >= 0 else "[red]"
+
+        user_locale = SettingsManager().get_locale()
 
         monthly_income_label: Label = self.get_widget_by_id(
             "monthly-income"
@@ -178,18 +182,40 @@ class MainMenu(Screen):
         )  # type:ignore
 
         monthly_income_label.update(
-            _("Income this Month\n{income_color}{monthly_income}").format(
-                income_color=income_color, monthly_income=monthly_income
+            _(
+                "Income this Month\n{main_currency} {income_color}{monthly_income}"
+            ).format(
+                income_color=income_color,
+                monthly_income=format_currency(
+                    monthly_income,
+                    main_currency,
+                    locale=user_locale,
+                    format_type="accounting",
+                ),
+                main_currency=main_currency,
             )
         )
         monthly_balance_label.update(
-            _("Balance\n{balance_color}{balance}").format(
-                balance_color=balance_color, balance=balance
+            _("Balance\n{main_currency} {balance_color}{balance}").format(
+                balance_color=balance_color,
+                balance=format_currency(
+                    balance, main_currency, locale=user_locale, format_type="accounting"
+                ),
+                main_currency=main_currency,
             )
         )
         monthly_expense_label.update(
-            _("Expenses this Month\n{expense_color}{monthly_expense}").format(
-                expense_color=expense_color, monthly_expense=monthly_expense
+            _(
+                "Expenses this Month\n{main_currency} {expense_color}{monthly_expense}"
+            ).format(
+                expense_color=expense_color,
+                monthly_expense=format_currency(
+                    monthly_expense,
+                    main_currency,
+                    locale=user_locale,
+                    format_type="accounting",
+                ),
+                main_currency=main_currency,
             )
         )
 
