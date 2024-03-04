@@ -7,6 +7,7 @@ from sqlalchemy import create_engine, select, update
 from sqlalchemy.orm import Session
 from textual.app import App
 
+from budgetize import CurrencyManager, SettingsManager
 from budgetize.consts import PROD_DB_URL
 
 from .orm import Account, Base, Transaction
@@ -27,6 +28,7 @@ class Database:
             else "sqlite:///test_db.sqlite"
         )
         Base.metadata.create_all(self.engine)
+        self.settings = SettingsManager()
 
     def get_transactions_from_account(self, account_id: int) -> Iterator[Transaction]:
         """Returns an iterator of transactions from the specified account"""
@@ -157,13 +159,20 @@ class Database:
 
         income = 0.0
         for account in self.get_accounts():
+
+            exchange_rate = 1.0
+            if account.currency != self.settings.get_base_currency():
+                exchange_rate = CurrencyManager(
+                    self.settings.get_base_currency()
+                ).get_exchange(account.currency)
+
             for transaction in self.get_monthly_transactions_from_account(
                 account.id, now.format("M"), now.format("YYYY")
             ):
                 if transaction.amount > 0:
-                    income += transaction.amount
+                    income += transaction.amount / exchange_rate
 
-        return income
+        return round(income, 2)
 
     def delete_account(self, account_id: int) -> None:
         """Deletes the specified account from the database."""

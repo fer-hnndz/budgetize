@@ -61,12 +61,8 @@ class Settings(Screen):
     def action_save_settings(self) -> None:
         """Action to run when user hits save settings"""
 
-        language = self.get_child_by_id(
-            "language-select", expect_type=Select[str]
-        ).value
-        currency = self.get_child_by_id(
-            "currency-select", expect_type=Select[str]
-        ).value
+        language = self.get_child_by_id("language-select", expect_type=Select).value
+        currency = self.get_child_by_id("currency-select", expect_type=Select).value
 
         # This should never happen because select are not allowed to be blank
         if isinstance(language, NoSelection) or isinstance(currency, NoSelection):

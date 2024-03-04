@@ -1,7 +1,7 @@
 "Module that handles requests to the currency exchanges API"
 import json
 import os
-from typing import TypedDict
+from typing import Optional, TypedDict
 
 import requests
 from arrow import Arrow
@@ -25,6 +25,7 @@ class CurrencyManager:
         Retrieves currency exchanges using requests with Google search
         """
 
+        self.FILE_PATH = os.path.join(APP_FOLDER_PATH, "currency_exchanges.json")
         self.base_currency = base_currency
 
     def request_exchange(self, currency: str) -> float:
@@ -46,7 +47,7 @@ class CurrencyManager:
 
         return rate
 
-    def get_local_rates(self) -> dict[str, dict[str, RatesData]]:
+    def get_local_rates(self) -> Optional[dict[str, dict[str, RatesData]]]:
         """
         Retrieves the exchange rates from a local file.
 
@@ -54,8 +55,10 @@ class CurrencyManager:
             dict: The exchange rates
         """
 
-        file_path = os.path.join(APP_FOLDER_PATH, "currency_exchanges.json")
-        with open(file_path, "r") as f:
+        if not os.path.exists(self.FILE_PATH):
+            return {}
+
+        with open(self.FILE_PATH, "r") as f:
             rates: dict[str, dict[str, RatesData]] = json.load(f)
 
         return rates
@@ -72,6 +75,10 @@ class CurrencyManager:
         """
 
         rates = self.get_local_rates()
+        if not rates:
+            rate = self.request_exchange(currency)
+            self._save_exchange(self.base_currency, currency, rate)
+            return rate
 
         if self.base_currency not in rates or currency not in rates[self.base_currency]:
             exchange = self.request_exchange(currency)
@@ -116,6 +123,22 @@ class CurrencyManager:
         """
 
         rates = self.get_local_rates()
+
+        # In case the rates file is not created.
+        if not rates:
+            rates = {
+                base_currency: {
+                    currency: {
+                        "retrieve_timestamp": round(Arrow.now().timestamp()),
+                        "rate": exchange,
+                    }
+                }
+            }
+
+            with open(self.FILE_PATH, "w", encoding="utf-8") as f:
+                json.dump(rates, f, indent=4)
+
+            return
 
         if base_currency not in rates:
             rates[base_currency] = {}
