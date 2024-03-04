@@ -51,11 +51,6 @@ class Database:
         for transaction in transactions:
             date = Arrow.fromtimestamp(transaction.timestamp)
             ar = Arrow.fromtimestamp(transaction.timestamp)
-            print("===================================")
-            print(f"Date for transaction #{transaction.id}: {ar.format('M/D/YYYY')}")
-
-            print(f"Ar m/y: {ar.format('M')} | {ar.format('YYYY')}")
-            print(f"Received: {month} | {year}")
 
             if date.format("M") == month and date.format("YYYY") == year:
                 yield transaction

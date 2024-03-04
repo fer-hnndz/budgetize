@@ -52,15 +52,6 @@ class MainMenu(Screen):
 
     def compose(self) -> ComposeResult:
         """Called when screen is composed"""
-
-        monthly_income = self.DB.get_monthly_income()
-        monthly_expense = self.DB.get_monthly_expense()
-        balance = monthly_income + monthly_expense
-
-        income_color = "[green]" if monthly_income > 0 else "[red]"
-        expense_color = "[green]" if monthly_expense > 0 else "[red]"
-        balance_color = "[green]" if balance >= 0 else "[red]"
-
         self.app.sub_title = _("Main Menu")
         yield Header()
         yield Footer()
@@ -71,21 +62,15 @@ class MainMenu(Screen):
             # TODO: Convert all other currencies to main currency
             Vertical(
                 Label(
-                    _("Income this Month\n{income_color}{monthly_income}").format(
-                        income_color=income_color, monthly_income=monthly_income
-                    ),
+                    "lorem",
                     id="monthly-income",
                 ),
                 Label(
-                    _("Balance\n{balance_color}{balance}").format(
-                        balance_color=balance_color, balance=balance
-                    ),
+                    "lorem",
                     id="monthly-balance",
                 ),
                 Label(
-                    _("Expenses this Month\n{expense_color}{monthly_expense}").format(
-                        expense_color=expense_color, monthly_expense=monthly_expense
-                    ),
+                    "lorem",
                     id="monthly-expense",
                 ),
             ),

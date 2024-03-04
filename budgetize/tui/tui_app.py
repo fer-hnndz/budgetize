@@ -1,8 +1,5 @@
 """Main Module that starts the Terminal User Interface (TUI)"""
 
-import gettext
-import os
-
 from textual.app import App
 
 from .screens import CreateAccount, MainMenu, Startup

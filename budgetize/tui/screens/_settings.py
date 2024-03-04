@@ -1,13 +1,10 @@
-import gettext
-
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.screen import Screen
 from textual.types import NoSelection
 from textual.widgets import Footer, Header, Label, Select
 
-from budgetize import SettingsManager
-from budgetize._settings_manager import SettingsDict
+from budgetize._settings_manager import SettingsDict, SettingsManager
 from budgetize.consts import AVAILABLE_LANGUAGES
 from budgetize.db import Database
 from budgetize.utils import _, get_select_currencies
@@ -78,7 +75,7 @@ class Settings(Screen):
 
         if language_changed:
             self.notify(
-                _("App will close to apply the new language."),
+                _("Close Budgetize to apply the new language."),
                 title=_("Language Change"),
             )
 

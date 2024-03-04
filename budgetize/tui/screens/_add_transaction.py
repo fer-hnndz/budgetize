@@ -1,6 +1,5 @@
 """Module that defines the AddTransaction screen"""
 
-import gettext
 from datetime import date as date_func
 from traceback import print_exc
 from typing import Optional
@@ -9,11 +8,10 @@ from arrow import Arrow
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.screen import Screen
-from textual.types import NoSelection
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from budgetize.consts import DEFAULT_CATEGORIES, TRANSLATIONS_PATH
+from budgetize.consts import DEFAULT_CATEGORIES
 from budgetize.db import Database
 from budgetize.db.orm import Transaction
 from budgetize.utils import _

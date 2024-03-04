@@ -17,7 +17,7 @@ DB_FILE_NAME = "budgetize.sqlite"
 PROD_DB_URL = f"sqlite:///{os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)}"
 
 # Localization
-TRANSLATIONS_PATH = pkg_resources.resource_filename("budgetize", "translations")
+TRANSLATIONS_PATH: str = pkg_resources.resource_filename("budgetize", "translations")
 DEFAULT_CATEGORIES = [
     "Income",
     "Food",
@@ -28,7 +28,6 @@ DEFAULT_CATEGORIES = [
     "Investment",
     "Entertainment",
 ]
-
 AVAILABLE_LANGUAGES: list[tuple[str, str]] = [
     (Locale("en").display_name, "en"),
 ]

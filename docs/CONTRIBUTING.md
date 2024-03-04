@@ -72,3 +72,8 @@ Updating Translations:
 ```bash
 pipenv run pybabel update -i .\budgetize\translations\TRANSLATION_TEMPLATE.po -o .\budgetize\translations\{locale}\{locale}.po -l {locale} --previous --update-header-comment -D budgetize
 ```
+
+To extract new translatable strings
+```bash
+pipenv run pybabel extract budgetize --project BUDGETIZE  -o .\budgetize\translations\TRANSLATION_TEMPLATE.po
+```

@@ -11,6 +11,8 @@ from budgetize.consts import APP_FOLDER_PATH, VALID_EXCHANGE_TIMESTAMP
 
 
 class RatesData(TypedDict):
+    """Dict that represents how are curreny data saved."""
+
     retrieve_timestamp: int
     rate: float
 
@@ -38,8 +40,9 @@ class CurrencyManager:
         Returns:
             float: The exchange rate
         """
+
         url = f"https://www.xe.com/currencyconverter/convert/?Amount=1&From={self.base_currency.upper()}&To={currency.upper()}"
-        r = requests.get(url)
+        r = requests.get(url, timeout=5)
         soup = BeautifulSoup(r.text, "html.parser")
 
         a = soup.find("p", class_="result__BigRate-sc-1bsijpp-1 dPdXSB")
@@ -58,7 +61,7 @@ class CurrencyManager:
         if not os.path.exists(self.FILE_PATH):
             return {}
 
-        with open(self.FILE_PATH, "r") as f:
+        with open(self.FILE_PATH, "r", encoding="UTF-8") as f:
             rates: dict[str, dict[str, RatesData]] = json.load(f)
 
         return rates

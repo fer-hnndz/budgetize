@@ -1,5 +1,3 @@
-import gettext
-
 from arrow import Arrow
 from textual.app import ComposeResult
 from textual.containers import Center, Horizontal

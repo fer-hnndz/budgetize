@@ -1,3 +1,5 @@
+"""Module that defines the settings manager class which manages user's settings"""
+
 import json
 import os
 from pathlib import Path
@@ -5,16 +7,20 @@ from typing import TypedDict
 
 from babel import Locale
 
-from budgetize.consts import APP_FOLDER_PATH, CURRENCIES, DEFAULT_SETTINGS
+from budgetize.consts import APP_FOLDER_PATH, DEFAULT_SETTINGS
 
 
 class SettingsDict(TypedDict):
+    """Dict that represents the settings json"""
+
     language: str
     categories: list[str]
     base_currency: str
 
 
 class SettingsManager:
+    """Manager for user's settings."""
+
     def __init__(self) -> None:
         """Create a new manager for user's settings.
         This class is the only one that should modify any of the user's settings.
@@ -23,6 +29,7 @@ class SettingsManager:
         self._app_folder_path = Path(APP_FOLDER_PATH)
         self._settings_path = self._app_folder_path.joinpath("settings.json")
 
+        #! Make this a class variable so it is shared between all instances and avoid constant reloading?
         self._settings: SettingsDict = {}  # type: ignore
         self._reload_settings()
 
