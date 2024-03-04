@@ -134,7 +134,9 @@ class AddTransaction(Screen):
                 timestamp=date.timestamp(),
             )
             self.app.pop_screen()
-            self.app.notify(_("Sucessfully updated transaction!"))
+            self.app.notify(
+                _("Sucessfully updated transaction!"), title=_("Transaction Updated")
+            )
             return
 
         self.DB.add_transaction(
@@ -149,7 +151,8 @@ class AddTransaction(Screen):
         self.app.notify(
             _("Sucessfully added transaction of {currency} {amount}").format(
                 currency=currency, amount=amount
-            )
+            ),
+            title=_("Transaction Added"),
         )
 
     def _get_account_options(self) -> list[tuple[str, int]]:
