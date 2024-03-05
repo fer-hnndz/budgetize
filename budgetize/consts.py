@@ -18,16 +18,26 @@ PROD_DB_URL = f"sqlite:///{os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)}"
 
 # Localization
 TRANSLATIONS_PATH: str = pkg_resources.resource_filename("budgetize", "translations")
+
+
+# Dummy definition for Babel to extract the strings
+def _(msg: str) -> str:
+    return msg
+
+
 DEFAULT_CATEGORIES = [
-    "Income",
-    "Food",
-    "Groceries",
-    "Medicine",
-    "Car",
-    "Gifts",
-    "Investment",
-    "Entertainment",
+    _("Income"),
+    _("Food"),
+    _("Groceries"),
+    _("Medicine"),
+    _("Car"),
+    _("Gifts"),
+    _("Investment"),
+    _("Entertainment"),
 ]
+
+del _
+
 AVAILABLE_LANGUAGES: list[tuple[str, str]] = [
     (Locale("en").display_name, "en"),
 ]

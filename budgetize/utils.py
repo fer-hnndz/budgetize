@@ -27,16 +27,3 @@ def get_select_currencies() -> list[tuple[str, str]]:
 
     res.sort()
     return res
-
-
-# This array is to help Babel extract these default categories.
-LOCALIZED_CATEGORIES = [
-    _("Income"),
-    _("Food"),
-    _("Groceries"),
-    _("Medicine"),
-    _("Car"),
-    _("Gifts"),
-    _("Investment"),
-    _("Entertainment"),
-]

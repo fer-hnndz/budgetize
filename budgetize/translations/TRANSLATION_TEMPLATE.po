@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BUDGETIZE VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-03-04 11:22-0600\n"
+"POT-Creation-Date: 2024-03-05 14:23-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,181 +17,181 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.14.0\n"
 
-#: budgetize/consts.py:25
+#: budgetize/consts.py:29
 msgid "Income"
 msgstr ""
 
-#: budgetize/consts.py:26
+#: budgetize/consts.py:30
 msgid "Food"
 msgstr ""
 
-#: budgetize/consts.py:27
+#: budgetize/consts.py:31
 msgid "Groceries"
 msgstr ""
 
-#: budgetize/consts.py:28
+#: budgetize/consts.py:32
 msgid "Medicine"
 msgstr ""
 
-#: budgetize/consts.py:29
+#: budgetize/consts.py:33
 msgid "Car"
 msgstr ""
 
-#: budgetize/consts.py:30
+#: budgetize/consts.py:34
 msgid "Gifts"
 msgstr ""
 
-#: budgetize/consts.py:31
+#: budgetize/consts.py:35
 msgid "Investment"
 msgstr ""
 
-#: budgetize/consts.py:32
+#: budgetize/consts.py:36
 msgid "Entertainment"
 msgstr ""
 
-#: budgetize/tui/modals/_confirm_quit.py:22
+#: budgetize/tui/modals/_confirm_quit.py:20
 msgid "Are you sure you want to quit?"
 msgstr ""
 
-#: budgetize/tui/modals/_confirm_quit.py:24
+#: budgetize/tui/modals/_confirm_quit.py:22
 msgid "Exit"
 msgstr ""
 
-#: budgetize/tui/modals/_confirm_quit.py:25
-#: budgetize/tui/screens/_create_account.py:26
-#: budgetize/tui/screens/_create_account.py:73
+#: budgetize/tui/modals/_confirm_quit.py:23
+#: budgetize/tui/screens/_create_account.py:23
+#: budgetize/tui/screens/_create_account.py:70
 msgid "Cancel"
 msgstr ""
 
-#: budgetize/tui/modals/_transaction_details.py:34
+#: budgetize/tui/modals/_transaction_details.py:32
 msgid "Transaction #{transaction_id} Details"
 msgstr ""
 
-#: budgetize/tui/modals/_transaction_details.py:39
+#: budgetize/tui/modals/_transaction_details.py:37
 msgid "Date: {date_str}"
 msgstr ""
 
-#: budgetize/tui/modals/_transaction_details.py:41
+#: budgetize/tui/modals/_transaction_details.py:39
 msgid "Account: {account_name}"
 msgstr ""
 
-#: budgetize/tui/modals/_transaction_details.py:47
+#: budgetize/tui/modals/_transaction_details.py:45
 msgid "Amount: {amt}"
 msgstr ""
 
-#: budgetize/tui/modals/_transaction_details.py:49
+#: budgetize/tui/modals/_transaction_details.py:47
 msgid "Description: {desc}"
 msgstr ""
 
-#: budgetize/tui/modals/_transaction_details.py:52
+#: budgetize/tui/modals/_transaction_details.py:50
 msgid "Category: {category}"
 msgstr ""
 
-#: budgetize/tui/modals/_transaction_details.py:55
+#: budgetize/tui/modals/_transaction_details.py:53
 msgid "Close"
 msgstr ""
 
-#: budgetize/tui/modals/_transaction_details.py:56
+#: budgetize/tui/modals/_transaction_details.py:54
 msgid "Edit"
 msgstr ""
 
-#: budgetize/tui/modals/_transaction_details.py:57
+#: budgetize/tui/modals/_transaction_details.py:55
 msgid "Delete"
 msgstr ""
 
-#: budgetize/tui/modals/_transaction_details.py:73
+#: budgetize/tui/modals/_transaction_details.py:71
 msgid "The transaction has been successfully deleted."
 msgstr ""
 
-#: budgetize/tui/modals/_transaction_details.py:74
+#: budgetize/tui/modals/_transaction_details.py:72
 msgid "Transaction Deleted"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:31
+#: budgetize/tui/screens/_add_transaction.py:28
 msgid "Cancel Transaction"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:48
-#: budgetize/tui/screens/_main_menu.py:124
+#: budgetize/tui/screens/_add_transaction.py:45
+#: budgetize/tui/screens/_main_menu.py:115
 msgid "Account"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:56
-#: budgetize/tui/screens/_main_menu.py:124
+#: budgetize/tui/screens/_add_transaction.py:53
+#: budgetize/tui/screens/_main_menu.py:115
 #: budgetize/tui/screens/_manage_accounts.py:66
 msgid "Amount"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:73
-#: budgetize/tui/screens/_main_menu.py:124
+#: budgetize/tui/screens/_add_transaction.py:70
+#: budgetize/tui/screens/_main_menu.py:115
 #: budgetize/tui/screens/_manage_accounts.py:66
 msgid "Date"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:84
-#: budgetize/tui/screens/_main_menu.py:124
+#: budgetize/tui/screens/_add_transaction.py:81
+#: budgetize/tui/screens/_main_menu.py:115
 #: budgetize/tui/screens/_manage_accounts.py:66
 msgid "Description"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:92
+#: budgetize/tui/screens/_add_transaction.py:89
 msgid "Update Transaction"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:92
+#: budgetize/tui/screens/_add_transaction.py:89
 #: budgetize/tui/screens/_main_menu.py:38
 msgid "Add Transaction"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:138
+#: budgetize/tui/screens/_add_transaction.py:135
 msgid "Sucessfully updated transaction!"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:138
+#: budgetize/tui/screens/_add_transaction.py:135
 msgid "Transaction Updated"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:152
+#: budgetize/tui/screens/_add_transaction.py:149
 msgid "Sucessfully added transaction of {currency} {amount}"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:155
+#: budgetize/tui/screens/_add_transaction.py:152
 msgid "Transaction Added"
 msgstr ""
 
-#: budgetize/tui/screens/_create_account.py:38
-#: budgetize/tui/screens/_create_account.py:72
-#: budgetize/tui/screens/_main_menu.py:88
+#: budgetize/tui/screens/_create_account.py:35
+#: budgetize/tui/screens/_create_account.py:69
+#: budgetize/tui/screens/_main_menu.py:79
 msgid "Create Account"
 msgstr ""
 
-#: budgetize/tui/screens/_create_account.py:45
+#: budgetize/tui/screens/_create_account.py:42
 msgid "Account Currency"
 msgstr ""
 
-#: budgetize/tui/screens/_create_account.py:46
-#: budgetize/tui/screens/_main_menu.py:147
+#: budgetize/tui/screens/_create_account.py:43
+#: budgetize/tui/screens/_main_menu.py:138
 msgid "Account Name"
 msgstr ""
 
-#: budgetize/tui/screens/_create_account.py:50
+#: budgetize/tui/screens/_create_account.py:47
 msgid "Bank Account"
 msgstr ""
 
-#: budgetize/tui/screens/_create_account.py:52
+#: budgetize/tui/screens/_create_account.py:49
 msgid "Starting Balance"
 msgstr ""
 
-#: budgetize/tui/screens/_create_account.py:60
+#: budgetize/tui/screens/_create_account.py:57
 msgid "Initial Balance must be atleast zero."
 msgstr ""
 
-#: budgetize/tui/screens/_create_account.py:64
-#: budgetize/tui/screens/_main_menu.py:147
+#: budgetize/tui/screens/_create_account.py:61
+#: budgetize/tui/screens/_main_menu.py:138
 msgid "Account Type"
 msgstr ""
 
-#: budgetize/tui/screens/_create_account.py:95
+#: budgetize/tui/screens/_create_account.py:92
 msgid "Account created successfully."
 msgstr ""
 
@@ -203,64 +203,64 @@ msgstr ""
 msgid "Open Settings"
 msgstr ""
 
-#: budgetize/tui/screens/_main_menu.py:64
-#: budgetize/tui/screens/_main_menu.py:218
+#: budgetize/tui/screens/_main_menu.py:55
+#: budgetize/tui/screens/_main_menu.py:209
 msgid "Main Menu"
 msgstr ""
 
-#: budgetize/tui/screens/_main_menu.py:89
+#: budgetize/tui/screens/_main_menu.py:80
 #: budgetize/tui/screens/_manage_accounts.py:38
 msgid "Manage Accounts"
 msgstr ""
 
-#: budgetize/tui/screens/_main_menu.py:91
+#: budgetize/tui/screens/_main_menu.py:82
 msgid "Recent Transactions"
 msgstr ""
 
-#: budgetize/tui/screens/_main_menu.py:124
+#: budgetize/tui/screens/_main_menu.py:115
 #: budgetize/tui/screens/_manage_accounts.py:66
 msgid "Category"
 msgstr ""
 
-#: budgetize/tui/screens/_main_menu.py:147
+#: budgetize/tui/screens/_main_menu.py:138
 msgid "Balance"
 msgstr ""
 
-#: budgetize/tui/screens/_main_menu.py:147
+#: budgetize/tui/screens/_main_menu.py:138
 msgid "Currency"
 msgstr ""
 
-#: budgetize/tui/screens/_main_menu.py:179
+#: budgetize/tui/screens/_main_menu.py:170
 msgid ""
 "Income this Month\n"
 "{main_currency} {income_color}{monthly_income}"
 msgstr ""
 
-#: budgetize/tui/screens/_main_menu.py:193
+#: budgetize/tui/screens/_main_menu.py:184
 msgid ""
 "Balance\n"
 "{main_currency} {balance_color}{balance}"
 msgstr ""
 
-#: budgetize/tui/screens/_main_menu.py:202
+#: budgetize/tui/screens/_main_menu.py:193
 msgid ""
 "Expenses this Month\n"
 "{main_currency} {expense_color}{monthly_expense}"
 msgstr ""
 
-#: budgetize/tui/screens/_main_menu.py:235
+#: budgetize/tui/screens/_main_menu.py:226
 msgid "Cannot Manage Accounts"
 msgstr ""
 
-#: budgetize/tui/screens/_main_menu.py:236
+#: budgetize/tui/screens/_main_menu.py:227
 msgid "You must need atleast one account to manage accounts."
 msgstr ""
 
-#: budgetize/tui/screens/_main_menu.py:257
+#: budgetize/tui/screens/_main_menu.py:248
 msgid "Cannot add a Transaction"
 msgstr ""
 
-#: budgetize/tui/screens/_main_menu.py:258
+#: budgetize/tui/screens/_main_menu.py:249
 msgid "You must need atleast one account to add a transaction."
 msgstr ""
 
@@ -286,38 +286,38 @@ msgstr ""
 msgid "Account Deleted"
 msgstr ""
 
-#: budgetize/tui/screens/_settings.py:23
+#: budgetize/tui/screens/_settings.py:20
 msgid "Quit without saving"
 msgstr ""
 
-#: budgetize/tui/screens/_settings.py:29
+#: budgetize/tui/screens/_settings.py:26
 msgid "Save and Quit"
 msgstr ""
 
-#: budgetize/tui/screens/_settings.py:34
+#: budgetize/tui/screens/_settings.py:31
 msgid "Settings"
 msgstr ""
 
-#: budgetize/tui/screens/_settings.py:45
+#: budgetize/tui/screens/_settings.py:42
 msgid "Language"
 msgstr ""
 
-#: budgetize/tui/screens/_settings.py:53
+#: budgetize/tui/screens/_settings.py:50
 msgid "Main Currency"
 msgstr ""
 
-#: budgetize/tui/screens/_settings.py:81
+#: budgetize/tui/screens/_settings.py:78
 msgid "Close Budgetize to apply the new language."
 msgstr ""
 
-#: budgetize/tui/screens/_settings.py:82
+#: budgetize/tui/screens/_settings.py:79
 msgid "Language Change"
 msgstr ""
 
-#: budgetize/tui/screens/_settings.py:87
+#: budgetize/tui/screens/_settings.py:84
 msgid "Settings saved."
 msgstr ""
 
-#: budgetize/tui/screens/_settings.py:87
+#: budgetize/tui/screens/_settings.py:84
 msgid "Settings Changed"
 msgstr ""

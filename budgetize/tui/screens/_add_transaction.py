@@ -11,7 +11,7 @@ from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from budgetize.consts import DEFAULT_CATEGORIES
+from budgetize._settings_manager import SettingsManager
 from budgetize.db import Database
 from budgetize.db.orm import Transaction
 from budgetize.utils import _
@@ -160,7 +160,7 @@ class AddTransaction(Screen):
     def get_category_select_options(self) -> list[tuple[str, str]]:
         """Returns a list of tuples (name, id) for the TUI to show"""
         categories = []
-        for category in DEFAULT_CATEGORIES:
+        for category in SettingsManager().get_categories():
             categories.append((category, category))
 
         return categories

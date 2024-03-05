@@ -82,6 +82,3 @@ class Settings(Screen):
         self.manager.save(new_settings)
         self.app.pop_screen()
         self.notify(_("Settings saved."), title=_("Settings Changed"))
-
-        if language_changed:
-            self.app.exit()
