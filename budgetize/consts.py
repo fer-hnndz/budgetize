@@ -51,7 +51,7 @@ for locale_dir in locale_dirs:
 
 # Settings
 DEFAULT_SETTINGS = {
-    "language": "en",
+    "language": "",
     "categories": DEFAULT_CATEGORIES,
     "base_currency": "",
 }

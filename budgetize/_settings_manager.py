@@ -56,6 +56,11 @@ class SettingsManager:
         with open(self._settings_path, "w", encoding="utf-8") as f:
             json.dump(DEFAULT_SETTINGS, f, indent=4)
 
+    def is_default_settings(self) -> bool:
+        """Returns True if user has default settings (no lang or currency)"""
+
+        return not self.get_language() and not self.get_base_currency()
+
     def get_language(self) -> str:
         """Returns the user's language code for the app."""
         self._reload_settings()

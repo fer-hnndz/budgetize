@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-03-05 14:23-0600\n"
+"POT-Creation-Date: 2024-03-05 15:33-0600\n"
 "PO-Revision-Date: 2024-02-21 12:20-0600\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -108,59 +108,59 @@ msgstr "La transacción ha sido eliminada exitosamente."
 msgid "Transaction Deleted"
 msgstr "Transacción Eliminada"
 
-#: budgetize/tui/screens/_add_transaction.py:28
+#: budgetize/tui/screens/_add_transaction.py:29
 msgid "Cancel Transaction"
 msgstr "Cancelar Transacción"
 
-#: budgetize/tui/screens/_add_transaction.py:45
+#: budgetize/tui/screens/_add_transaction.py:46
 #: budgetize/tui/screens/_main_menu.py:115
 msgid "Account"
 msgstr "Cuenta"
 
-#: budgetize/tui/screens/_add_transaction.py:53
+#: budgetize/tui/screens/_add_transaction.py:54
 #: budgetize/tui/screens/_main_menu.py:115
 #: budgetize/tui/screens/_manage_accounts.py:66
 msgid "Amount"
 msgstr "Cantidad"
 
-#: budgetize/tui/screens/_add_transaction.py:70
+#: budgetize/tui/screens/_add_transaction.py:71
 #: budgetize/tui/screens/_main_menu.py:115
 #: budgetize/tui/screens/_manage_accounts.py:66
 msgid "Date"
 msgstr "Fecha"
 
-#: budgetize/tui/screens/_add_transaction.py:81
+#: budgetize/tui/screens/_add_transaction.py:82
 #: budgetize/tui/screens/_main_menu.py:115
 #: budgetize/tui/screens/_manage_accounts.py:66
 msgid "Description"
 msgstr "Descripción"
 
 # | msgid "Add Transaction"
-#: budgetize/tui/screens/_add_transaction.py:89
+#: budgetize/tui/screens/_add_transaction.py:90
 msgid "Update Transaction"
 msgstr "Actualizar Transacción"
 
-#: budgetize/tui/screens/_add_transaction.py:89
+#: budgetize/tui/screens/_add_transaction.py:90
 #: budgetize/tui/screens/_main_menu.py:38
 msgid "Add Transaction"
 msgstr "Agregar Transacción"
 
 # | msgid "Cancel Transaction"
-#: budgetize/tui/screens/_add_transaction.py:135
+#: budgetize/tui/screens/_add_transaction.py:136
 msgid "Sucessfully updated transaction!"
 msgstr "Cancelar Transacción"
 
 # | msgid "Transaction Deleted"
-#: budgetize/tui/screens/_add_transaction.py:135
+#: budgetize/tui/screens/_add_transaction.py:136
 msgid "Transaction Updated"
 msgstr "Transacción Actualizada"
 
-#: budgetize/tui/screens/_add_transaction.py:149
+#: budgetize/tui/screens/_add_transaction.py:150
 msgid "Sucessfully added transaction of {currency} {amount}"
 msgstr "Se agregó exitosamente la transacción de {currency} {amount}"
 
 # | msgid "Transaction Deleted"
-#: budgetize/tui/screens/_add_transaction.py:152
+#: budgetize/tui/screens/_add_transaction.py:153
 msgid "Transaction Added"
 msgstr "Transacción Agregada"
 
@@ -199,6 +199,31 @@ msgstr "Tipo de Cuenta"
 #: budgetize/tui/screens/_create_account.py:92
 msgid "Account created successfully."
 msgstr "Cuenta creada exitosamente."
+
+#: budgetize/tui/screens/_initial_config.py:38
+msgid "Select your Base Currency"
+msgstr "Selecciona tu Moneda Principal"
+
+# | msgid "Language"
+#: budgetize/tui/screens/_initial_config.py:40
+msgid "Select a language"
+msgstr "Selecciona un idioma"
+
+#: budgetize/tui/screens/_initial_config.py:42
+msgid "Save"
+msgstr "Guardar"
+
+#: budgetize/tui/screens/_initial_config.py:78
+#, fuzzy
+#| msgid "Close Budgetize to apply the new language."
+msgid "Welcome to Budgetize. Restart the app to apply selected language."
+msgstr "Cierra Budgetize para aplicar el nuevo idioma."
+
+# | msgid "Settings"
+# | msgid "Settings saved."
+#: budgetize/tui/screens/_initial_config.py:79
+msgid "Settings Applied"
+msgstr "Configuración Aplicada"
 
 #: budgetize/tui/screens/_main_menu.py:32
 msgid "Quit Budgetize"
@@ -336,3 +361,7 @@ msgstr "Configuración guardada."
 #: budgetize/tui/screens/_settings.py:84
 msgid "Settings Changed"
 msgstr "Configuración Modificada"
+
+# | msgid "Quit Budgetize"
+#~ msgid "Welcome to Budgetize"
+#~ msgstr "Bienvenid@ a Budgetize"

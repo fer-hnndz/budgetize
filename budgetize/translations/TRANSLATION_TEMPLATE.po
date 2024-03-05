@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BUDGETIZE VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-03-05 14:23-0600\n"
+"POT-Creation-Date: 2024-03-05 15:33-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -107,55 +107,55 @@ msgstr ""
 msgid "Transaction Deleted"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:28
+#: budgetize/tui/screens/_add_transaction.py:29
 msgid "Cancel Transaction"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:45
+#: budgetize/tui/screens/_add_transaction.py:46
 #: budgetize/tui/screens/_main_menu.py:115
 msgid "Account"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:53
+#: budgetize/tui/screens/_add_transaction.py:54
 #: budgetize/tui/screens/_main_menu.py:115
 #: budgetize/tui/screens/_manage_accounts.py:66
 msgid "Amount"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:70
+#: budgetize/tui/screens/_add_transaction.py:71
 #: budgetize/tui/screens/_main_menu.py:115
 #: budgetize/tui/screens/_manage_accounts.py:66
 msgid "Date"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:81
+#: budgetize/tui/screens/_add_transaction.py:82
 #: budgetize/tui/screens/_main_menu.py:115
 #: budgetize/tui/screens/_manage_accounts.py:66
 msgid "Description"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:89
+#: budgetize/tui/screens/_add_transaction.py:90
 msgid "Update Transaction"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:89
+#: budgetize/tui/screens/_add_transaction.py:90
 #: budgetize/tui/screens/_main_menu.py:38
 msgid "Add Transaction"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:135
+#: budgetize/tui/screens/_add_transaction.py:136
 msgid "Sucessfully updated transaction!"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:135
+#: budgetize/tui/screens/_add_transaction.py:136
 msgid "Transaction Updated"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:149
+#: budgetize/tui/screens/_add_transaction.py:150
 msgid "Sucessfully added transaction of {currency} {amount}"
 msgstr ""
 
-#: budgetize/tui/screens/_add_transaction.py:152
+#: budgetize/tui/screens/_add_transaction.py:153
 msgid "Transaction Added"
 msgstr ""
 
@@ -193,6 +193,26 @@ msgstr ""
 
 #: budgetize/tui/screens/_create_account.py:92
 msgid "Account created successfully."
+msgstr ""
+
+#: budgetize/tui/screens/_initial_config.py:38
+msgid "Select your Base Currency"
+msgstr ""
+
+#: budgetize/tui/screens/_initial_config.py:40
+msgid "Select a language"
+msgstr ""
+
+#: budgetize/tui/screens/_initial_config.py:42
+msgid "Save"
+msgstr ""
+
+#: budgetize/tui/screens/_initial_config.py:78
+msgid "Welcome to Budgetize. Restart the app to apply selected language."
+msgstr ""
+
+#: budgetize/tui/screens/_initial_config.py:79
+msgid "Settings Applied"
 msgstr ""
 
 #: budgetize/tui/screens/_main_menu.py:32

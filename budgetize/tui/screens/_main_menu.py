@@ -98,12 +98,12 @@ class MainMenu(Screen):
                     self.app.push_screen(details_screen)
                     # details_screen.set_transaction(row_key.value)
 
-    def on_mount(self) -> None:
-        """Called when the screen widgets are mounted"""
+    # def on_mount(self) -> None:
+    #     """Called when the screen widgets are mounted"""
 
-        self._update_account_tables()
-        self._update_recent_transactions_table()
-        self._update_balance_labels()
+    #     self._update_account_tables()
+    #     self._update_recent_transactions_table()
+    #     self._update_balance_labels()
 
     def _update_recent_transactions_table(self) -> None:
         """Updates the recent transactions DataTable widget"""
