@@ -2,11 +2,12 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.screen import Screen
 from textual.types import NoSelection
-from textual.widgets import Footer, Header, Label, Select
+from textual.widgets import Button, Footer, Header, Label, Select
 
 from budgetize._settings_manager import SettingsDict, SettingsManager
 from budgetize.consts import AVAILABLE_LANGUAGES
 from budgetize.db import Database
+from budgetize.tui.modals import CategoriesModal
 from budgetize.utils import _, get_select_currencies
 
 
@@ -54,6 +55,13 @@ class Settings(Screen):
             value=self.manager.get_base_currency(),
             allow_blank=False,
         )
+        yield Button("Manage Categories", id="categories-btn", variant="primary")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Button press handler"""
+
+        if event.button.id == "categories-btn":
+            self.app.push_screen(CategoriesModal())
 
     def action_save_settings(self) -> None:
         """Action to run when user hits save settings"""
