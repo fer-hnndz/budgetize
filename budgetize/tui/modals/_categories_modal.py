@@ -7,6 +7,7 @@ from textual.widgets import Button, SelectionList
 
 from budgetize import SettingsManager
 from budgetize.db import Database
+from budgetize.utils import _
 
 
 class CategoriesModal(ModalScreen):
@@ -17,6 +18,7 @@ class CategoriesModal(ModalScreen):
         """Creates a new CategoriesModal instance."""
 
         self.settings = SettingsManager()
+        self.current_categories = self.settings.get_categories()
         CategoriesModal.DB = Database(self.app)
         super().__init__()
 
@@ -25,16 +27,35 @@ class CategoriesModal(ModalScreen):
 
         with ScrollableContainer(id="scrollable"):
 
-            selection_list: SelectionList[str] = SelectionList(
+            self.selection_list: SelectionList[str] = SelectionList(
                 *self._get_categories_tuple(), id="categories-list"
             )
-            yield selection_list
+            yield self.selection_list
 
         with Horizontal(id="horizontal"):
-            yield Button("Add Category", id="add-category-btn", variant="primary")
+            yield Button(_("Add Category"), id="add-category-btn", variant="primary")
             yield Button.error(
-                "Delete Selected Categories", id="delete-btn", disabled=True
+                _("Delete Selected Categories"), id="delete-btn", disabled=True
             )
+            yield Button(_("Close"), id="close-btn")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Triggers when a Button is pressed."""
+
+        # TODO: Show confirmation msg
+        if event.button.id == "delete-btn":
+            selected_items = self.selection_list.selected
+
+            for category in selected_items:
+                self.current_categories.remove(category)
+
+            self.settings.set_categories(self.current_categories)
+            self.selection_list.clear_options()
+            for category in self.current_categories:
+                self.selection_list.add_option((category, category))
+
+        if event.button.id == "close-btn":
+            self.app.pop_screen()
 
     def on_selection_list_selected_changed(
         self, event: SelectionList.SelectedChanged
@@ -54,6 +75,4 @@ class CategoriesModal(ModalScreen):
 
     def _get_categories_tuple(self) -> list[tuple[str, str]]:
         """Returns a list of tuples with the category name in both values"""
-
-        categories = self.settings.get_categories()
-        return [(category, category) for category in categories]
+        return [(category, category) for category in self.current_categories]

@@ -81,6 +81,11 @@ class SettingsManager:
         self._reload_settings()
         return self._settings["categories"]
 
+    def set_categories(self, categories: list[str]) -> None:
+        """Sets the user's categories and saves them."""
+        self._settings["categories"] = categories
+        self.save(self._settings)
+
     def save(self, settings: SettingsDict) -> None:
         """Saves the user's settings."""
         self._settings = settings

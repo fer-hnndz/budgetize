@@ -55,7 +55,7 @@ class Settings(Screen):
             value=self.manager.get_base_currency(),
             allow_blank=False,
         )
-        yield Button("Manage Categories", id="categories-btn", variant="primary")
+        yield Button(_("Manage Categories"), id="categories-btn", variant="primary")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button press handler"""
@@ -75,6 +75,7 @@ class Settings(Screen):
 
         language_changed = language != self.manager.get_language()
 
+        # TODO: CREATE A METHOD TO UPDATE THIS
         new_settings: SettingsDict = {
             "language": language,
             "base_currency": currency,
