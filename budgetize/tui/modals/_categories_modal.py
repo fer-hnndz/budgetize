@@ -7,6 +7,7 @@ from textual.widgets import Button, SelectionList
 
 from budgetize import SettingsManager
 from budgetize.db import Database
+from budgetize.tui.modals._input_modal import InputModal
 from budgetize.utils import _
 
 
@@ -50,11 +51,16 @@ class CategoriesModal(ModalScreen):
                 self.current_categories.remove(category)
 
             self.settings.set_categories(self.current_categories)
-            self.selection_list.clear_options()
-            for category in self.current_categories:
-                self.selection_list.add_option((category, category))
+            self._update_selection_list()
+
+        if event.button.id == "add-category-btn":
+            modal = InputModal(_("Enter Category Name"), allow_blank=False)
+            self.app.push_screen(modal, self.add_category)
 
         if event.button.id == "close-btn":
+            self.app.notify(
+                _("Categories have been saved"), title=_("Categories Updated")
+            )
             self.app.pop_screen()
 
     def on_selection_list_selected_changed(
@@ -72,6 +78,23 @@ class CategoriesModal(ModalScreen):
         )
 
         delete_button.disabled = True if not selected_items else False
+
+    def add_category(self, category_name: str) -> None:
+        """Adds a new category to the list of categories"""
+
+        self.current_categories.append(category_name)
+        self.settings.set_categories(self.current_categories)
+        self._update_selection_list()
+        self.app.notify(
+            _("Added category {category_name}").format(category_name=category_name),
+            title=_("Category Added"),
+        )
+
+    def _update_selection_list(self) -> None:
+        """Updates the categories in the selection list"""
+        self.selection_list.clear_options()
+        for category in self.current_categories:
+            self.selection_list.add_option((category, category))
 
     def _get_categories_tuple(self) -> list[tuple[str, str]]:
         """Returns a list of tuples with the category name in both values"""
