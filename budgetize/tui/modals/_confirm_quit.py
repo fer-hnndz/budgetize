@@ -21,6 +21,7 @@ class ConfirmQuit(ModalScreen):
             Horizontal(
                 Button.error(_("Exit"), id="yes-button"),
                 Button(_("Cancel"), id="no-button", variant="primary"),
+                id="horizontal-container",
             ),
             id="dialog",
         )
