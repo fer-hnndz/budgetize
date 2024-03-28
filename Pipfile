@@ -11,6 +11,8 @@ arrow = "*"
 pipfile = "*"
 babel = "*"
 beautifulsoup4 = "*"
+asyncio = "*"
+httpx = "*"
 
 [dev-packages]
 black = "*"
