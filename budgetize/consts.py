@@ -5,8 +5,8 @@ import os
 import pkg_resources
 from babel import Locale
 
+VERSION = "0.0.3"
 VALID_EXCHANGE_TIMESTAMP = 7 * 24 * 60 * 60  # 1 week in seconds
-
 # Database
 
 APP_FOLDER_NAME = ".budgetize"

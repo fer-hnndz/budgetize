@@ -7,8 +7,10 @@ from typing import Optional, TypedDict
 import httpx
 from arrow import Arrow
 from bs4 import BeautifulSoup
+from httpx import HTTPStatusError, NetworkError, TimeoutException
 
 from budgetize.consts import APP_FOLDER_PATH, VALID_EXCHANGE_TIMESTAMP
+from budgetize.exceptions import ExchangeRateFetchError
 
 
 class RatesData(TypedDict):
@@ -108,10 +110,14 @@ class CurrencyManager:
         rate_data = rates[self.base_currency][currency]
 
         # If the exchange rate is older than 1 week, retrieve it again
-        if self.has_expired(rate_data["retrieve_timestamp"]):
-            return await self.update_rate(currency)
 
-        return rates[self.base_currency][currency]["rate"]
+        try:
+            if self.has_expired(rate_data["retrieve_timestamp"]):
+                return await self.update_rate(currency)
+
+            return rates[self.base_currency][currency]["rate"]
+        except ExchangeRateFetchError:
+            return rate_data["rate"]
 
     def has_expired(self, timestamp: int) -> bool:
         """
@@ -137,24 +143,41 @@ class CurrencyManager:
             float: The exchange rate
         """
 
-        try:
-            async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient() as client:
 
-                url = f"https://www.xe.com/currencyconverter/convert/?Amount=1&From={self.base_currency.upper()}&To={currency.upper()}"
-                headers = {
-                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36 OPR/82.0.4227.50",
-                }
-                r = await client.get(url, timeout=15)
-                print(r.text)
+            url = f"https://www.xe.com/currencyconverter/convert/?Amount=1&From={self.base_currency.upper()}&To={currency.upper()}"
+            headers = {
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36 OPR/82.0.4227.50",
+            }
+
+            try:
+                r = await client.get(url, timeout=8)
+
+                # Parse response
                 soup = BeautifulSoup(r.text, "html.parser")
                 a = soup.find("p", class_="result__BigRate-sc-1bsijpp-1 dPdXSB")
                 rate: float = float(a.text.split(" ")[0])  # type: ignore
 
                 return rate
-        except Exception:
-            traceback.print_exc()
-            return -1.0
+            except TimeoutException as e:
+                raise ExchangeRateFetchError(
+                    f"The request timed out fetching the exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
+                )
+            except NetworkError as e:
+                raise ExchangeRateFetchError(
+                    f"A network error has ocurred trying to fetch the exchange rate for {currency.upper()}.\n"
+                    + traceback.format_exc()
+                )
+            except HTTPStatusError as e:
+                raise ExchangeRateFetchError(
+                    f"Server responded with an error when fetching exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
+                )
+
+            except Exception as e:
+                raise ExchangeRateFetchError(
+                    f"An unkown error has ocurred trying to fetch the exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
+                )
 
     def _get_all_local_rates(self) -> Optional[dict[str, dict[str, RatesData]]]:
         """

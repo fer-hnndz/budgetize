@@ -1,7 +1,6 @@
 """Module that defines the main menu screen"""
 
 import asyncio
-from typing import Coroutine
 
 from arrow import Arrow
 from babel.numbers import format_currency
@@ -13,7 +12,9 @@ from textual.widgets import Button, DataTable, Footer, Header, Label, Rule
 
 from budgetize import CurrencyManager, SettingsManager
 from budgetize.db import Database
+from budgetize.exceptions import ExchangeRateFetchError
 from budgetize.tui.modals import ConfirmQuit, TransactionDetails
+from budgetize.tui.modals.error_modal import ErrorModal
 from budgetize.tui.screens import AddTransaction
 
 # Import directly from the class file to avoid circular imports
@@ -99,34 +100,47 @@ class MainMenu(Screen):
         """Lets the user now that the app is about to update exchange rates and update UI elements"""
         # TODO: Show error log when the exchange couldnt be fetched.
 
-        currency_manager = CurrencyManager(SettingsManager().get_base_currency())
+        try:
+            currency_manager = CurrencyManager(SettingsManager().get_base_currency())
 
-        rates_update_task = asyncio.create_task(currency_manager.update_invalid_rates())
-        if not currency_manager.has_expired_rates():
-            self.rates_fetched = True
+            rates_update_task = asyncio.create_task(
+                currency_manager.update_invalid_rates()
+            )
 
-        if not self.rates_fetched:
+            # If rates have been fetched (or attempted), just update UI
+            if self.rates_fetched or not currency_manager.has_expired_rates():
+                self._update_account_tables()
+                self._update_recent_transactions_table()
+                return
+
             self.app.notify(
                 title=_("Updating Currency Rates"),
                 message=_(
                     "Please wait while we retrieve the latest currency conversion rates for you."
                 ),
                 severity="warning",
+                timeout=6,
             )
 
-        self._update_account_tables()
-        self._update_recent_transactions_table()
+            self._update_account_tables()
+            self._update_recent_transactions_table()
 
-        await rates_update_task
-        if not self.rates_fetched:
-            self.app.notify(
-                title=_("Updating Currency Rates"),
-                message=_("Updated all currency rates."),
-                severity="information",
+            await rates_update_task
+            if not self.rates_fetched:
+                self.app.notify(
+                    title=_("Updating Currency Rates"),
+                    message=_("Updated all currency rates."),
+                    severity="information",
+                    timeout=6,
+                )
+        except ExchangeRateFetchError as e:
+            msg = str(e) + _("\n\n Using outdated exchange rates for now.")
+            self.app.push_screen(
+                ErrorModal(title=_("Error Fetching Exchange Rates"), traceback_msg=msg)
             )
+        finally:
             self.rates_fetched = True
-
-        await self._update_balance_labels()
+            await self._update_balance_labels()
 
     def on_screen_resume(self) -> None:
         """Called when the screen is now the current screen"""

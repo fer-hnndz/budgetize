@@ -25,6 +25,10 @@ dependencies = [
   "arrow",
   "babel",
   "types-setuptools",
+  "beautifulsoup4",
+  "asyncio",
+  "httpx",
+  "pyperclip",
 ]
 
 [project.scripts]
