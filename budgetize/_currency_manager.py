@@ -154,12 +154,24 @@ class CurrencyManager:
             try:
                 r = await client.get(url, timeout=8)
 
-                # Parse response
                 soup = BeautifulSoup(r.text, "html.parser")
-                a = soup.find("p", class_="result__BigRate-sc-1bsijpp-1 dPdXSB")
-                rate: float = float(a.text.split(" ")[0])  # type: ignore
 
-                return rate
+                main_element = soup.find("main")
+                if not main_element:
+                    raise ExchangeRateFetchError(
+                        f"Could not find main element in response."
+                    )
+
+                digits_span = soup.find("span", class_="faded-digits")
+                parent_div = digits_span.parent  # type:ignore
+
+                # Get first element of the iterator
+                for child in parent_div.children:  # type:ignore
+                    rate_p = str(child)
+                    break
+
+                return float(rate_p)
+
             except TimeoutException as e:
                 raise ExchangeRateFetchError(
                     f"The request timed out fetching the exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
@@ -173,7 +185,6 @@ class CurrencyManager:
                 raise ExchangeRateFetchError(
                     f"Server responded with an error when fetching exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
                 )
-
             except Exception as e:
                 raise ExchangeRateFetchError(
                     f"An unkown error has ocurred trying to fetch the exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
