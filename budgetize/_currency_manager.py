@@ -59,6 +59,9 @@ class CurrencyManager:
         if not rates:
             return True
 
+        if self.base_currency not in rates.values():
+            rates[self.base_currency] = {}
+
         for base_currency, data in rates[self.base_currency].items():
             if self.has_expired(data["retrieve_timestamp"]):
                 exchange = await self._request_exchange(base_currency)
@@ -75,6 +78,9 @@ class CurrencyManager:
         rates = self._get_all_local_rates()
         if not rates:
             return False
+
+        if not self.base_currency in rates.values():
+            return True
 
         for currency, data in rates[self.base_currency].items():
             if self.has_expired(data["retrieve_timestamp"]):
@@ -104,7 +110,10 @@ class CurrencyManager:
         if not rates:
             return await self.update_rate(currency)
 
-        if self.base_currency not in rates or currency not in rates[self.base_currency]:
+        if (
+            self.base_currency not in rates.values()
+            or currency not in rates[self.base_currency].values()
+        ):
             return await self.update_rate(currency)
 
         rate_data = rates[self.base_currency][currency]
@@ -163,6 +172,11 @@ class CurrencyManager:
                     )
 
                 digits_span = soup.find("span", class_="faded-digits")
+
+                if digits_span is None:
+                    return -1
+
+                digits_str: str = digits_span.get_text()
                 parent_div = digits_span.parent  # type:ignore
 
                 # Get first element of the iterator
@@ -170,7 +184,11 @@ class CurrencyManager:
                     rate_p = str(child)
                     break
 
-                return float(rate_p)
+                units = rate_p.split(".")
+                amount_of_zero = len(units[-1])
+                zeroes = "0." + ("0" * amount_of_zero)
+                digits_to_sum = zeroes + digits_str
+                return float(rate_p) + float(digits_to_sum)
 
             except TimeoutException as e:
                 raise ExchangeRateFetchError(

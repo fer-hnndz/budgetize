@@ -47,6 +47,12 @@ class MainMenu(Screen):
             action="show_settings()",
             description=_("Open Settings"),
         ),
+        Binding(
+            key="r, R",
+            key_display="R",
+            action="refresh_currencies()",
+            description=_("Force Exchange Rate Update"),
+        ),
     ]
 
     def __init__(self) -> None:
@@ -100,6 +106,16 @@ class MainMenu(Screen):
         """Lets the user now that the app is about to update exchange rates and update UI elements"""
         # TODO: Show error log when the exchange couldnt be fetched.
 
+        monthly_income_label: Label = self.get_widget_by_id(
+            "monthly-income"
+        )  # type:ignore
+        monthly_balance_label: Label = self.get_widget_by_id(
+            "monthly-balance"
+        )  # type:ignore
+        monthly_expense_label: Label = self.get_widget_by_id(
+            "monthly-expense"
+        )  # type:ignore
+
         try:
             currency_manager = CurrencyManager(SettingsManager().get_base_currency())
 
@@ -107,10 +123,16 @@ class MainMenu(Screen):
                 currency_manager.update_invalid_rates()
             )
 
+            if not self.rates_fetched:
+                monthly_income_label.update("...")
+                monthly_balance_label.update("...")
+                monthly_expense_label.update("...")
+
             # If rates have been fetched (or attempted), just update UI
             if self.rates_fetched or not currency_manager.has_expired_rates():
                 self._update_account_tables()
                 self._update_recent_transactions_table()
+                await self._update_balance_labels()
                 return
 
             self.app.notify(
@@ -126,6 +148,13 @@ class MainMenu(Screen):
             self._update_recent_transactions_table()
 
             await rates_update_task
+        except ExchangeRateFetchError as e:
+            msg = str(e) + _("\n\n Using outdated exchange rates for now.")
+            self.app.push_screen(
+                ErrorModal(title=_("Error Fetching Exchange Rates"), traceback_msg=msg)
+            )
+        finally:
+            await self._update_balance_labels()
             if not self.rates_fetched:
                 self.app.notify(
                     title=_("Updating Currency Rates"),
@@ -133,14 +162,7 @@ class MainMenu(Screen):
                     severity="information",
                     timeout=6,
                 )
-        except ExchangeRateFetchError as e:
-            msg = str(e) + _("\n\n Using outdated exchange rates for now.")
-            self.app.push_screen(
-                ErrorModal(title=_("Error Fetching Exchange Rates"), traceback_msg=msg)
-            )
-        finally:
             self.rates_fetched = True
-            await self._update_balance_labels()
 
     def on_screen_resume(self) -> None:
         """Called when the screen is now the current screen"""
@@ -172,6 +194,9 @@ class MainMenu(Screen):
                 if (n == row_pos) and (row_key.value is not None):
                     details_screen = TransactionDetails(int(row_key.value))
                     self.app.push_screen(details_screen)
+
+    async def force_reload(self) -> None:
+        """Force reloads all exchange rates"""
 
     def _update_recent_transactions_table(self) -> None:
         """Updates the recent transactions DataTable widget."""
@@ -240,38 +265,35 @@ class MainMenu(Screen):
         )  # type:ignore
 
         monthly_income_label.update(
-            _(
-                "Income this Month\n{main_currency} {income_color}{monthly_income}"
-            ).format(
+            _("Income this Month\n{income_color}{monthly_income}").format(
                 income_color=income_color,
                 monthly_income=format_currency(
                     monthly_income,
                     main_currency,
                     locale=user_locale,
-                    format_type="accounting",
                 ),
                 main_currency=main_currency,
             )
         )
+
         monthly_balance_label.update(
-            _("Balance\n{main_currency} {balance_color}{balance}").format(
+            _("Balance\n{balance_color}{balance}").format(
                 balance_color=balance_color,
                 balance=format_currency(
-                    balance, main_currency, locale=user_locale, format_type="accounting"
+                    balance,
+                    main_currency,
+                    locale=user_locale,
                 ),
                 main_currency=main_currency,
             )
         )
         monthly_expense_label.update(
-            _(
-                "Expenses this Month\n{main_currency} {expense_color}{monthly_expense}"
-            ).format(
+            _("Expenses this Month\n{expense_color}{monthly_expense}").format(
                 expense_color=expense_color,
                 monthly_expense=format_currency(
                     monthly_expense,
                     main_currency,
                     locale=user_locale,
-                    format_type="accounting",
                 ),
                 main_currency=main_currency,
             )
@@ -305,4 +327,5 @@ class MainMenu(Screen):
 
     def action_show_settings(self) -> None:
         """Opens the settings."""
+        self.rates_fetched = False
         self.app.push_screen(Settings())
