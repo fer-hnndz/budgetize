@@ -8,9 +8,9 @@ from textual.screen import Screen
 from textual.types import NoSelection
 from textual.widgets import Button, Header, Label, Select
 
-from budgetize._settings_manager import SettingsDict, SettingsManager
 from budgetize.consts import AVAILABLE_LANGUAGES, TRANSLATIONS_PATH
-from budgetize.tui.screens._main_menu import MainMenu
+from budgetize.settings_manager import SettingsDict, SettingsManager
+from budgetize.tui.screens.main_menu import MainMenu
 from budgetize.utils import get_select_currencies
 
 # Split any territory data

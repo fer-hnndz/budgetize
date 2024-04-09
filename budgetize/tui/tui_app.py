@@ -1,13 +1,11 @@
 """Main Module that starts the Terminal User Interface (TUI)"""
 
-import os
-
 from textual.app import App
 
-from budgetize._settings_manager import SettingsManager
-from budgetize.consts import APP_FOLDER_PATH
-
-from .screens import CreateAccount, InitialConfig, MainMenu
+from budgetize.settings_manager import SettingsManager
+from budgetize.tui.screens.create_account import CreateAccount
+from budgetize.tui.screens.initial_config import InitialConfig
+from budgetize.tui.screens.main_menu import MainMenu
 
 
 class TuiApp(App):

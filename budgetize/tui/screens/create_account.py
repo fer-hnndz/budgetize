@@ -1,7 +1,5 @@
 """Module that defines the CreateAccount screen."""
 
-import gettext
-
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Grid, Horizontal, VerticalScroll
@@ -9,14 +7,9 @@ from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from budgetize.db import Database
-from budgetize.db.orm import Account, AccountType
+from budgetize.db.database import Database
+from budgetize.db.orm.account import Account, AccountType
 from budgetize.utils import _, get_select_currencies
-
-t = gettext.translation(
-    "budgetize", localedir="./budgetize/translations", languages=["es"]
-)
-_ = t.gettext
 
 
 class CreateAccount(Screen):

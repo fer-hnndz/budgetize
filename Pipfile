@@ -4,29 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-textual = "*"
-sqlalchemy = "*"
-requests = "*"
-arrow = "*"
-pipfile = "*"
-babel = "*"
-beautifulsoup4 = "*"
-asyncio = "*"
-httpx = "*"
-pyperclip = "*"
 
 [dev-packages]
-black = "*"
-pylint = "*"
-mypy = "*"
-pre-commit = "*"
-build = "*"
-twine = "*"
-textual-dev = "*"
-setuptools = "*"
-types-setuptools = "*"
-types-requests = "*"
-types-beautifulsoup4 = "*"
 
 [requires]
 python_version = "3.10"

@@ -10,6 +10,7 @@ ErrorModal {
 #title-str {
     margin-top: 1;
 }
-#traceback-str {
+
+#scroll {
     border: dashed red;
 }

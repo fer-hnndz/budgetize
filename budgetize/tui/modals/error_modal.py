@@ -2,7 +2,7 @@
 
 import pyperclip
 from textual.app import ComposeResult
-from textual.containers import Center, Horizontal
+from textual.containers import Center, Horizontal, ScrollableContainer
 from textual.screen import ModalScreen
 from textual.widgets import Button, Label
 
@@ -28,7 +28,8 @@ class ErrorModal(ModalScreen):
 
         with Center(id="center-modal"):
             yield Label(self.title, id="title-str")
-            yield Label(self.traceback_msg, id="traceback-str")
+            with ScrollableContainer(id="scroll"):
+                yield Label(self.traceback_msg, id="traceback-str")
 
             with Horizontal(id="horizontal-modal"):
                 yield Button("Copy to clipboard", id="copy-btn", variant="primary")
@@ -38,11 +39,12 @@ class ErrorModal(ModalScreen):
         """Button press handler"""
 
         if event.button.id == "close-btn":
-            self.dismiss()
+            self.app.pop_screen()
 
         elif event.button.id == "copy-btn":
 
             if self.title is None or self.traceback_msg is None:
                 return
+
             pyperclip.copy(self.title + "\n\n" + self.traceback_msg)
-            self.dismiss()
+            self.app.pop_screen()

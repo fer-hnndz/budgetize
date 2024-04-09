@@ -1,6 +1,5 @@
 """Module that defines the AddTransaction screen"""
 
-import gettext
 from datetime import date as date_func
 from traceback import print_exc
 from typing import Optional
@@ -12,15 +11,10 @@ from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from budgetize._settings_manager import SettingsManager
-from budgetize.db import Database
-from budgetize.db.orm import Transaction
+from budgetize.db.database import Database
+from budgetize.db.orm.transactions import Transaction
+from budgetize.settings_manager import SettingsManager
 from budgetize.utils import _
-
-t = gettext.translation(
-    "Budgetize", localedir="./budgetize/translations", languages=["es"]
-)
-_ = t.gettext
 
 
 class AddTransaction(Screen):

@@ -1,7 +1,5 @@
 """Module that defines the ConfirmQuit modal"""
 
-import gettext
-
 from textual.app import ComposeResult
 from textual.containers import Center, Horizontal
 from textual.screen import ModalScreen
