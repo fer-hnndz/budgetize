@@ -7,6 +7,7 @@ from sqlalchemy import create_engine, select, update
 from sqlalchemy.orm import Session
 from textual.app import App
 
+from budgetize import CurrencyManager, SettingsManager
 from budgetize.consts import PROD_DB_URL
 
 from .orm import Account, Base, Transaction
@@ -19,7 +20,7 @@ class Database:
 
     def __init__(self, app: App):
         if app is None:
-            return
+            raise RuntimeError(app, "App cannot be None")
 
         Database.engine = create_engine(
             PROD_DB_URL
@@ -27,6 +28,7 @@ class Database:
             else "sqlite:///test_db.sqlite"
         )
         Base.metadata.create_all(self.engine)
+        self.settings = SettingsManager()
 
     def get_transactions_from_account(self, account_id: int) -> Iterator[Transaction]:
         """Returns an iterator of transactions from the specified account"""
@@ -49,11 +51,6 @@ class Database:
         for transaction in transactions:
             date = Arrow.fromtimestamp(transaction.timestamp)
             ar = Arrow.fromtimestamp(transaction.timestamp)
-            print("===================================")
-            print(f"Date for transaction #{transaction.id}: {ar.format('M/D/YYYY')}")
-
-            print(f"Ar m/y: {ar.format('M')} | {ar.format('YYYY')}")
-            print(f"Received: {month} | {year}")
 
             if date.format("M") == month and date.format("YYYY") == year:
                 yield transaction
@@ -150,20 +147,27 @@ class Database:
             transactions: list[Transaction] = session.execute(stmt).scalars().all()  # type: ignore
             return transactions
 
-    def get_monthly_income(self) -> float:
-        """Returns the total income for the current month"""
+    async def get_monthly_income(self) -> float:
+        """(Coroutine) Returns the total income for the current month"""
 
         now = Arrow.now()
 
         income = 0.0
         for account in self.get_accounts():
+
+            exchange_rate = 1.0
+            if account.currency != self.settings.get_base_currency():
+                exchange_rate = await CurrencyManager(
+                    self.settings.get_base_currency()
+                ).get_exchange(account.currency)
+
             for transaction in self.get_monthly_transactions_from_account(
                 account.id, now.format("M"), now.format("YYYY")
             ):
                 if transaction.amount > 0:
-                    income += transaction.amount
+                    income += transaction.amount / exchange_rate
 
-        return income
+        return round(income, 2)
 
     def delete_account(self, account_id: int) -> None:
         """Deletes the specified account from the database."""
@@ -192,19 +196,24 @@ class Database:
 
             session.commit()
 
-    def get_monthly_expense(self) -> float:
-        """Returns the total expenses for the current month"""
+    async def get_monthly_expense(self) -> float:
+        """(Coroutine) Returns the total expenses for the current month"""
         now = Arrow.now()
 
         expense = 0.0
         for account in self.get_accounts():
+            rate = 1.0
+            if account.currency != self.settings.get_base_currency():
+                rate = await CurrencyManager(
+                    self.settings.get_base_currency()
+                ).get_exchange(account.currency)
             for transaction in self.get_monthly_transactions_from_account(
                 account.id, now.format("M"), now.format("YYYY")
             ):
                 if transaction.amount < 0:
-                    expense += transaction.amount
+                    expense += transaction.amount / rate
 
-        return expense
+        return round(expense, 2)
 
     def delete_transaction(self, transaction_id: int) -> Transaction:
         """Deletes the specified transaction from the DB and returns it."""

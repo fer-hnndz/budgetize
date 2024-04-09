@@ -9,9 +9,9 @@ from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from budgetize.consts import CURRENCIES
 from budgetize.db import Database
 from budgetize.db.orm import Account, AccountType
+from budgetize.utils import _, get_select_currencies
 
 t = gettext.translation(
     "budgetize", localedir="./budgetize/translations", languages=["es"]
@@ -49,7 +49,7 @@ class CreateAccount(Screen):
                 Label(_("Account Currency"), id="currency-label"),
                 Label(_("Account Name"), id="name-label"),
                 Select(
-                    self.get_currency_choices(), id="currency-select", allow_blank=False
+                    get_select_currencies(), id="currency-select", allow_blank=False
                 ),
                 Input(placeholder=_("Bank Account"), id="account-name-input"),
             ),
@@ -102,14 +102,6 @@ class CreateAccount(Screen):
             self.get_widget_by_id("account-name-input").value = ""  # type: ignore
             self.get_widget_by_id("balance-input").value = ""  # type: ignore
             self.app.pop_screen()
-
-    def get_currency_choices(self) -> list[tuple[str, str]]:
-        """Returns a list of tuples for the currency select widget"""
-        res = []
-        for curr in CURRENCIES:
-            res.append((f"({curr[0]}) {curr[1]}", curr[0]))
-
-        return res
 
     def get_account_type_choices(self) -> list[tuple[str, str]]:
         """Returns a list of tuples for the account type select widget"""

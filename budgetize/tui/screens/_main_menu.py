@@ -1,25 +1,26 @@
 """Module that defines the main menu screen"""
 
-import gettext
+import asyncio
 
 from arrow import Arrow
+from babel.numbers import format_currency
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import Button, DataTable, Footer, Header, Label, Rule
 
+from budgetize import CurrencyManager, SettingsManager
 from budgetize.db import Database
+from budgetize.exceptions import ExchangeRateFetchError
 from budgetize.tui.modals import ConfirmQuit, TransactionDetails
+from budgetize.tui.modals.error_modal import ErrorModal
 from budgetize.tui.screens import AddTransaction
 
 # Import directly from the class file to avoid circular imports
 from budgetize.tui.screens._manage_accounts import ManageAccounts
-
-t = gettext.translation(
-    "budgetize", localedir="./budgetize/translations", languages=["es"]
-)
-_ = t.gettext
+from budgetize.tui.screens._settings import Settings
+from budgetize.utils import _
 
 
 class MainMenu(Screen):
@@ -40,24 +41,28 @@ class MainMenu(Screen):
             action="verify_add_transaction()",
             description=_("Add Transaction"),
         ),
+        Binding(
+            key="i,I",
+            key_display="I",
+            action="show_settings()",
+            description=_("Open Settings"),
+        ),
+        Binding(
+            key="r, R",
+            key_display="R",
+            action="refresh_currencies()",
+            description=_("Force Exchange Rate Update"),
+        ),
     ]
 
     def __init__(self) -> None:
         """Creates a new MainMenu Screen"""
         MainMenu.DB = Database(self.app)
+        self.rates_fetched = False
         super().__init__()
 
     def compose(self) -> ComposeResult:
         """Called when screen is composed"""
-
-        monthly_income = self.DB.get_monthly_income()
-        monthly_expense = self.DB.get_monthly_expense()
-        balance = monthly_income + monthly_expense
-
-        income_color = "[green]" if monthly_income > 0 else "[red]"
-        expense_color = "[green]" if monthly_expense > 0 else "[red]"
-        balance_color = "[green]" if balance >= 0 else "[red]"
-
         self.app.sub_title = _("Main Menu")
         yield Header()
         yield Footer()
@@ -68,21 +73,15 @@ class MainMenu(Screen):
             # TODO: Convert all other currencies to main currency
             Vertical(
                 Label(
-                    _("Income this Month\n{income_color}{monthly_income}").format(
-                        income_color=income_color, monthly_income=monthly_income
-                    ),
+                    "...",
                     id="monthly-income",
                 ),
                 Label(
-                    _("Balance\n{balance_color}{balance}").format(
-                        balance_color=balance_color, balance=balance
-                    ),
+                    "...",
                     id="monthly-balance",
                 ),
                 Label(
-                    _("Expenses this Month\n{expense_color}{monthly_expense}").format(
-                        expense_color=expense_color, monthly_expense=monthly_expense
-                    ),
+                    "...",
                     id="monthly-expense",
                 ),
             ),
@@ -99,6 +98,93 @@ class MainMenu(Screen):
 
         yield Rule(orientation="horizontal")
 
+    async def on_mount(self) -> None:
+        """Called when the screen is about to be shown"""
+        self.run_worker(self.update_ui_info, exclusive=True)  # type: ignore
+
+    async def update_ui_info(self) -> None:
+        """Lets the user now that the app is about to update exchange rates and update UI elements"""
+        # TODO: Show error log when the exchange couldnt be fetched.
+
+        monthly_income_label: Label = self.get_widget_by_id(
+            "monthly-income"
+        )  # type:ignore
+        monthly_balance_label: Label = self.get_widget_by_id(
+            "monthly-balance"
+        )  # type:ignore
+        monthly_expense_label: Label = self.get_widget_by_id(
+            "monthly-expense"
+        )  # type:ignore
+
+        try:
+            currency_manager = CurrencyManager(SettingsManager().get_base_currency())
+
+            rates_update_task = asyncio.create_task(
+                currency_manager.update_invalid_rates()
+            )
+
+            if not self.rates_fetched:
+                monthly_income_label.update("...")
+                monthly_balance_label.update("...")
+                monthly_expense_label.update("...")
+
+            # If rates have been fetched (or attempted), just update UI
+            if self.rates_fetched or not currency_manager.has_expired_rates():
+                self._update_account_tables()
+                self._update_recent_transactions_table()
+                await self._update_balance_labels()
+                return
+
+            self.app.notify(
+                title=_("Updating Currency Rates"),
+                message=_(
+                    "Please wait while we retrieve the latest currency conversion rates for you."
+                ),
+                severity="warning",
+                timeout=6,
+            )
+
+            self._update_account_tables()
+            self._update_recent_transactions_table()
+
+            await rates_update_task
+        except ExchangeRateFetchError as e:
+            msg = str(e) + _("\n\n Using outdated exchange rates for now.")
+            self.app.push_screen(
+                ErrorModal(title=_("Error Fetching Exchange Rates"), traceback_msg=msg)
+            )
+        finally:
+            await self._update_balance_labels()
+            if not self.rates_fetched:
+                self.app.notify(
+                    title=_("Updating Currency Rates"),
+                    message=_("Updated all currency rates."),
+                    severity="information",
+                    timeout=6,
+                )
+            self.rates_fetched = True
+
+    def on_screen_resume(self) -> None:
+        """Called when the screen is now the current screen"""
+        self.app.sub_title = _("Main Menu")
+        self.run_worker(self.update_ui_info, exclusive=True)  # type: ignore
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Button press handler"""
+
+        if event.button.id == "create-account-button":
+            self.app.push_screen("create_account")
+        if event.button.id == "manage-accounts-button":
+            accounts = self.DB.get_accounts()
+            if sum(1 for _ in accounts) > 0:  # Get the length of the generator
+                self.app.push_screen(ManageAccounts())
+            else:
+                self.app.notify(
+                    severity="warning",
+                    title=_("Cannot Manage Accounts"),
+                    message=_("You must need atleast one account to manage accounts."),
+                )
+
     def on_data_table_cell_selected(self, event: DataTable.CellSelected) -> None:
         """Called when a cell in the DataTable is selected"""
 
@@ -108,16 +194,12 @@ class MainMenu(Screen):
                 if (n == row_pos) and (row_key.value is not None):
                     details_screen = TransactionDetails(int(row_key.value))
                     self.app.push_screen(details_screen)
-                    # details_screen.set_transaction(row_key.value)
 
-    def on_mount(self) -> None:
-        """Called when the screen widgets are mounted"""
-
-        self._update_account_tables()
-        self._update_recent_transactions_table()
+    async def force_reload(self) -> None:
+        """Force reloads all exchange rates"""
 
     def _update_recent_transactions_table(self) -> None:
-        """Updates the recent transactions DataTable widget"""
+        """Updates the recent transactions DataTable widget."""
 
         recent_transactions = self.DB.get_all_recent_transactions()
         table: DataTable = self.get_widget_by_id("recent-transactions-table")  # type: ignore
@@ -127,7 +209,12 @@ class MainMenu(Screen):
         )
 
         for trans in recent_transactions:
-            account = self.DB.get_account_by_id(trans.account_id)
+
+            # Should never happen.
+            if trans.account_id == None:
+                continue
+
+            account = self.DB.get_account_by_id(int(trans.account_id))
             color = "[green]" if trans.amount > 0 else "[red]"
             date = Arrow.fromtimestamp(trans.timestamp).format("MM/DD/YYYY")
 
@@ -154,15 +241,18 @@ class MainMenu(Screen):
                 acc.name, acc.account_type.name.capitalize(), acc.balance, acc.currency
             )
 
-    def _update_balance_labels(self) -> None:
-        """Updates monthly income/balance/expense labels"""
-        monthly_income = self.DB.get_monthly_income()
-        monthly_expense = self.DB.get_monthly_expense()
-        balance = monthly_income + monthly_expense
+    async def _update_balance_labels(self) -> None:
+        """(Coroutine) Updates monthly income/balance/expense labels"""
+        monthly_income: float = await self.DB.get_monthly_income()
+        monthly_expense: float = await self.DB.get_monthly_expense()
+        balance: float = round(monthly_income + monthly_expense, 2)
+        main_currency = SettingsManager().get_base_currency()
 
         income_color = "[green]" if monthly_income > 0 else "[red]"
         expense_color = "[green]" if monthly_expense > 0 else "[red]"
         balance_color = "[green]" if balance >= 0 else "[red]"
+
+        user_locale = SettingsManager().get_locale()
 
         monthly_income_label: Label = self.get_widget_by_id(
             "monthly-income"
@@ -176,41 +266,38 @@ class MainMenu(Screen):
 
         monthly_income_label.update(
             _("Income this Month\n{income_color}{monthly_income}").format(
-                income_color=income_color, monthly_income=monthly_income
+                income_color=income_color,
+                monthly_income=format_currency(
+                    monthly_income,
+                    main_currency,
+                    locale=user_locale,
+                ),
+                main_currency=main_currency,
             )
         )
+
         monthly_balance_label.update(
             _("Balance\n{balance_color}{balance}").format(
-                balance_color=balance_color, balance=balance
+                balance_color=balance_color,
+                balance=format_currency(
+                    balance,
+                    main_currency,
+                    locale=user_locale,
+                ),
+                main_currency=main_currency,
             )
         )
         monthly_expense_label.update(
             _("Expenses this Month\n{expense_color}{monthly_expense}").format(
-                expense_color=expense_color, monthly_expense=monthly_expense
+                expense_color=expense_color,
+                monthly_expense=format_currency(
+                    monthly_expense,
+                    main_currency,
+                    locale=user_locale,
+                ),
+                main_currency=main_currency,
             )
         )
-
-    def on_screen_resume(self) -> None:
-        """Called when the screen is now the current screen"""
-        self._update_account_tables()
-        self._update_recent_transactions_table()
-        self._update_balance_labels()
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Button press handler"""
-
-        if event.button.id == "create-account-button":
-            self.app.push_screen("create_account")
-        if event.button.id == "manage-accounts-button":
-            accounts = self.DB.get_accounts()
-            if sum(1 for _ in accounts) > 0:  # Get the length of the generator
-                self.app.push_screen(ManageAccounts())
-            else:
-                self.app.notify(
-                    severity="warning",
-                    title=_("Cannot Manage Accounts"),
-                    message=_("You must need atleast one account to manage accounts."),
-                )
 
     # ==================== App Bindings ====================
 
@@ -222,7 +309,7 @@ class MainMenu(Screen):
         """
 
         accounts = 0
-        for _ in self.DB.get_accounts():
+        for acc in self.DB.get_accounts():
             accounts += 1
         if accounts:
             self.app.push_screen(AddTransaction())
@@ -237,3 +324,8 @@ class MainMenu(Screen):
     def action_request_quit(self) -> None:
         """Shows the modal to quit the app"""
         self.app.push_screen(ConfirmQuit())
+
+    def action_show_settings(self) -> None:
+        """Opens the settings."""
+        self.rates_fetched = False
+        self.app.push_screen(Settings())

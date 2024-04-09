@@ -1,4 +1,3 @@
-
 Label {
     width: 100%;
     text-align: center;
@@ -10,9 +9,8 @@ Rule {
 
 Horizontal {
     align: center top;
-    margin: 0;
-    padding: 0;
 }
+
 Button {
     margin: 1 2;
 }

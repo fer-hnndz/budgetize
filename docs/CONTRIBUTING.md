@@ -50,6 +50,15 @@ When submitting your pull request make sure to name it accordingly and explain i
 Create a folder with the locale you want to translate.
 
 Commands:
+<<<<<<< HEAD
+=======
+If you need to extract new translations to the template file:
+
+```bash
+pipenv run pybabel extract ./budgetize -o ./budgetize/translations/TRANSLATION_TEMPLATE.po --project Budgetize
+```
+
+>>>>>>> 357853a6e581d4856916765eb0c9e420230f6c91
 To create a new translation
 
 ```bash
@@ -59,9 +68,23 @@ pipenv run pybabel init -D budgetize -i ./budgetize/translations/TRANSLATION_TEM
 Create a folder called `LC_MESSAGES`
 Compilation:
 ```bash
+<<<<<<< HEAD
 pipenv run pybabel compile -D budgetize -l {locale} -i {your_translation}.po -d ./budgetize/translations/{locale}
 ```
 Updating Translations:
 ```bash
 pipenv run pybabel update -i .\budgetize\translations\TRANSLATION_TEMPLATE.po -o .\budgetize\translations\es\es.po -l es --previous --update-header-comment -D budgetize
+=======
+pipenv run pybabel compile -D budgetize -l {locale} -i {your_translation}.po -d ./budgetize/translations/
+```
+
+Updating Translations:
+```bash
+pipenv run pybabel update -i .\budgetize\translations\TRANSLATION_TEMPLATE.po -o .\budgetize\translations\{locale}\{locale}.po -l {locale} --previous --update-header-comment -D budgetize
+```
+
+To extract new translatable strings
+```bash
+pipenv run pybabel extract budgetize --project BUDGETIZE  -o .\budgetize\translations\TRANSLATION_TEMPLATE.po
+>>>>>>> 357853a6e581d4856916765eb0c9e420230f6c91
 ```

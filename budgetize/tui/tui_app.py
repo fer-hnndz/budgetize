@@ -1,11 +1,13 @@
 """Main Module that starts the Terminal User Interface (TUI)"""
 
-import gettext
 import os
 
 from textual.app import App
 
-from .screens import AddTransaction, CreateAccount, MainMenu, Startup
+from budgetize._settings_manager import SettingsManager
+from budgetize.consts import APP_FOLDER_PATH
+
+from .screens import CreateAccount, InitialConfig, MainMenu
 
 
 class TuiApp(App):
@@ -14,11 +16,12 @@ class TuiApp(App):
     def on_mount(self) -> None:
         """Called when the app is mounted"""
 
-        print(os.getcwd())
-
-        gettext.install("budgetize", localedir="./budgetize/translations")
         self.title = "Budgetize"
-        self.install_screen(Startup(), "startup")
-        self.install_screen(MainMenu(), "main_menu")
-        self.install_screen(CreateAccount(), "create_account")
-        self.push_screen("main_menu")
+        settings = SettingsManager()
+
+        if settings.is_default_settings():
+            self.push_screen(InitialConfig())
+        else:
+            self.install_screen(MainMenu(), "main_menu")
+            self.install_screen(CreateAccount(), "create_account")
+            self.push_screen("main_menu")

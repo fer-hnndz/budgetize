@@ -15,6 +15,6 @@ ConfirmQuit {
     width: 62;
 }
 
-Horizontal {
+#horizontal-container {
     margin-top: 1;
 }

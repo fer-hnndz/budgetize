@@ -1,0 +1,17 @@
+InputModal {
+    align: center middle;
+}
+
+#prompt {
+    margin-top: 1;
+    margin-bottom: 2;
+}
+
+#input {
+    margin-left: 5;
+    margin-right: 5;
+}
+Center {
+    height: 12;
+    width: 95;
+}

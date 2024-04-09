@@ -17,8 +17,10 @@ from textual.widgets import (
     TabPane,
 )
 
+from budgetize.consts import TRANSLATIONS_PATH
 from budgetize.db import Database
 from budgetize.tui.modals import TransactionDetails
+from budgetize.utils import _
 
 t = gettext.translation(
     "budgetize", localedir="./budgetize/translations", languages=["en"], fallback=True
