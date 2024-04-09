@@ -1,107 +1,266 @@
-# type: ignore
-# TODO: Remove this when implemented
 "Module that handles requests to the currency exchanges API"
 import json
 import os
+import traceback
+from typing import Optional, TypedDict
 
-import requests
+import httpx
 from arrow import Arrow
+from bs4 import BeautifulSoup
+from httpx import HTTPStatusError, NetworkError, TimeoutException
 
-from budgetize import consts
+from budgetize.consts import APP_FOLDER_PATH, VALID_EXCHANGE_TIMESTAMP
+from budgetize.exceptions import ExchangeRateFetchError
 
 
-# TODO: Improve this class so it is more user-friendly
+class RatesData(TypedDict):
+    """Dict that represents how are curreny data saved."""
+
+    retrieve_timestamp: int
+    rate: float
+
+
 class CurrencyManager:
     """Class that handles requests to the currency exchanges API and saves it to disk"""
+
+    """
+    !Format for saving exchange rates
+
+    {main_currency}: {
+        {currency}: {
+            "retrieve_timestamp": {timestamp},
+            "rate": {rate}
+    }
+
+    Example
+
+    USD: {
+        EUR: {
+            "retrieve_timestamp": 00000000,
+            "rate": 0.8        
+        }
+    }
+    """
 
     def __init__(self, base_currency: str):
         """
         Creates a new CurrencyManager object.
-        By default, it uses a free API key from https://exchangeratesapi.io/.
 
-        If you wish to use a different API key,
-        create a new file called "exchangeratesapi.txt" in `.budgetize` folder
-        located in your user folder.
+        Retrieves currency exchanges using requests with Google search
         """
 
+        self.FILE_PATH = os.path.join(APP_FOLDER_PATH, "currency_exchanges.json")
         self.base_currency = base_currency
-        self.key = self._get_api_key()
 
-    def _get_api_key(self):
-        app_folder = os.path.join(os.path.expanduser("~"), ".budgetize")
-        api_key_file = os.path.join(app_folder, "exchangeratesapi.txt")
+    async def update_invalid_rates(self) -> bool:
+        """(Coroutine) Updates all the rates that have expired. Returns True if successful."""
 
-        if not os.path.exists(api_key_file):
-            return consts.EXCHANGERATES_FREE_API_KEY
+        rates = self._get_all_local_rates()
+        if not rates:
+            return True
 
-        with open(api_key_file, "r", encoding="utf-8") as f:
-            return f.read().strip()
+        if self.base_currency not in rates.values():
+            rates[self.base_currency] = {}
 
-    def _retrieve_exchange_rates(self) -> bool:
-        """
-        Retrieves exchange rates from the API
-        and saves it to exchange_rates.json file.
-
-        Returns `True` if request was successful.
-        """
-
-        base_url: str = (
-            f"http://api.exchangeratesapi.io/v1/latest?access_key={self.key}"
-        )
-        headers = {"Content-Type": "application/json"}
-        print("Requesting with url: " + base_url)
-
-        response = requests.get(base_url, headers=headers, timeout=5)
-        print(response.text)
-
-        if response.status_code != 200:
-            return False
-
-        data = response.json()
-        with open("exchange_rates.json", "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4)
+        for base_currency, data in rates[self.base_currency].items():
+            if self.has_expired(data["retrieve_timestamp"]):
+                exchange = await self._request_exchange(base_currency)
+                if exchange < 0:
+                    return False
+                else:
+                    self._save_exchange(self.base_currency, base_currency, exchange)
 
         return True
 
-    def get_all_exchanges(self) -> dict:
+    def has_expired_rates(self) -> bool:
+        """Returns True if there is a rate that has expired."""
+
+        rates = self._get_all_local_rates()
+        if not rates:
+            return False
+
+        if not self.base_currency in rates.values():
+            return True
+
+        for currency, data in rates[self.base_currency].items():
+            if self.has_expired(data["retrieve_timestamp"]):
+                return True
+        return False
+
+    async def update_rate(self, currency: str) -> float:
+        """Forces a currency rate update."""
+        exchange = await self._request_exchange(currency)
+        if exchange < 0:
+            return -1
+        self._save_exchange(self.base_currency, currency, exchange)
+        return exchange
+
+    async def get_exchange(self, currency: str) -> float:
         """
-        Gets all exchange rates.
-        If the data is older than the constant `VALID_EXCHANGE_TIMESTAMP`,
-        it will retrieve new data.
+        Retrieves the exchange rate between the base currency and the given currency.
+
+        Args:
+            currency (str): The currency to convert to
+
+        Returns:
+            float: The exchange rate
         """
 
-        # Check if exchange file exists
-        app_folder = os.path.join(os.path.expanduser("~"), ".budgetize")
+        rates = self._get_all_local_rates()
+        if not rates:
+            return await self.update_rate(currency)
 
-        exchange_file = os.path.join(
-            os.path.expanduser("~"), ".budgetize", "exchange_rates.json"
-        )
+        if (
+            self.base_currency not in rates.values()
+            or currency not in rates[self.base_currency].values()
+        ):
+            return await self.update_rate(currency)
 
-        if not os.path.exists(app_folder):
-            os.mkdir(app_folder)
+        rate_data = rates[self.base_currency][currency]
 
-        # Retrive data
-        if os.path.exists(exchange_file):
-            data = None
+        # If the exchange rate is older than 1 week, retrieve it again
 
-            with open("exchange_rates.json", "r", encoding="utf-8") as f:
-                data = json.load(f)
+        try:
+            if self.has_expired(rate_data["retrieve_timestamp"]):
+                return await self.update_rate(currency)
 
-            last_retrieved_timestamp = data["timestamp"]
+            return rates[self.base_currency][currency]["rate"]
+        except ExchangeRateFetchError:
+            return rate_data["rate"]
 
-            # If the data is older than 36 hours, retrieve new data
-            if (
-                Arrow.now().timestamp - last_retrieved_timestamp
-                > consts.VALID_EXCHANGE_TIMESTAMP
-            ):
-                self._retrieve_exchange_rates()
-        else:  # If file does not exist, retrive new data
-            self._retrieve_exchange_rates()
+    def has_expired(self, timestamp: int) -> bool:
+        """
+        Checks if the timestamp has expired.
 
-        # Load data
+        Args:
+            timestamp (int): The timestamp to check
 
-        file_data = None
-        with open("exchange_rates.json", "r", encoding="utf-8") as f:
-            file_data = json.load(f)
+        Returns:
+            bool: True if the timestamp has expired, False otherwise
+        """
 
-        return file_data["rates"]
+        return timestamp > Arrow.now().timestamp() + VALID_EXCHANGE_TIMESTAMP
+
+    async def _request_exchange(self, currency: str) -> float:
+        """
+        (Coroutine) Retrieves the exchange rate between the base currency and the given currency.
+
+        Args:
+            currency (str): The currency to convert to
+
+        Returns:
+            float: The exchange rate
+        """
+
+        async with httpx.AsyncClient() as client:
+
+            url = f"https://www.xe.com/currencyconverter/convert/?Amount=1&From={self.base_currency.upper()}&To={currency.upper()}"
+            headers = {
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36 OPR/82.0.4227.50",
+            }
+
+            try:
+                r = await client.get(url, timeout=8)
+
+                soup = BeautifulSoup(r.text, "html.parser")
+
+                main_element = soup.find("main")
+                if not main_element:
+                    raise ExchangeRateFetchError(
+                        f"Could not find main element in response."
+                    )
+
+                digits_span = soup.find("span", class_="faded-digits")
+
+                if digits_span is None:
+                    return -1
+
+                digits_str: str = digits_span.get_text()
+                parent_div = digits_span.parent  # type:ignore
+
+                # Get first element of the iterator
+                for child in parent_div.children:  # type:ignore
+                    rate_p = str(child)
+                    break
+
+                units = rate_p.split(".")
+                amount_of_zero = len(units[-1])
+                zeroes = "0." + ("0" * amount_of_zero)
+                digits_to_sum = zeroes + digits_str
+                return float(rate_p) + float(digits_to_sum)
+
+            except TimeoutException as e:
+                raise ExchangeRateFetchError(
+                    f"The request timed out fetching the exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
+                )
+            except NetworkError as e:
+                raise ExchangeRateFetchError(
+                    f"A network error has ocurred trying to fetch the exchange rate for {currency.upper()}.\n"
+                    + traceback.format_exc()
+                )
+            except HTTPStatusError as e:
+                raise ExchangeRateFetchError(
+                    f"Server responded with an error when fetching exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
+                )
+            except Exception as e:
+                raise ExchangeRateFetchError(
+                    f"An unkown error has ocurred trying to fetch the exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
+                )
+
+    def _get_all_local_rates(self) -> Optional[dict[str, dict[str, RatesData]]]:
+        """
+        Retrieves the exchange rates from a local file.
+
+        Returns:
+            dict: The exchange rates
+        """
+
+        if not os.path.exists(self.FILE_PATH):
+            return {}
+
+        with open(self.FILE_PATH, "r", encoding="UTF-8") as f:
+            rates: dict[str, dict[str, RatesData]] = json.load(f)
+
+        return rates
+
+    def _save_exchange(
+        self, base_currency: str, currency: str, exchange: float
+    ) -> None:
+        """
+        Saves the exchange rate between the base currency and the given currency to disk.
+
+        Args:
+            base_currency (str): The base currency
+            currency (str): The currency to convert to
+            exchange (float): The exchange rate
+        """
+
+        rates = self._get_all_local_rates()
+
+        # In case the rates file is not created.
+        if not rates:
+            rates = {
+                base_currency: {
+                    currency: {
+                        "retrieve_timestamp": round(Arrow.now().timestamp()),
+                        "rate": exchange,
+                    }
+                }
+            }
+
+            with open(self.FILE_PATH, "w", encoding="utf-8") as f:
+                json.dump(rates, f, indent=4)
+
+            return
+
+        if base_currency not in rates:
+            rates[base_currency] = {}
+
+        rates[base_currency][currency] = {
+            "retrieve_timestamp": round(Arrow.now().timestamp()),
+            "rate": exchange,
+        }
+
+        with open(self.FILE_PATH, "w", encoding="utf-8") as f:
+            json.dump(rates, f, indent=4)
