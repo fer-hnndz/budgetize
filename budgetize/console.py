@@ -3,6 +3,6 @@
 from budgetize.tui import TuiApp
 
 
-def main() -> None:
+def run() -> None:
     """Runs Budgetize"""
     TuiApp().run()

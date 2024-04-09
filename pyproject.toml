@@ -5,6 +5,19 @@ description = "A Terminal User Interface (TUI) to create budgets, track your inc
 authors = ["fer-hnndz <jfernandohernandez28@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+homepage = "https://github.com/fer-hnndz/budgetize"
+repository = "https://github.com/fer-hnndz/budgetize"
+keywords = ["budget", "finance", "expense", "tracker"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: End Users/Desktop",
+    "Programming Language :: Python :: 3",
+]
+
+[tool.poetry.scripts]
+budgetize = "budgetize.console:run"
 
 [tool.poetry.dependencies]
 python = "^3.10"
