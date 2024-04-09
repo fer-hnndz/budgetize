@@ -4,8 +4,8 @@ from textual.containers import Center, Horizontal
 from textual.screen import ModalScreen
 from textual.widgets import Button, Label
 
-from budgetize.db import Database
-from budgetize.tui.screens._add_transaction import AddTransaction
+from budgetize.db.database import Database
+from budgetize.tui.screens.add_transaction import AddTransaction
 from budgetize.utils import _
 
 
@@ -24,6 +24,10 @@ class TransactionDetails(ModalScreen):
         super().__init__()
 
     def compose(self) -> ComposeResult:
+
+        if self.transaction.account_id is None:
+            raise RuntimeError("Transaction must have an account_id")
+
         """Called when modal needs to be composed."""
         date_str = Arrow.fromtimestamp(self.transaction.timestamp).format("MM/DD/YYYY")
 

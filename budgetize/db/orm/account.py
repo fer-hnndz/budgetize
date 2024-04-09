@@ -3,8 +3,8 @@
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from ._account_type import AccountType
 from ._base import Base
+from .account_type import AccountType
 
 
 class Account(Base):

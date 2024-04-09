@@ -17,9 +17,8 @@ from textual.widgets import (
     TabPane,
 )
 
-from budgetize.consts import TRANSLATIONS_PATH
-from budgetize.db import Database
-from budgetize.tui.modals import TransactionDetails
+from budgetize.db.database import Database
+from budgetize.tui.modals.transaction_details import TransactionDetails
 from budgetize.utils import _
 
 
@@ -73,6 +72,10 @@ class ManageAccounts(Screen):
         )
 
         for trans in transactions:
+            # Wont happen but mypy complains
+            if trans.id is None:
+                continue
+
             color = "[green]" if trans.amount > 0 else "[red]"
             date = Arrow.fromtimestamp(trans.timestamp).format("M/D/YYYY")
             table.add_row(
@@ -80,7 +83,7 @@ class ManageAccounts(Screen):
                 color + str(trans.amount),
                 trans.category,
                 trans.description,
-                key=trans.id,
+                key=str(trans.id),
             )
 
         return table

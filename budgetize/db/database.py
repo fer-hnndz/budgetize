@@ -9,8 +9,14 @@ from textual.app import App
 
 from budgetize import CurrencyManager, SettingsManager
 from budgetize.consts import PROD_DB_URL
+from budgetize.db.orm._base import Base
+from budgetize.db.orm.account import Account
+from budgetize.db.orm.transactions import Transaction
 
-from .orm import Account, Base, Transaction
+"""
+! RUN MYPY, AND PYLINT TO MAKE SURE THAT EVERYTHING AFTER CHANGING IMPORT FORMAT IS OK. COMMIT THE CHANGES.
+
+"""
 
 
 class Database:
@@ -180,19 +186,18 @@ class Database:
             if row is None:
                 return
 
-            acc = row.tuple()[0]
-            session.delete(acc)
+            account = row.tuple()[0]
+            session.delete(account)
 
             # Delete transactions from the account
-
             transaction_stmt = select(Transaction).where(
                 Transaction.account_id == account_id
             )
-            rows = session.execute(transaction_stmt).fetchall()
+            transaction_rows = session.execute(transaction_stmt).fetchall()
 
-            for row in rows:
-                transaction = row.tuple()[0]
-                session.delete(transaction)
+            for transaction in transaction_rows:
+                transaction_obj = transaction.tuple()[0]
+                session.delete(transaction_obj)
 
             session.commit()
 

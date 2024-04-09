@@ -6,8 +6,8 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, SelectionList
 
 from budgetize import SettingsManager
-from budgetize.db import Database
-from budgetize.tui.modals._input_modal import InputModal
+from budgetize.db.database import Database
+from budgetize.tui.modals.input_modal import InputModal
 from budgetize.utils import _
 
 

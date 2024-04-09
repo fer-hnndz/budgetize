@@ -23,24 +23,21 @@ class RatesData(TypedDict):
 class CurrencyManager:
     """Class that handles requests to the currency exchanges API and saves it to disk"""
 
-    """
-    !Format for saving exchange rates
+    # {main_currency}: {
+    #     {currency}: {
+    #         "retrieve_timestamp": {timestamp},
+    #         "rate": {rate}
+    # }
 
-    {main_currency}: {
-        {currency}: {
-            "retrieve_timestamp": {timestamp},
-            "rate": {rate}
-    }
+    # Example
 
-    Example
-
-    USD: {
-        EUR: {
-            "retrieve_timestamp": 00000000,
-            "rate": 0.8        
-        }
-    }
-    """
+    # USD: {
+    #     EUR: {
+    #         "retrieve_timestamp": 00000000,
+    #         "rate": 0.8
+    #     }
+    # }
+    #
 
     def __init__(self, base_currency: str):
         """
@@ -67,8 +64,8 @@ class CurrencyManager:
                 exchange = await self._request_exchange(base_currency)
                 if exchange < 0:
                     return False
-                else:
-                    self._save_exchange(self.base_currency, base_currency, exchange)
+
+                self._save_exchange(self.base_currency, base_currency, exchange)
 
         return True
 
@@ -155,10 +152,6 @@ class CurrencyManager:
         async with httpx.AsyncClient() as client:
 
             url = f"https://www.xe.com/currencyconverter/convert/?Amount=1&From={self.base_currency.upper()}&To={currency.upper()}"
-            headers = {
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36 OPR/82.0.4227.50",
-            }
 
             try:
                 r = await client.get(url, timeout=8)
@@ -168,7 +161,7 @@ class CurrencyManager:
                 main_element = soup.find("main")
                 if not main_element:
                     raise ExchangeRateFetchError(
-                        f"Could not find main element in response."
+                        "Could not find main element in response html."
                     )
 
                 digits_span = soup.find("span", class_="faded-digits")
@@ -184,29 +177,26 @@ class CurrencyManager:
                     rate_p = str(child)
                     break
 
-                units = rate_p.split(".")
-                amount_of_zero = len(units[-1])
-                zeroes = "0." + ("0" * amount_of_zero)
-                digits_to_sum = zeroes + digits_str
+                amount_of_zero = len(rate_p.split(".")[-1])
+                digits_to_sum = ("0." + ("0" * amount_of_zero)) + digits_str
                 return float(rate_p) + float(digits_to_sum)
 
             except TimeoutException as e:
                 raise ExchangeRateFetchError(
                     f"The request timed out fetching the exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
-                )
+                ) from e
             except NetworkError as e:
                 raise ExchangeRateFetchError(
-                    f"A network error has ocurred trying to fetch the exchange rate for {currency.upper()}.\n"
-                    + traceback.format_exc()
-                )
-            except HTTPStatusError as e:
+                    f"A network error has ocurred trying to fetch the exchange rate for {currency.upper()}.\nPlease check your internet connection."
+                ) from e
+            except HTTPStatusError:
                 raise ExchangeRateFetchError(
                     f"Server responded with an error when fetching exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
                 )
             except Exception as e:
                 raise ExchangeRateFetchError(
                     f"An unkown error has ocurred trying to fetch the exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
-                )
+                ) from e
 
     def _get_all_local_rates(self) -> Optional[dict[str, dict[str, RatesData]]]:
         """

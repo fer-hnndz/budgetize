@@ -6,8 +6,8 @@ from textual.widgets import Button, Footer, Header, Label, Select
 
 from budgetize._settings_manager import SettingsDict, SettingsManager
 from budgetize.consts import AVAILABLE_LANGUAGES
-from budgetize.db import Database
-from budgetize.tui.modals import CategoriesModal
+from budgetize.db.database import Database
+from budgetize.tui.modals.categories_modal import CategoriesModal
 from budgetize.utils import _, get_select_currencies
 
 

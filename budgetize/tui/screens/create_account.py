@@ -7,8 +7,8 @@ from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from budgetize.db import Database
-from budgetize.db.orm import Account, AccountType
+from budgetize.db.database import Database
+from budgetize.db.orm.account import Account, AccountType
 from budgetize.utils import _, get_select_currencies
 
 
