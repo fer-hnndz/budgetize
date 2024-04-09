@@ -13,18 +13,20 @@ from budgetize.db.orm._base import Base
 from budgetize.db.orm.account import Account
 from budgetize.db.orm.transactions import Transaction
 
-"""
-! RUN MYPY, AND PYLINT TO MAKE SURE THAT EVERYTHING AFTER CHANGING IMPORT FORMAT IS OK. COMMIT THE CHANGES.
-
-"""
-
 
 class Database:
-    """Class that handles database operations"""
+    """This class is the API for interacting with the database.
+    All read and writes are done here which may include utilities for converting currencies, for example.
+    """
 
     engine = create_engine(PROD_DB_URL)
 
     def __init__(self, app: App):
+        """Initializes a Database instance.
+
+        Args:
+            app (App): The application instance.
+        """
         if app is None:
             raise RuntimeError(app, "App cannot be None")
 
@@ -37,7 +39,14 @@ class Database:
         self.settings = SettingsManager()
 
     def get_transactions_from_account(self, account_id: int) -> Iterator[Transaction]:
-        """Returns an iterator of transactions from the specified account"""
+        """Returns an iterator of transactions from the specified account.
+
+        Args:
+            account_id (int): The ID of the account.
+
+        Yields:
+            Transaction: A transaction from the specified account.
+        """
         stmt = select(Transaction).where(Transaction.account_id == account_id)
 
         with Session(Database.engine) as session:
@@ -47,22 +56,31 @@ class Database:
     def get_monthly_transactions_from_account(
         self, account_id: int, month: str, year: str
     ) -> Iterator[Transaction]:
-        """
-        Returns an iterator of transactions from
-        the specified account within the specified month and year
+        """Returns an iterator of transactions from the specified account within the specified month and year.
+
+        Args:
+            account_id (int): The ID of the account.
+            month (str): The month in format 'MM'.
+            year (str): The year in format 'YYYY'.
+
+        Yields:
+            Transaction: A transaction from the specified account within the specified month and year.
         """
         transactions = self.get_transactions_from_account(account_id)
 
         # Filter transactions by month and year
         for transaction in transactions:
             date = Arrow.fromtimestamp(transaction.timestamp)
-            ar = Arrow.fromtimestamp(transaction.timestamp)
 
             if date.format("M") == month and date.format("YYYY") == year:
                 yield transaction
 
     def get_accounts(self) -> Iterator[Account]:
-        """Returns an iterator of all accounts"""
+        """Returns an iterator of all accounts.
+
+        Yields:
+            Account: An account from the database.
+        """
         stmt = select(Account)
 
         with Session(Database.engine) as session:
@@ -70,15 +88,27 @@ class Database:
                 yield account
 
     def get_account_by_id(self, account_id: int) -> Account:
-        """Returns the account with the specified id"""
+        """Returns the account with the specified ID.
 
+        Args:
+            account_id (int): The ID of the account.
+
+        Returns:
+            Account: The account with the specified ID.
+        """
         with Session(Database.engine) as session:
             found_account: Account = session.get_one(Account, account_id)
             return found_account
 
     def get_transaction_by_id(self, transaction_id: int) -> Transaction:
-        """Returns the transaction with the specified id"""
+        """Returns the transaction with the specified ID.
 
+        Args:
+            transaction_id (int): The ID of the transaction.
+
+        Returns:
+            Transaction: The transaction with the specified ID.
+        """
         with Session(Database.engine) as session:
             found_transaction: Transaction = session.get_one(
                 Transaction, transaction_id
@@ -86,7 +116,11 @@ class Database:
             return found_transaction
 
     def add_account(self, account: Account) -> None:
-        """Adds a new account to the user"""
+        """Adds a new account to the user.
+
+        Args:
+            account (Account): The account to be added.
+        """
         with Session(Database.engine) as session:
             session.add(account)
             session.commit()
@@ -99,8 +133,15 @@ class Database:
         category: str,
         timestamp: float,
     ) -> None:
-        """Registers a new transaction"""
+        """Registers a new transaction.
 
+        Args:
+            account_id (int): The ID of the account.
+            amount (float): The amount of the transaction.
+            description (str): The description of the transaction.
+            category (str): The category of the transaction.
+            timestamp (float): The timestamp of the transaction.
+        """
         transaction = Transaction(
             account_id=account_id,
             amount=amount,
@@ -126,8 +167,16 @@ class Database:
         category: str,
         timestamp: float,
     ) -> None:
-        """Updates the specified transaction in the database"""
+        """Updates the specified transaction in the database.
 
+        Args:
+            transaction_id (int): The ID of the transaction to update.
+            account_id (int): The ID of the account.
+            amount (float): The new amount of the transaction.
+            description (str): The new description of the transaction.
+            category (str): The new category of the transaction.
+            timestamp (float): The new timestamp of the transaction.
+        """
         values = {
             "account_id": account_id,
             "amount": amount,
@@ -146,16 +195,22 @@ class Database:
             session.commit()
 
     def get_all_recent_transactions(self) -> list[Transaction]:
-        """Returns a list with the last 5 transactions saved across all accounts."""
+        """Returns a list with the last 5 transactions saved across all accounts.
 
+        Returns:
+            list[Transaction]: A list of recent transactions.
+        """
         with Session(Database.engine) as session:
             stmt = select(Transaction).order_by(Transaction.timestamp.desc()).limit(5)
             transactions: list[Transaction] = session.execute(stmt).scalars().all()  # type: ignore
             return transactions
 
     async def get_monthly_income(self) -> float:
-        """(Coroutine) Returns the total income for the current month"""
+        """(Coroutine) Returns the total income for the current month.
 
+        Returns:
+            float: The total income for the current month.
+        """
         now = Arrow.now()
 
         income = 0.0
@@ -176,7 +231,11 @@ class Database:
         return round(income, 2)
 
     def delete_account(self, account_id: int) -> None:
-        """Deletes the specified account from the database."""
+        """Deletes the specified account from the database.
+
+        Args:
+            account_id (int): The ID of the account to delete.
+        """
         stmt = select(Account).where(Account.id == account_id)
 
         with Session(Database.engine) as session:
@@ -202,7 +261,11 @@ class Database:
             session.commit()
 
     async def get_monthly_expense(self) -> float:
-        """(Coroutine) Returns the total expenses for the current month"""
+        """(Coroutine) Returns the total expenses for the current month.
+
+        Returns:
+            float: The total expenses for the current month.
+        """
         now = Arrow.now()
 
         expense = 0.0
@@ -221,8 +284,14 @@ class Database:
         return round(expense, 2)
 
     def delete_transaction(self, transaction_id: int) -> Transaction:
-        """Deletes the specified transaction from the DB and returns it."""
+        """Deletes the specified transaction from the DB and returns it.
 
+        Args:
+            transaction_id (int): The ID of the transaction to delete.
+
+        Returns:
+            Transaction: The deleted transaction.
+        """
         stmt = select(Transaction).where(Transaction.id == transaction_id)
         with Session(Database.engine) as session:
             res = session.execute(stmt)
