@@ -8,7 +8,6 @@ from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
 from budgetize.db.database import Database
-from budgetize.db.orm.account import Account, AccountType
 from budgetize.utils import _, get_select_currencies
 
 
@@ -58,13 +57,6 @@ class CreateAccount(Screen):
                     )
                 ],
             ),
-            Label(_("Account Type"), id="account-type-label"),
-            Select(
-                # TODO: Localize this
-                self.get_account_type_choices(),
-                id="account-type-select",
-                allow_blank=False,
-            ),
             Horizontal(
                 Button.success(_("Create Account"), id="create-account-button"),
                 Button.error(_("Cancel"), id="cancel-button"),
@@ -77,17 +69,14 @@ class CreateAccount(Screen):
         if event.button.id == "create-account-button":
             name: str = self.get_widget_by_id("account-name-input").value  # type: ignore
             currency: str = self.get_widget_by_id("currency-select").value  # type: ignore
-            balance: float = self.get_widget_by_id("balance-input").value  # type: ignore
-            account_type_name: str = self.get_widget_by_id("account-type-select").value  # type: ignore #pylint: disable=line-too-long
+            starting_balance: float = self.get_widget_by_id("balance-input").value  # type: ignore
 
-            new_account = Account(
-                account_type_name=account_type_name.upper(),
+            self.DB.add_account(
                 name=name,
                 currency=currency,
-                balance=balance,
+                starting_balance=starting_balance,
             )
 
-            self.DB.add_account(new_account)
             self.app.pop_screen()
             self.notify(_("Account created successfully."), title="Account Created")
 
@@ -95,11 +84,3 @@ class CreateAccount(Screen):
             self.get_widget_by_id("account-name-input").value = ""  # type: ignore
             self.get_widget_by_id("balance-input").value = ""  # type: ignore
             self.app.pop_screen()
-
-    def get_account_type_choices(self) -> list[tuple[str, str]]:
-        """Returns a list of tuples for the account type select widget"""
-        res = []
-        for acc in AccountType:
-            res.append((acc.name.capitalize(), acc.name.capitalize()))
-
-        return res

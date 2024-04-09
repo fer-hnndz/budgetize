@@ -221,7 +221,7 @@ class MainMenu(Screen):
 
             table.add_row(
                 account.name,
-                f"{color}{account.currency} {str(trans.amount)}",
+                f"{color}{format_currency(trans.amount, account.currency, locale = SettingsManager().get_locale())}",
                 date,
                 trans.category,
                 trans.description,
@@ -234,12 +234,18 @@ class MainMenu(Screen):
         table: DataTable = self.get_widget_by_id("accounts-table")  # type: ignore
         table.clear(columns=True)
         table.add_columns(
-            _("Account Name"), _("Account Type"), _("Balance"), _("Currency")
+            _("Account Name"),
+            _("Balance"),
         )
 
         for acc in self.DB.get_accounts():
             table.add_row(
-                acc.name, acc.account_type.name.capitalize(), acc.balance, acc.currency
+                acc.name,
+                format_currency(
+                    self.DB.get_account_balance(acc.id),
+                    acc.currency,
+                    locale=SettingsManager().get_locale(),
+                ),
             )
 
     async def _update_balance_labels(self) -> None:
