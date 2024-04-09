@@ -1,39 +1,31 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[project]
+[tool.poetry]
 name = "budgetize"
 version = "0.0.3"
-authors = [
-  { name = "Jorge Hernández", email = "jfernandohernandez28@gmail.com" },
-]
 description = "A Terminal User Interface (TUI) to create budgets, track your incomes/expenses and manage your finances."
+authors = ["fer-hnndz <jfernandohernandez28@gmail.com>"]
+license = "MIT"
 readme = "README.md"
-requires-python = ">=3.9"
-classifiers = [
-  "Development Status :: 3 - Alpha",
-  "License :: OSI Approved :: MIT License",
-  "Operating System :: OS Independent",
-  "Intended Audience :: End Users/Desktop",
-  "Programming Language :: Python :: 3",
-]
-dependencies = [
-  "textual",
-  "sqlalchemy",
-  "requests",
-  "arrow",
-  "babel",
-  "types-setuptools",
-  "beautifulsoup4",
-  "asyncio",
-  "httpx",
-  "pyperclip",
-]
 
-[project.scripts]
-budgetize = "budgetize._entry_point:main"
+[tool.poetry.dependencies]
+python = "^3.10"
+textual = "^0.56.3"
+SQLAlchemy = "^2.0.29"
+arrow = "^1.3.0"
+Babel = "^2.14.0"
+beautifulsoup4 = "^4.12.3"
+asyncio = "^3.4.3"
+httpx = "^0.27.0"
+pyperclip = "^1.8.2"
 
-[project.urls]
-Homepage = "https://github.com/fer-hnndz/budgetize"
-Issues = "https://github.com/fer-hnndz/budgetize/issues"
+[tool.poetry.group.dev.dependencies]
+types-setuptools = "^69.2.0.20240317"
+pre-commit = "^3.7.0"
+black = "^24.3.0"
+mypy = "^1.9.0"
+isort = "^5.13.2"
+pylint = "^3.1.0"
+textual-dev = "^1.5.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
