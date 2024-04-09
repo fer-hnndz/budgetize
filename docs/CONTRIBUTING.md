@@ -65,6 +65,12 @@ pipenv run pybabel init -D budgetize -i ./budgetize/translations/TRANSLATION_TEM
 Create a folder called `LC_MESSAGES`
 Compilation:
 ```bash
+pipenv run pybabel compile -D budgetize -l {locale} -i {your_translation}.po -d ./budgetize/translations/{locale}
+```
+
+Updating Translations:
+```bash
+pipenv run pybabel update -i .\budgetize\translations\TRANSLATION_TEMPLATE.po -o .\budgetize\translations\es\es.po -l es --previous --update-header-comment -D budgetize
 pipenv run pybabel compile -D budgetize -l {locale} -i {your_translation}.po -d ./budgetize/translations/
 ```
 

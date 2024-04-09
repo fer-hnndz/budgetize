@@ -9,11 +9,11 @@ homepage = "https://github.com/fer-hnndz/budgetize"
 repository = "https://github.com/fer-hnndz/budgetize"
 keywords = ["budget", "finance", "expense", "tracker"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Intended Audience :: End Users/Desktop",
-    "Programming Language :: Python :: 3",
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Intended Audience :: End Users/Desktop",
+  "Programming Language :: Python :: 3",
 ]
 
 [tool.poetry.scripts]
