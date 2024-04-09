@@ -21,7 +21,7 @@ class RatesData(TypedDict):
 
 
 class CurrencyManager:
-    """Class that handles requests to the currency exchanges API and saves it to disk"""
+    """Class that handles requests to the currency exchanges API and saves it to disk."""
 
     # {main_currency}: {
     #     {currency}: {
@@ -43,15 +43,16 @@ class CurrencyManager:
         """
         Creates a new CurrencyManager object.
 
-        Retrieves currency exchanges using requests with Google search
-        """
+        Retrieves currency exchanges using requests with Google search.
 
+        Args:
+            base_currency (str): The base currency.
+        """
         self.FILE_PATH = os.path.join(APP_FOLDER_PATH, "currency_exchanges.json")
         self.base_currency = base_currency
 
     async def update_invalid_rates(self) -> bool:
         """(Coroutine) Updates all the rates that have expired. Returns True if successful."""
-
         rates = self._get_all_local_rates()
         if not rates:
             return True
@@ -71,7 +72,6 @@ class CurrencyManager:
 
     def has_expired_rates(self) -> bool:
         """Returns True if there is a rate that has expired."""
-
         rates = self._get_all_local_rates()
         if not rates:
             return False
@@ -85,7 +85,7 @@ class CurrencyManager:
         return False
 
     async def update_rate(self, currency: str) -> float:
-        """Forces a currency rate update."""
+        """(Coroutine) Forces a currency rate update."""
         exchange = await self._request_exchange(currency)
         if exchange < 0:
             return -1
@@ -97,12 +97,11 @@ class CurrencyManager:
         Retrieves the exchange rate between the base currency and the given currency.
 
         Args:
-            currency (str): The currency to convert to
+            currency (str): The currency to convert to.
 
         Returns:
-            float: The exchange rate
+            float: The exchange rate.
         """
-
         rates = self._get_all_local_rates()
         if not rates:
             return await self.update_rate(currency)
@@ -130,12 +129,11 @@ class CurrencyManager:
         Checks if the timestamp has expired.
 
         Args:
-            timestamp (int): The timestamp to check
+            timestamp (int): The timestamp to check.
 
         Returns:
-            bool: True if the timestamp has expired, False otherwise
+            bool: True if the timestamp has expired, False otherwise.
         """
-
         return timestamp > Arrow.now().timestamp() + VALID_EXCHANGE_TIMESTAMP
 
     async def _request_exchange(self, currency: str) -> float:
@@ -143,12 +141,11 @@ class CurrencyManager:
         (Coroutine) Retrieves the exchange rate between the base currency and the given currency.
 
         Args:
-            currency (str): The currency to convert to
+            currency (str): The currency to convert to.
 
         Returns:
-            float: The exchange rate
+            float: The exchange rate.
         """
-
         async with httpx.AsyncClient() as client:
 
             url = f"https://www.xe.com/currencyconverter/convert/?Amount=1&From={self.base_currency.upper()}&To={currency.upper()}"
@@ -189,10 +186,10 @@ class CurrencyManager:
                 raise ExchangeRateFetchError(
                     f"A network error has ocurred trying to fetch the exchange rate for {currency.upper()}.\nPlease check your internet connection."
                 ) from e
-            except HTTPStatusError:
+            except HTTPStatusError as e:
                 raise ExchangeRateFetchError(
                     f"Server responded with an error when fetching exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
-                )
+                ) from e
             except Exception as e:
                 raise ExchangeRateFetchError(
                     f"An unkown error has ocurred trying to fetch the exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
@@ -203,9 +200,8 @@ class CurrencyManager:
         Retrieves the exchange rates from a local file.
 
         Returns:
-            dict: The exchange rates
+            dict: The exchange rates.
         """
-
         if not os.path.exists(self.FILE_PATH):
             return {}
 
@@ -221,11 +217,10 @@ class CurrencyManager:
         Saves the exchange rate between the base currency and the given currency to disk.
 
         Args:
-            base_currency (str): The base currency
-            currency (str): The currency to convert to
-            exchange (float): The exchange rate
+            base_currency (str): The base currency.
+            currency (str): The currency to convert to.
+            exchange (float): The exchange rate.
         """
-
         rates = self._get_all_local_rates()
 
         # In case the rates file is not created.

@@ -11,9 +11,9 @@ from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from budgetize._settings_manager import SettingsManager
 from budgetize.db.database import Database
 from budgetize.db.orm.transactions import Transaction
+from budgetize.settings_manager import SettingsManager
 from budgetize.utils import _
 
 

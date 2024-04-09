@@ -22,7 +22,9 @@ class SettingsManager:
     """Manager for user's settings."""
 
     def __init__(self) -> None:
-        """Create a new manager for user's settings.
+        """
+        Create a new manager for user's settings.
+
         This class is the only one that should modify any of the user's settings.
         """
 
@@ -34,6 +36,7 @@ class SettingsManager:
         self._reload_settings()
 
     def _reload_settings(self) -> None:
+        """Reloads user settings from disk."""
         if not self._settings_exist():
             self._create_default_settings()
 
@@ -43,13 +46,11 @@ class SettingsManager:
             self._settings = json.load(f)
 
     def _settings_exist(self) -> bool:
-        """Checks if the settings file exists"""
-
+        """Checks if the settings file exists."""
         return self._settings_path.exists()
 
     def _create_default_settings(self) -> None:
-        """Creates the default settings file"""
-
+        """Creates the default settings file."""
         if not Path(APP_FOLDER_PATH).exists():
             os.mkdir(APP_FOLDER_PATH)
 
@@ -57,8 +58,7 @@ class SettingsManager:
             json.dump(DEFAULT_SETTINGS, f, indent=4)
 
     def is_default_settings(self) -> bool:
-        """Returns True if user has default settings (no lang or currency)"""
-
+        """Returns True if user has default settings (no lang or currency)."""
         return not self.get_language() and not self.get_base_currency()
 
     def get_language(self) -> str:
