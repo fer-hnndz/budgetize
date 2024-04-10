@@ -8,6 +8,7 @@ from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
 from budgetize.db.database import Database
+from budgetize.tui.modals.error_modal import ErrorModal
 from budgetize.utils import _, get_select_currencies
 
 
@@ -70,6 +71,17 @@ class CreateAccount(Screen):
             name: str = self.get_widget_by_id("account-name-input").value  # type: ignore
             currency: str = self.get_widget_by_id("currency-select").value  # type: ignore
             starting_balance: float = self.get_widget_by_id("balance-input").value  # type: ignore
+
+            if self.DB.account_name_exists(name):
+                self.app.push_screen(
+                    ErrorModal(
+                        _("Account Name already Exists"),
+                        traceback_msg=_(
+                            "You cannot have 2 accounts with the same name!"
+                        ),
+                    )
+                )
+                return
 
             self.DB.add_account(
                 name=name,
