@@ -23,6 +23,7 @@ class RatesData(TypedDict):
 class CurrencyManager:
     """Class that handles requests to the currency exchanges API and saves it to disk."""
 
+    CURRENT_RATES: dict[str, dict[str, RatesData]] = {}
     # {main_currency}: {
     #     {currency}: {
     #         "retrieve_timestamp": {timestamp},
@@ -48,19 +49,22 @@ class CurrencyManager:
         Args:
             base_currency (str): The base currency.
         """
-        self.FILE_PATH = os.path.join(APP_FOLDER_PATH, "currency_exchanges.json")
+        self.file_path = os.path.join(APP_FOLDER_PATH, "currency_exchanges.json")
         self.base_currency = base_currency
 
     async def update_invalid_rates(self) -> bool:
         """(Coroutine) Updates all the rates that have expired. Returns True if successful."""
-        rates = self._get_all_local_rates()
-        if not rates:
+        CurrencyManager.CURRENT_RATES = self._get_all_local_rates()
+
+        if not CurrencyManager.CURRENT_RATES:
             return True
 
-        if self.base_currency not in rates.values():
-            rates[self.base_currency] = {}
+        if self.base_currency not in CurrencyManager.CURRENT_RATES.values():
+            CurrencyManager.CURRENT_RATES[self.base_currency] = {}
 
-        for base_currency, data in rates[self.base_currency].items():
+        for base_currency, data in CurrencyManager.CURRENT_RATES[
+            self.base_currency
+        ].items():
             if self.has_expired(data["retrieve_timestamp"]):
                 exchange = await self._request_exchange(base_currency)
                 if exchange < 0:
@@ -102,26 +106,36 @@ class CurrencyManager:
         Returns:
             float: The exchange rate.
         """
-        rates = self._get_all_local_rates()
-        if not rates:
+
+        print(CurrencyManager.CURRENT_RATES)
+        if not CurrencyManager.CURRENT_RATES:
+            print("[get_exchange] Currency dict is empty. Updating...")
             return await self.update_rate(currency)
 
-        if (
-            self.base_currency not in rates.values()
-            or currency not in rates[self.base_currency].values()
-        ):
+        print(CurrencyManager.CURRENT_RATES.keys())
+        print(self.base_currency in CurrencyManager.CURRENT_RATES.keys())
+
+        if self.base_currency not in CurrencyManager.CURRENT_RATES.keys():
+            print("[get_exchange] Base currency not found in local rates. Updating...")
             return await self.update_rate(currency)
 
-        rate_data = rates[self.base_currency][currency]
+        if currency not in CurrencyManager.CURRENT_RATES[self.base_currency].keys():
+            print("[get_exchange] Currency not found in local rates. Updating...")
+            return await self.update_rate(currency)
+
+        rate_data = CurrencyManager.CURRENT_RATES[self.base_currency][currency]
 
         # If the exchange rate is older than 1 week, retrieve it again
 
         try:
             if self.has_expired(rate_data["retrieve_timestamp"]):
+                print("[get_exchange] Currency rate has expired. Updating...")
                 return await self.update_rate(currency)
 
-            return rates[self.base_currency][currency]["rate"]
+            print("[get_exchange] Currency rate found in local rates. Returning local")
+            return CurrencyManager.CURRENT_RATES[self.base_currency][currency]["rate"]
         except ExchangeRateFetchError:
+            print("[get_exchange] Error fetching currency rate. Returning current")
             return rate_data["rate"]
 
     def has_expired(self, timestamp: int) -> bool:
@@ -195,17 +209,17 @@ class CurrencyManager:
                     f"An unkown error has ocurred trying to fetch the exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
                 ) from e
 
-    def _get_all_local_rates(self) -> Optional[dict[str, dict[str, RatesData]]]:
+    def _get_all_local_rates(self) -> dict[str, dict[str, RatesData]]:
         """
         Retrieves the exchange rates from a local file.
 
         Returns:
             dict: The exchange rates.
         """
-        if not os.path.exists(self.FILE_PATH):
+        if not os.path.exists(self.file_path):
             return {}
 
-        with open(self.FILE_PATH, "r", encoding="UTF-8") as f:
+        with open(self.file_path, "r", encoding="UTF-8") as f:
             rates: dict[str, dict[str, RatesData]] = json.load(f)
 
         return rates
@@ -221,11 +235,12 @@ class CurrencyManager:
             currency (str): The currency to convert to.
             exchange (float): The exchange rate.
         """
-        rates = self._get_all_local_rates()
+
+        CurrencyManager.CURRENT_RATES = self._get_all_local_rates()
 
         # In case the rates file is not created.
-        if not rates:
-            rates = {
+        if not CurrencyManager.CURRENT_RATES:
+            CurrencyManager.CURRENT_RATES = {
                 base_currency: {
                     currency: {
                         "retrieve_timestamp": round(Arrow.now().timestamp()),
@@ -234,18 +249,18 @@ class CurrencyManager:
                 }
             }
 
-            with open(self.FILE_PATH, "w", encoding="utf-8") as f:
-                json.dump(rates, f, indent=4)
+            with open(self.file_path, "w", encoding="utf-8") as f:
+                json.dump(CurrencyManager.CURRENT_RATES, f, indent=4)
 
             return
 
-        if base_currency not in rates:
-            rates[base_currency] = {}
+        if base_currency not in CurrencyManager.CURRENT_RATES:
+            CurrencyManager.CURRENT_RATES[base_currency] = {}
 
-        rates[base_currency][currency] = {
+        CurrencyManager.CURRENT_RATES[base_currency][currency] = {
             "retrieve_timestamp": round(Arrow.now().timestamp()),
             "rate": exchange,
         }
 
-        with open(self.FILE_PATH, "w", encoding="utf-8") as f:
-            json.dump(rates, f, indent=4)
+        with open(self.file_path, "w", encoding="utf-8") as f:
+            json.dump(CurrencyManager.CURRENT_RATES, f, indent=4)
