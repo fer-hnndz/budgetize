@@ -1,14 +1,16 @@
 """Module that defines the main menu screen"""
 
 import asyncio
+from typing import Optional
 
 from arrow import Arrow
-from babel.numbers import format_currency
+from babel.numbers import format_currency, parse_decimal
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import Button, DataTable, Footer, Header, Label, Rule
+from textual.widgets.data_table import CellKey
 
 from budgetize import CurrencyManager, SettingsManager
 from budgetize.db.database import Database
@@ -56,9 +58,14 @@ class MainMenu(Screen):
 
     def __init__(self) -> None:
         """Creates a new MainMenu Screen"""
+        super().__init__()
         MainMenu.DB = Database(self.app)
         self.rates_fetched = False
-        super().__init__()
+
+        self.last_account_key: Optional[CellKey] = None
+        self.last_account_value: str = "None"
+        self.last_recent_transactions_key: Optional[CellKey] = None
+        self.last_recent_transactions_value: str = "None"
 
     def compose(self) -> ComposeResult:
         """Called when screen is composed"""
@@ -99,6 +106,11 @@ class MainMenu(Screen):
 
     async def on_mount(self) -> None:
         """Called when the screen is about to be shown"""
+        self.last_account_key = None
+        self.last_account_value = ""
+        self.last_recent_transactions_key = None
+        self.last_recent_transactions_value = ""
+
         self.run_worker(self.update_ui_info, exclusive=True)  # type: ignore
 
     async def update_ui_info(self) -> None:
@@ -200,8 +212,8 @@ class MainMenu(Screen):
     def _update_recent_transactions_table(self) -> None:
         """Updates the recent transactions DataTable widget."""
 
-        recent_transactions = self.DB.get_all_recent_transactions()
         table: DataTable = self.get_widget_by_id("recent-transactions-table")  # type: ignore
+        recent_transactions = self.DB.get_all_recent_transactions()
         table.clear(columns=True)
         table.add_columns(
             _("Account"), _("Amount"), _("Date"), _("Category"), _("Description")
@@ -282,7 +294,6 @@ class MainMenu(Screen):
                         main_currency,
                         locale=user_locale,
                     ),
-                    main_currency=main_currency,
                 )
             )
 
@@ -294,7 +305,6 @@ class MainMenu(Screen):
                         main_currency,
                         locale=user_locale,
                     ),
-                    main_currency=main_currency,
                 )
             )
             monthly_expense_label.update(
@@ -305,7 +315,6 @@ class MainMenu(Screen):
                         main_currency,
                         locale=user_locale,
                     ),
-                    main_currency=main_currency,
                 )
             )
 
@@ -353,3 +362,78 @@ class MainMenu(Screen):
         """Opens the settings."""
         self.rates_fetched = False
         self.app.push_screen(Settings())
+
+    async def on_data_table_cell_highlighted(
+        self, event: DataTable.CellHighlighted
+    ) -> None:
+        """Called when a cell in the DataTable is highlighted"""
+
+        if event.control.id == "accounts-table":
+            accounts_table: DataTable = self.get_widget_by_id(
+                "accounts-table"
+            )  # type:ignore
+
+            # User clicked in balance column
+            if event.coordinate.column == 1:
+                if self.last_account_key is None:
+                    self.last_account_key = event.cell_key
+                    self.last_account_value = str(event.value)
+
+                else:
+                    accounts_table.update_cell(
+                        self.last_account_key.row_key,
+                        self.last_account_key.column_key,
+                        self.last_account_value,
+                    )
+
+                    self.last_account_key = event.cell_key
+                    self.last_account_value = str(event.value)
+
+                # 0.00\xa0USD - format
+                numbers: str = event.value.split("\xa0")[0]  # type:ignore
+                decimal_value = parse_decimal(
+                    numbers,
+                    locale=SettingsManager().get_locale(),
+                )
+
+                account_name = accounts_table.get_cell_at(event.coordinate.left())
+                account = self.DB.get_account_by_name(account_name)
+
+                # Do not show exchange rate of the currency since its the same
+                if account.currency == SettingsManager().get_base_currency():
+                    return
+
+                main_currency = SettingsManager().get_base_currency()
+                exchange_rate = await CurrencyManager(main_currency).get_exchange(
+                    account.currency
+                )
+
+                amt = float(str(decimal_value))
+                formatted_currency = format_currency(
+                    number=(amt / exchange_rate),
+                    currency=main_currency,
+                    locale=SettingsManager().get_locale(),
+                ).replace("\xa0", " ")
+
+                print(formatted_currency)
+                accounts_table.update_cell(
+                    event.cell_key.row_key,
+                    event.cell_key.column_key,
+                    str(formatted_currency),
+                    update_width=True,
+                )
+
+                print("Updated exchange rate")
+            # User selected other column instead of balance
+            elif self.last_account_key is not None:
+                accounts_table.update_cell(
+                    self.last_account_key.row_key,
+                    self.last_account_key.column_key,
+                    self.last_account_value,
+                )
+
+                self.last_account_key = None
+                self.last_account_value = ""
+
+        if event.control.id == "recent-transactions-table":
+            pass

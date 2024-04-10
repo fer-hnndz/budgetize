@@ -100,6 +100,34 @@ class Database:
             found_account: Account = session.get_one(Account, account_id)
             return found_account
 
+    def get_account_by_name(self, name: str) -> Account:
+        """Returns the account with the specified name.
+
+        Args:
+            name (str): The name of the account.
+
+        Returns:
+            Account: The account with the specified name.
+        """
+        with Session(Database.engine) as session:
+            stmt = select(Account).where(Account.name == name)
+            account: Account = session.execute(stmt).scalars().first()  # type:ignore
+            return account
+
+    def account_name_exists(self, name: str) -> bool:
+        """Returns True if an account with the specified name exists, False otherwise.
+
+        Args:
+            name (str): The name of the account.
+
+        Returns:
+            bool: True if an account with the specified name exists, False otherwise.
+        """
+        with Session(Database.engine) as session:
+            stmt = select(Account).where(Account.name == name)
+            account = session.execute(stmt).scalars().first()
+            return account is not None
+
     def get_transaction_by_id(self, transaction_id: int) -> Transaction:
         """Returns the transaction with the specified ID.
 

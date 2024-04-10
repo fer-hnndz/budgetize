@@ -94,7 +94,7 @@ class CurrencyManager:
 
     async def get_exchange(self, currency: str) -> float:
         """
-        Retrieves the exchange rate between the base currency and the given currency.
+        (Coroutine) Retrieves the exchange rate between the base currency and the given currency.
 
         Args:
             currency (str): The currency to convert to.
