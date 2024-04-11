@@ -2,7 +2,7 @@
 import json
 import os
 import traceback
-from typing import Optional, TypedDict
+from typing import TypedDict
 
 import httpx
 from arrow import Arrow
@@ -83,7 +83,7 @@ class CurrencyManager:
         if not self.base_currency in rates.values():
             return True
 
-        for currency, data in rates[self.base_currency].items():
+        for _, data in rates[self.base_currency].items():
             if self.has_expired(data["retrieve_timestamp"]):
                 return True
         return False
@@ -107,19 +107,15 @@ class CurrencyManager:
             float: The exchange rate.
         """
 
-        print(CurrencyManager.CURRENT_RATES)
-        if CurrencyManager.CURRENT_RATES == {}:
+        if not CurrencyManager.CURRENT_RATES:
             print("[get_exchange] Currency dict is empty. Updating from local...")
 
             CurrencyManager.CURRENT_RATES = self._get_all_local_rates()
-            if CurrencyManager.CURRENT_RATES == {}:
-                print("Still empty, retrieving")
+            if not CurrencyManager.CURRENT_RATES:
+                print("Still empty, scraping online...")
                 return await self.update_rate(currency)
 
-        print(CurrencyManager.CURRENT_RATES.keys())
-        print(self.base_currency in CurrencyManager.CURRENT_RATES.keys())
-
-        if self.base_currency not in CurrencyManager.CURRENT_RATES.keys():
+        if self.base_currency not in CurrencyManager.CURRENT_RATES:
             print("[get_exchange] Base currency not found in local rates. Updating...")
             return await self.update_rate(currency)
 

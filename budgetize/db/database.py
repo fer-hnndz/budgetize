@@ -1,6 +1,6 @@
 """Definition of Database class that handles database operations"""
 
-from typing import Iterator
+from typing import Iterator, Optional
 
 from arrow import Arrow
 from sqlalchemy import create_engine, select, update
@@ -21,20 +21,20 @@ class Database:
 
     engine = create_engine(PROD_DB_URL)
 
-    def __init__(self, app: App):
+    def __init__(self, app: Optional[App] = None):
         """Initializes a Database instance.
 
         Args:
             app (App): The application instance.
         """
         if app is None:
-            raise RuntimeError(app, "App cannot be None")
-
-        Database.engine = create_engine(
-            PROD_DB_URL
-            if not "devtools" in app.features
-            else "sqlite:///test_db.sqlite"
-        )
+            Database.engine = create_engine("sqlite:///test_db.sqlite")
+        else:
+            Database.engine = create_engine(
+                PROD_DB_URL
+                if not "devtools" in app.features
+                else "sqlite:///test_db.sqlite"
+            )
         Base.metadata.create_all(self.engine)
         self.settings = SettingsManager()
 
