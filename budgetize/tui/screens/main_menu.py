@@ -21,6 +21,7 @@ from budgetize.tui.modals.transaction_details import TransactionDetails
 from budgetize.tui.screens.add_transaction import AddTransaction
 from budgetize.tui.screens.manage_accounts import ManageAccounts
 from budgetize.tui.screens.settings import Settings
+from budgetize.tui.screens.transfer import TransferScreen
 from budgetize.utils import _
 
 
@@ -49,10 +50,16 @@ class MainMenu(Screen):
             description=_("Open Settings"),
         ),
         Binding(
-            key="r, R",
+            key="r,R",
             key_display="R",
             action="refresh_currencies()",
             description=_("Force Exchange Rate Update"),
+        ),
+        Binding(
+            key="t,T",
+            key_display="T",
+            action="create_transfer()",
+            description=_("Create a new Transfer"),
         ),
     ]
 
@@ -94,6 +101,9 @@ class MainMenu(Screen):
         )
         yield Horizontal(
             Button(_("Create Account"), id="create-account-button"),
+            Button(
+                _("Transfer between Accounts"), id="transfer-btn", variant="primary"
+            ),
             Button(_("Manage Accounts"), id="manage-accounts-button"),
         )
         yield Label(_("Recent Transactions"), id="recent-transactions-label")
@@ -195,6 +205,9 @@ class MainMenu(Screen):
                     title=_("Cannot Manage Accounts"),
                     message=_("You must need atleast one account to manage accounts."),
                 )
+        if event.button.id == "transfer-btn":
+            self.action_create_transfer()
+            return
 
     def on_data_table_cell_selected(self, event: DataTable.CellSelected) -> None:
         """Called when a cell in the DataTable is selected"""
@@ -437,3 +450,13 @@ class MainMenu(Screen):
 
         if event.control.id == "recent-transactions-table":
             pass
+
+    def action_refresh_currencies(self) -> None:
+        """Called when user hits the binding to refresh currencies"""
+        self.notify(
+            title="Unable to Update", message="Missing implementation", severity="error"
+        )
+
+    def action_create_transfer(self) -> None:
+        """Called when user hits binding to make a transfer"""
+        self.app.push_screen(TransferScreen())

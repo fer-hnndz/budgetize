@@ -4,6 +4,7 @@ import gettext
 from typing import Generator
 
 from arrow import Arrow
+from babel.numbers import format_currency
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.screen import Screen
@@ -17,6 +18,7 @@ from textual.widgets import (
     TabPane,
 )
 
+from budgetize import SettingsManager
 from budgetize.db.database import Database
 from budgetize.tui.modals.transaction_details import TransactionDetails
 from budgetize.utils import _
@@ -42,7 +44,17 @@ class ManageAccounts(Screen):
             accounts = self.DB.get_accounts()
             for acc in accounts:
                 with TabPane(acc.name, id=f"tab-{acc.name.replace(' ', '-')}"):
-                    yield Label(_("Balance: {balance}").format(balance=acc.balance))
+
+                    account_balance = self.DB.get_account_balance(acc.id)
+                    yield Label(
+                        _("Balance: {balance}").format(
+                            balance=format_currency(
+                                number=account_balance,
+                                currency=acc.currency,
+                                locale=SettingsManager().get_locale(),
+                            )
+                        )
+                    )
                     yield self.get_transactions_table(acc.id)
                     yield Button.error(_("Delete Account"), id=f"delete-acc-{acc.id}")
 
@@ -53,7 +65,16 @@ class ManageAccounts(Screen):
             accounts = self.DB.get_accounts()
             for acc in accounts:
                 with TabPane(acc.name, id=f"tab-{acc.name.replace(' ', '-')}"):
-                    yield Label(_("Balance: {balance}").format(balance=acc.balance))
+                    account_balance = self.DB.get_account_balance(acc.id)
+                    yield Label(
+                        _("Balance: {balance}").format(
+                            balance=format_currency(
+                                number=account_balance,
+                                currency=acc.currency,
+                                locale=SettingsManager().get_locale(),
+                            )
+                        )
+                    )
                     yield self.get_transactions_table(acc.id)
                     yield Button(_("Delete Account"), id=f"delete-acc-{acc.id}")
             return tabs

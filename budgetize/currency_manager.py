@@ -108,9 +108,13 @@ class CurrencyManager:
         """
 
         print(CurrencyManager.CURRENT_RATES)
-        if not CurrencyManager.CURRENT_RATES:
-            print("[get_exchange] Currency dict is empty. Updating...")
-            return await self.update_rate(currency)
+        if CurrencyManager.CURRENT_RATES == {}:
+            print("[get_exchange] Currency dict is empty. Updating from local...")
+
+            CurrencyManager.CURRENT_RATES = self._get_all_local_rates()
+            if CurrencyManager.CURRENT_RATES == {}:
+                print("Still empty, retrieving")
+                return await self.update_rate(currency)
 
         print(CurrencyManager.CURRENT_RATES.keys())
         print(self.base_currency in CurrencyManager.CURRENT_RATES.keys())
@@ -118,6 +122,10 @@ class CurrencyManager:
         if self.base_currency not in CurrencyManager.CURRENT_RATES.keys():
             print("[get_exchange] Base currency not found in local rates. Updating...")
             return await self.update_rate(currency)
+
+        if CurrencyManager.CURRENT_RATES[self.base_currency] == {}:
+            print("[get_exchange] Base currency dict is empty. Updating from local...")
+            CurrencyManager.CURRENT_RATES = self._get_all_local_rates()
 
         if currency not in CurrencyManager.CURRENT_RATES[self.base_currency].keys():
             print("[get_exchange] Currency not found in local rates. Updating...")
