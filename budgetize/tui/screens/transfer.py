@@ -1,7 +1,6 @@
 """Module that defines the transfer screen between accounts"""
 
-from typing import Optional
-
+from arrow import Arrow
 from babel.numbers import format_currency
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
@@ -69,11 +68,102 @@ class TransferScreen(Screen):
             yield Button.success(_("Confirm Transfer"), id="transfer-btn")
             yield Button.error(_("Cancel"), id="cancel-btn")
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button handler"""
 
+        if event.button.id == "transfer-btn":
+            origin_select: Select = self.get_widget_by_id(
+                "origin-select"
+            )  # type:ignore
+            origin_account = TransferScreen.DB.get_account_by_id(
+                int(str(origin_select.value))
+            )
+
+            destination_select: Select = self.get_widget_by_id(
+                "destination-select"
+            )  # type:ignore
+            destination_account = TransferScreen.DB.get_account_by_id(
+                int(str(destination_select.value))
+            )
+
+            if origin_account.id == destination_account.id:
+                self.app.notify(
+                    title=_("Error Transfering Funds"),
+                    message=_("Origin and Destination Accounts can not be the same."),
+                    severity="error",
+                )
+                return
+
+            transfer_funds = self.get_transfer_funds()
+
+            if transfer_funds == 0:
+                self.app.notify(
+                    title=_("Error Transfering Funds"),
+                    message=_("Transfer amount has to be atleast 1."),
+                    severity="error",
+                )
+                return
+
+            origin_balance = TransferScreen.DB.get_account_balance(origin_account.id)
+            destination_balance = TransferScreen.DB.get_account_balance(
+                destination_account.id
+            )
+
+            if transfer_funds > origin_balance:
+                self.app.notify(
+                    title=_("Error Transfering Funds"),
+                    message=_("Insufficient funds in Origin account."),
+                    severity="error",
+                )
+                return
+
+            exchange_rate = 1.0
+            if destination_account.currency != origin_account.currency:
+                exchange_rate = await CurrencyManager(
+                    origin_account.currency
+                ).get_exchange(destination_account.currency)
+
+            TransferScreen.DB.add_transaction(
+                account_id=origin_account.id,
+                amount=-1 * transfer_funds,
+                description="-",
+                category="",
+                timestamp=Arrow.now().timestamp(),
+                visible=False,
+            )
+
+            TransferScreen.DB.add_transaction(
+                account_id=destination_account.id,
+                amount=transfer_funds * exchange_rate,
+                description="-",
+                category="",
+                timestamp=Arrow.now().timestamp(),
+                visible=False,
+            )
+
+            self.app.notify(
+                title=_("Funds Transfered"),
+                message=_("Funds have been successfully transfered."),
+                severity="information",
+            )
+            self.app.pop_screen()
         if event.button.id == "cancel-btn":
-            self.dismiss(result=None)
+            self.app.pop_screen()
+
+    def get_transfer_funds(self) -> float:
+        """Returns the transfer funds the user entered"""
+        amount_input: Input = self.get_widget_by_id("transfer-input")  # type:ignore
+        funds_to_transfer = 0.0
+
+        try:
+            funds_to_transfer = float(amount_input.value)
+
+            if funds_to_transfer < 0:
+                funds_to_transfer = 0
+
+            return funds_to_transfer
+        except ValueError:
+            return 0
 
     async def on_input_changed(self, event: Input.Changed) -> None:
         """Input handler"""
@@ -92,14 +182,7 @@ class TransferScreen(Screen):
         )
         origin_label: Label = self.get_widget_by_id("origin-balance")  # type:ignore
 
-        amount_input: Input = self.get_widget_by_id("transfer-input")  # type:ignore
-        funds_to_transfer = 0.0
-
-        if amount_input.value != "":
-            funds_to_transfer = float(amount_input.value)
-            if funds_to_transfer < 0:
-                funds_to_transfer = 0
-
+        funds_to_transfer = self.get_transfer_funds()
         origin_balance = TransferScreen.DB.get_account_balance(origin_account.id)
 
         if funds_to_transfer > origin_balance:
