@@ -119,6 +119,7 @@ class CurrencyManager:
             float: The exchange rate.
         """
 
+        logging.info(f"Retrieving exchange rate for {self.base_currency}-{currency}...")
         if not CurrencyManager.CURRENT_RATES:
             logging.info("Currency dict is empty. Updating from local...")
 
