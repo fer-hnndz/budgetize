@@ -1,9 +1,25 @@
 """Util functions for Budgetize"""
 
 import gettext
+import logging
+import os
 
 from budgetize import SettingsManager
-from budgetize.consts import CURRENCIES, TRANSLATIONS_PATH
+from budgetize.consts import APP_FOLDER_PATH, CURRENCIES, TRANSLATIONS_PATH
+
+
+def create_logger() -> None:
+    """Creates the app Logger"""
+
+    log_path = os.path.join(APP_FOLDER_PATH, f"budgetize.log")
+
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="[%(asctime)s UTC] (%(module)s.%(funcName)s | %(levelname)s) %(message)s",
+        datefmt="%d/%m/%Y @ %H:%M:%S",
+        filename=log_path,
+    )
+
 
 _t = gettext.translation(
     "budgetize",
