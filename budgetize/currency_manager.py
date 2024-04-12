@@ -172,7 +172,11 @@ class CurrencyManager:
     def _save_last_html_response(self, response: str) -> None:
         """Saves last HTML in a file"""
 
-        with open(os.path.join(APP_FOLDER_PATH, "last_html_response.html"), "w") as f:
+        with open(
+            os.path.join(APP_FOLDER_PATH, "last_html_response.html"),
+            "w",
+            encoding="utf-8",
+        ) as f:
             f.write(response)
 
     async def _request_exchange(self, currency: str) -> float:
