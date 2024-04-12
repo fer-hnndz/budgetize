@@ -1,14 +1,16 @@
 """Module that defines the main menu screen"""
 
 import asyncio
+from typing import Optional
 
 from arrow import Arrow
-from babel.numbers import format_currency
+from babel.numbers import format_currency, parse_decimal
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import Button, DataTable, Footer, Header, Label, Rule
+from textual.widgets.data_table import CellKey
 
 from budgetize import CurrencyManager, SettingsManager
 from budgetize.db.database import Database
@@ -19,6 +21,7 @@ from budgetize.tui.modals.transaction_details import TransactionDetails
 from budgetize.tui.screens.add_transaction import AddTransaction
 from budgetize.tui.screens.manage_accounts import ManageAccounts
 from budgetize.tui.screens.settings import Settings
+from budgetize.tui.screens.transfer import TransferScreen
 from budgetize.utils import _
 
 
@@ -47,18 +50,29 @@ class MainMenu(Screen):
             description=_("Open Settings"),
         ),
         Binding(
-            key="r, R",
+            key="r,R",
             key_display="R",
             action="refresh_currencies()",
             description=_("Force Exchange Rate Update"),
+        ),
+        Binding(
+            key="t,T",
+            key_display="T",
+            action="create_transfer()",
+            description=_("Create a new Transfer"),
         ),
     ]
 
     def __init__(self) -> None:
         """Creates a new MainMenu Screen"""
+        super().__init__()
         MainMenu.DB = Database(self.app)
         self.rates_fetched = False
-        super().__init__()
+
+        self.last_account_key: Optional[CellKey] = None
+        self.last_account_value: str = "None"
+        self.last_recent_transactions_key: Optional[CellKey] = None
+        self.last_recent_transactions_value: str = "None"
 
     def compose(self) -> ComposeResult:
         """Called when screen is composed"""
@@ -87,6 +101,9 @@ class MainMenu(Screen):
         )
         yield Horizontal(
             Button(_("Create Account"), id="create-account-button"),
+            Button(
+                _("Transfer between Accounts"), id="transfer-btn", variant="primary"
+            ),
             Button(_("Manage Accounts"), id="manage-accounts-button"),
         )
         yield Label(_("Recent Transactions"), id="recent-transactions-label")
@@ -99,6 +116,11 @@ class MainMenu(Screen):
 
     async def on_mount(self) -> None:
         """Called when the screen is about to be shown"""
+        self.last_account_key = None
+        self.last_account_value = ""
+        self.last_recent_transactions_key = None
+        self.last_recent_transactions_value = ""
+
         self.run_worker(self.update_ui_info, exclusive=True)  # type: ignore
 
     async def update_ui_info(self) -> None:
@@ -183,6 +205,9 @@ class MainMenu(Screen):
                     title=_("Cannot Manage Accounts"),
                     message=_("You must need atleast one account to manage accounts."),
                 )
+        if event.button.id == "transfer-btn":
+            self.action_create_transfer()
+            return
 
     def on_data_table_cell_selected(self, event: DataTable.CellSelected) -> None:
         """Called when a cell in the DataTable is selected"""
@@ -200,8 +225,8 @@ class MainMenu(Screen):
     def _update_recent_transactions_table(self) -> None:
         """Updates the recent transactions DataTable widget."""
 
-        recent_transactions = self.DB.get_all_recent_transactions()
         table: DataTable = self.get_widget_by_id("recent-transactions-table")  # type: ignore
+        recent_transactions = self.DB.get_all_recent_transactions()
         table.clear(columns=True)
         table.add_columns(
             _("Account"), _("Amount"), _("Date"), _("Category"), _("Description")
@@ -221,7 +246,7 @@ class MainMenu(Screen):
 
             table.add_row(
                 account.name,
-                f"{color}{account.currency} {str(trans.amount)}",
+                f"{color}{format_currency(trans.amount, account.currency, locale = SettingsManager().get_locale())}",
                 date,
                 trans.category,
                 trans.description,
@@ -234,12 +259,18 @@ class MainMenu(Screen):
         table: DataTable = self.get_widget_by_id("accounts-table")  # type: ignore
         table.clear(columns=True)
         table.add_columns(
-            _("Account Name"), _("Account Type"), _("Balance"), _("Currency")
+            _("Account Name"),
+            _("Balance"),
         )
 
         for acc in self.DB.get_accounts():
             table.add_row(
-                acc.name, acc.account_type.name.capitalize(), acc.balance, acc.currency
+                acc.name,
+                format_currency(
+                    self.DB.get_account_balance(acc.id),
+                    acc.currency,
+                    locale=SettingsManager().get_locale(),
+                ),
             )
 
     async def _update_balance_labels(self) -> None:
@@ -276,7 +307,6 @@ class MainMenu(Screen):
                         main_currency,
                         locale=user_locale,
                     ),
-                    main_currency=main_currency,
                 )
             )
 
@@ -288,7 +318,6 @@ class MainMenu(Screen):
                         main_currency,
                         locale=user_locale,
                     ),
-                    main_currency=main_currency,
                 )
             )
             monthly_expense_label.update(
@@ -299,7 +328,6 @@ class MainMenu(Screen):
                         main_currency,
                         locale=user_locale,
                     ),
-                    main_currency=main_currency,
                 )
             )
 
@@ -347,3 +375,88 @@ class MainMenu(Screen):
         """Opens the settings."""
         self.rates_fetched = False
         self.app.push_screen(Settings())
+
+    async def on_data_table_cell_highlighted(
+        self, event: DataTable.CellHighlighted
+    ) -> None:
+        """Called when a cell in the DataTable is highlighted"""
+
+        if event.control.id == "accounts-table":
+            accounts_table: DataTable = self.get_widget_by_id(
+                "accounts-table"
+            )  # type:ignore
+
+            # User clicked in balance column
+            if event.coordinate.column == 1:
+                if self.last_account_key is None:
+                    self.last_account_key = event.cell_key
+                    self.last_account_value = str(event.value)
+
+                else:
+                    accounts_table.update_cell(
+                        self.last_account_key.row_key,
+                        self.last_account_key.column_key,
+                        self.last_account_value,
+                    )
+
+                    self.last_account_key = event.cell_key
+                    self.last_account_value = str(event.value)
+
+                # 0.00\xa0USD - format
+                numbers: str = event.value.split("\xa0")[0]  # type:ignore
+                decimal_value = parse_decimal(
+                    numbers,
+                    locale=SettingsManager().get_locale(),
+                )
+
+                account_name = accounts_table.get_cell_at(event.coordinate.left())
+                account = self.DB.get_account_by_name(account_name)
+
+                # Do not show exchange rate of the currency since its the same
+                if account.currency == SettingsManager().get_base_currency():
+                    return
+
+                main_currency = SettingsManager().get_base_currency()
+                exchange_rate = await CurrencyManager(main_currency).get_exchange(
+                    account.currency
+                )
+
+                amt = float(str(decimal_value))
+                formatted_currency = format_currency(
+                    number=(amt / exchange_rate),
+                    currency=main_currency,
+                    locale=SettingsManager().get_locale(),
+                ).replace("\xa0", " ")
+
+                print(formatted_currency)
+                accounts_table.update_cell(
+                    event.cell_key.row_key,
+                    event.cell_key.column_key,
+                    str(formatted_currency),
+                    update_width=True,
+                )
+
+                print("Updated exchange rate")
+            # User selected other column instead of balance
+            elif self.last_account_key is not None:
+                accounts_table.update_cell(
+                    self.last_account_key.row_key,
+                    self.last_account_key.column_key,
+                    self.last_account_value,
+                )
+
+                self.last_account_key = None
+                self.last_account_value = ""
+
+        if event.control.id == "recent-transactions-table":
+            pass
+
+    def action_refresh_currencies(self) -> None:
+        """Called when user hits the binding to refresh currencies"""
+        self.notify(
+            title="Unable to Update", message="Missing implementation", severity="error"
+        )
+
+    def action_create_transfer(self) -> None:
+        """Called when user hits binding to make a transfer"""
+        self.app.push_screen(TransferScreen())

@@ -1,6 +1,6 @@
 """Definition of Database class that handles database operations"""
 
-from typing import Iterator
+from typing import Iterator, Optional
 
 from arrow import Arrow
 from sqlalchemy import create_engine, select, update
@@ -21,20 +21,20 @@ class Database:
 
     engine = create_engine(PROD_DB_URL)
 
-    def __init__(self, app: App):
+    def __init__(self, app: Optional[App] = None):
         """Initializes a Database instance.
 
         Args:
             app (App): The application instance.
         """
         if app is None:
-            raise RuntimeError(app, "App cannot be None")
-
-        Database.engine = create_engine(
-            PROD_DB_URL
-            if not "devtools" in app.features
-            else "sqlite:///test_db.sqlite"
-        )
+            Database.engine = create_engine("sqlite:///test_db.sqlite")
+        else:
+            Database.engine = create_engine(
+                PROD_DB_URL
+                if not "devtools" in app.features
+                else "sqlite:///test_db.sqlite"
+            )
         Base.metadata.create_all(self.engine)
         self.settings = SettingsManager()
 
@@ -100,6 +100,34 @@ class Database:
             found_account: Account = session.get_one(Account, account_id)
             return found_account
 
+    def get_account_by_name(self, name: str) -> Account:
+        """Returns the account with the specified name.
+
+        Args:
+            name (str): The name of the account.
+
+        Returns:
+            Account: The account with the specified name.
+        """
+        with Session(Database.engine) as session:
+            stmt = select(Account).where(Account.name == name)
+            account: Account = session.execute(stmt).scalars().first()  # type:ignore
+            return account
+
+    def account_name_exists(self, name: str) -> bool:
+        """Returns True if an account with the specified name exists, False otherwise.
+
+        Args:
+            name (str): The name of the account.
+
+        Returns:
+            bool: True if an account with the specified name exists, False otherwise.
+        """
+        with Session(Database.engine) as session:
+            stmt = select(Account).where(Account.name == name)
+            account = session.execute(stmt).scalars().first()
+            return account is not None
+
     def get_transaction_by_id(self, transaction_id: int) -> Transaction:
         """Returns the transaction with the specified ID.
 
@@ -115,14 +143,35 @@ class Database:
             )
             return found_transaction
 
-    def add_account(self, account: Account) -> None:
+    def add_account(
+        self,
+        name: str,
+        currency: str,
+        starting_balance: float,
+    ) -> None:
         """Adds a new account to the user.
 
         Args:
-            account (Account): The account to be added.
+            name (str): The name of the account.
+            currency (str): The currency of the account.
+            starting_balance (float): The starting balance of the account.
+            account_type_name (str): The type of the account.
         """
+
         with Session(Database.engine) as session:
-            session.add(account)
+            new_account = Account(name=name, currency=currency)
+            session.add(new_account)
+            session.commit()
+
+            initial_balance_transaction = Transaction(
+                account_id=new_account.id,
+                amount=starting_balance,
+                description="Initial balance",
+                category="-",
+                timestamp=Arrow.now().timestamp(),
+                visible=False,
+            )
+            session.add(initial_balance_transaction)
             session.commit()
 
     def add_transaction(
@@ -132,6 +181,7 @@ class Database:
         description: str,
         category: str,
         timestamp: float,
+        visible: bool = True,
     ) -> None:
         """Registers a new transaction.
 
@@ -148,14 +198,11 @@ class Database:
             description=description,
             category=category,
             timestamp=timestamp,
+            visible=visible,
         )
 
         with Session(Database.engine) as session:
             session.add(transaction)
-
-            # Update the account balance
-            account = session.get_one(Account, account_id)
-            account.balance += float(amount)
             session.commit()
 
     def update_transaction(
@@ -201,9 +248,34 @@ class Database:
             list[Transaction]: A list of recent transactions.
         """
         with Session(Database.engine) as session:
-            stmt = select(Transaction).order_by(Transaction.timestamp.desc()).limit(5)
+            stmt = (
+                select(Transaction)
+                .where(Transaction.visible == True)
+                .order_by(Transaction.timestamp.desc())
+                .limit(5)
+            )
             transactions: list[Transaction] = session.execute(stmt).scalars().all()  # type: ignore
             return transactions
+
+    def get_account_balance(self, account_id: int) -> float:
+        """Returns the balance of the specified account.
+
+        Args:
+            account_id (int): The ID of the account.
+
+        Returns:
+            float: The balance of the account.
+        """
+
+        stmt = select(Transaction).where(Transaction.account_id == account_id)
+        with Session(Database.engine) as session:
+            transactions = session.execute(stmt).scalars().all()
+
+            balance = 0.0
+            for transaction in transactions:
+                balance += transaction.amount
+
+            return balance
 
     async def get_monthly_income(self) -> float:
         """(Coroutine) Returns the total income for the current month.
@@ -225,7 +297,7 @@ class Database:
             for transaction in self.get_monthly_transactions_from_account(
                 account.id, now.format("M"), now.format("YYYY")
             ):
-                if transaction.amount > 0:
+                if transaction.amount > 0 and transaction.visible:
                     income += transaction.amount / exchange_rate
 
         return round(income, 2)
@@ -278,7 +350,7 @@ class Database:
             for transaction in self.get_monthly_transactions_from_account(
                 account.id, now.format("M"), now.format("YYYY")
             ):
-                if transaction.amount < 0:
+                if transaction.amount < 0 and transaction.visible:
                     expense += transaction.amount / rate
 
         return round(expense, 2)
