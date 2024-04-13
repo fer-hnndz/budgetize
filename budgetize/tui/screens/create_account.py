@@ -1,5 +1,7 @@
 """Module that defines the CreateAccount screen."""
 
+import logging
+
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Grid, Horizontal, VerticalScroll
@@ -32,6 +34,7 @@ class CreateAccount(Screen):
     def compose(self) -> ComposeResult:
         """Called when the screen is composed."""
 
+        logging.info("Composing CreateAccount Screen...")
         self.app.sub_title = _("Create Account")
         yield Header()
         yield Footer()
@@ -72,7 +75,10 @@ class CreateAccount(Screen):
             currency: str = self.get_widget_by_id("currency-select").value  # type: ignore
             starting_balance: float = self.get_widget_by_id("balance-input").value  # type: ignore
 
+            logging.debug(f"Creating Account: {name} {currency} {starting_balance}")
+
             if self.DB.account_name_exists(name):
+                logging.warning("Account Name already exists! Showing error")
                 self.app.push_screen(
                     ErrorModal(
                         _("Account Name already Exists"),
@@ -92,7 +98,7 @@ class CreateAccount(Screen):
             self.app.pop_screen()
             self.notify(_("Account created successfully."), title="Account Created")
 
-        elif event.button.id == "cancel-button":
-            self.get_widget_by_id("account-name-input").value = ""  # type: ignore
-            self.get_widget_by_id("balance-input").value = ""  # type: ignore
-            self.app.pop_screen()
+        # Clear the input fields
+        self.get_widget_by_id("account-name-input").value = ""  # type: ignore
+        self.get_widget_by_id("balance-input").value = ""  # type: ignore
+        self.app.pop_screen()

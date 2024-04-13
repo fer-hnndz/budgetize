@@ -1,5 +1,7 @@
 """Module that defines the transfer screen between accounts"""
 
+import logging
+
 from arrow import Arrow
 from babel.numbers import format_currency
 from textual.app import ComposeResult
@@ -26,11 +28,11 @@ class TransferScreen(Screen):
 
     def compose(self) -> ComposeResult:
         """Called when screen needs to be composed"""
+        logging.info("Composing TransferScreen")
         yield Header()
         yield Footer()
 
         with Vertical():
-            # Use ... because an account has not been selected yet
             yield Label(
                 "[bold cyan]Select an Origin Account",
                 id="origin-balance",
@@ -72,6 +74,7 @@ class TransferScreen(Screen):
         """Button handler"""
 
         if event.button.id == "transfer-btn":
+            logging.info("User clicked on transfer button.")
             origin_select: Select = self.get_widget_by_id(
                 "origin-select"
             )  # type:ignore
@@ -87,6 +90,7 @@ class TransferScreen(Screen):
             )
 
             if origin_account.id == destination_account.id:
+                logging.info("User attempted transfering to same account.")
                 self.app.notify(
                     title=_("Error Transfering Funds"),
                     message=_("Origin and Destination Accounts can not be the same."),
@@ -105,10 +109,9 @@ class TransferScreen(Screen):
                 return
 
             origin_balance = TransferScreen.DB.get_account_balance(origin_account.id)
-            destination_balance = TransferScreen.DB.get_account_balance(
-                destination_account.id
+            logging.debug(
+                f"Transfer Funds: {str(transfer_funds)} | Origin Account Balance: {str(origin_balance)}"
             )
-
             if transfer_funds > origin_balance:
                 self.app.notify(
                     title=_("Error Transfering Funds"),
@@ -127,7 +130,7 @@ class TransferScreen(Screen):
                 account_id=origin_account.id,
                 amount=-1 * transfer_funds,
                 description="-",
-                category="",
+                category="Transfer",
                 timestamp=Arrow.now().timestamp(),
                 visible=False,
             )
@@ -147,7 +150,10 @@ class TransferScreen(Screen):
                 severity="information",
             )
             self.app.pop_screen()
+            logging.info("Transfer has been registered.")
+
         if event.button.id == "cancel-btn":
+            logging.info("User canceled transfer. Popping screen.")
             self.app.pop_screen()
 
     def get_transfer_funds(self) -> float:
@@ -155,14 +161,19 @@ class TransferScreen(Screen):
         amount_input: Input = self.get_widget_by_id("transfer-input")  # type:ignore
         funds_to_transfer = 0.0
 
+        logging.debug(f"Amount Field Input: {amount_input}")
         try:
             funds_to_transfer = float(amount_input.value)
 
             if funds_to_transfer < 0:
                 funds_to_transfer = 0
 
+            logging.info(f"Parsed funds to: {str(funds_to_transfer)}")
             return funds_to_transfer
         except ValueError:
+            logging.critical(
+                "There was an error trying to parse input as a float. Returning 0."
+            )
             return 0
 
     async def on_input_changed(self, event: Input.Changed) -> None:

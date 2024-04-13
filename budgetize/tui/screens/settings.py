@@ -1,3 +1,5 @@
+import logging
+
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.screen import Screen
@@ -36,6 +38,7 @@ class Settings(Screen):
 
     def compose(self) -> ComposeResult:
         """Composes the Settings Screen"""
+        logging.info("Composing Settings Screen...")
 
         yield Header()
         yield Footer()
@@ -61,6 +64,7 @@ class Settings(Screen):
         """Button press handler"""
 
         if event.button.id == "categories-btn":
+            logging.info("Showing Categories Settings...")
             self.app.push_screen(CategoriesModal())
 
     def action_save_settings(self) -> None:
@@ -82,6 +86,8 @@ class Settings(Screen):
             "categories": self.manager.get_categories(),
         }
 
+        logging.debug("Saving settings: " + str(new_settings))
+
         if language_changed:
             self.notify(
                 _("Close Budgetize to apply the new language."),
@@ -89,5 +95,6 @@ class Settings(Screen):
             )
 
         self.manager.save(new_settings)
+        logging.info("Settings saved.")
         self.app.pop_screen()
         self.notify(_("Settings saved."), title=_("Settings Changed"))

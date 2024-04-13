@@ -1,7 +1,8 @@
 """Module that defines the AddTransaction screen"""
 
+import logging
 from datetime import date as date_func
-from traceback import print_exc
+from traceback import format_exc
 from typing import Optional
 
 from arrow import Arrow
@@ -37,6 +38,9 @@ class AddTransaction(Screen):
         super().__init__()
 
     def compose(self) -> ComposeResult:
+        """Called when screen is composed"""
+
+        logging.info("Composing AddTransaction Screen...")
         self.app.sub_title = (
             "Edit Transaction" if self.transaction else "Add Transaction"
         )
@@ -93,6 +97,7 @@ class AddTransaction(Screen):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handles button presses"""
 
+        logging.info("Adding Transaction")
         account_selected: int = self.get_widget_by_id("account-select").value  # type: ignore
         account = self.DB.get_account_by_id(account_selected)
         currency = account.currency
@@ -105,17 +110,28 @@ class AddTransaction(Screen):
         # Attempt to parse the date from the user in M/D/YYYY/
         # If parsing fails, use the current date and time for saving the transaction
 
+        logging.debug(
+            f"Amount: {amount}, Category: {category}, Description: {description}"
+        )
         date = Arrow.now()
 
         try:
+            # TODO: Parse date based on locale
+
             date_strs: list[str] = self.get_widget_by_id("date-input").value.split("/")  # type: ignore
             date_from_input = date_func(
                 int(date_strs[2]), int(date_strs[0]), int(date_strs[1])
             )
             date = Arrow.fromdate(date_from_input)
+            logging.warning(
+                "PARSE DATE BASED ON LOCALE. THIS PARSING IS DONE MANUALLY."
+            )
+            logging.debug(f"Parsed Date: {date}")
 
         except Exception:
-            print_exc()
+            traceback_str = format_exc()
+            logging.critical("An error ocurred parsing the date.\n" + traceback_str)
+            logging.info("Using current date and time for transaction")
             date = Arrow.now()
 
         # Clear fields

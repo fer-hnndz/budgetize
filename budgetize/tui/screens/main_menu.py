@@ -1,6 +1,7 @@
 """Module that defines the main menu screen"""
 
 import asyncio
+import logging
 from typing import Optional
 
 from arrow import Arrow
@@ -76,6 +77,8 @@ class MainMenu(Screen):
 
     def compose(self) -> ComposeResult:
         """Called when screen is composed"""
+        logging.info("Composing MainMenu...")
+
         self.app.sub_title = _("Main Menu")
         yield Header()
         yield Footer()
@@ -116,11 +119,13 @@ class MainMenu(Screen):
 
     async def on_mount(self) -> None:
         """Called when the screen is about to be shown"""
+        logging.info("Mounting MainMenu...")
         self.last_account_key = None
         self.last_account_value = ""
         self.last_recent_transactions_key = None
         self.last_recent_transactions_value = ""
 
+        logging.info("Runnning background worker for updating UI...")
         self.run_worker(self.update_ui_info, exclusive=True)  # type: ignore
 
     async def update_ui_info(self) -> None:
@@ -138,8 +143,13 @@ class MainMenu(Screen):
         )  # type:ignore
 
         try:
-            currency_manager = CurrencyManager(SettingsManager().get_base_currency())
+            base = SettingsManager().get_base_currency()
+            currency_manager = CurrencyManager(base)
+            logging.info(
+                f"Created a new CurrencyManager instance with base currency {base}"
+            )
 
+            logging.info("Attempting to update invalid rates...")
             rates_update_task = asyncio.create_task(
                 currency_manager.update_invalid_rates()
             )
@@ -151,6 +161,9 @@ class MainMenu(Screen):
 
             # If rates have been fetched (or attempted), just update UI
             if self.rates_fetched or not currency_manager.has_expired_rates():
+                logging.info(
+                    "Rates have been fetched or attempted. Updating UI without checking for outdated rates."
+                )
                 self._update_account_tables()
                 self._update_recent_transactions_table()
                 await self._update_balance_labels()
@@ -175,7 +188,9 @@ class MainMenu(Screen):
                 ErrorModal(title=_("Error Fetching Exchange Rates"), traceback_msg=msg)
             )
         finally:
+            logging.info("Updating balance labels...")
             await self._update_balance_labels()
+
             if not self.rates_fetched:
                 self.app.notify(
                     title=_("Updating Currency Rates"),
@@ -219,15 +234,14 @@ class MainMenu(Screen):
                     details_screen = TransactionDetails(int(row_key.value))
                     self.app.push_screen(details_screen)
 
-    async def force_reload(self) -> None:
-        """Force reloads all exchange rates"""
-
     def _update_recent_transactions_table(self) -> None:
         """Updates the recent transactions DataTable widget."""
 
+        logging.info("Updating recent transactions table...")
         table: DataTable = self.get_widget_by_id("recent-transactions-table")  # type: ignore
         recent_transactions = self.DB.get_all_recent_transactions()
         table.clear(columns=True)
+        logging.info("Cleared columns from recent transactions table.")
         table.add_columns(
             _("Account"), _("Amount"), _("Date"), _("Category"), _("Description")
         )
@@ -256,6 +270,7 @@ class MainMenu(Screen):
     def _update_account_tables(self) -> None:
         """Updates the accounts DataTable widget"""
 
+        logging.info("Updating account tables...")
         table: DataTable = self.get_widget_by_id("accounts-table")  # type: ignore
         table.clear(columns=True)
         table.add_columns(
@@ -292,6 +307,10 @@ class MainMenu(Screen):
             monthly_expense: float = await self.DB.get_monthly_expense()
             balance: float = round(monthly_income + monthly_expense, 2)
             main_currency = SettingsManager().get_base_currency()
+
+            logging.info(
+                f"Monthly Income: {monthly_income} | Monthly Expense: {monthly_expense} | Balance: {balance}"
+            )
 
             income_color = "[green]" if monthly_income > 0 else "[red]"
             expense_color = "[green]" if monthly_expense > 0 else "[red]"
@@ -332,9 +351,11 @@ class MainMenu(Screen):
             )
 
         except ExchangeRateFetchError as e:
+            logging.error(f"Error fetching exchange rates: {e}")
             msg = str(e) + _(
                 "\n\nConnect to the internet to be able to use Budgetize.\nOr create an issue at Github to get support."
             )
+            logging.info("Showing error modal...")
             modal = ErrorModal(
                 title=_("Error Fetching Exchange Rates"), traceback_msg=msg
             )
@@ -369,10 +390,12 @@ class MainMenu(Screen):
 
     def action_request_quit(self) -> None:
         """Shows the modal to quit the app"""
+        logging.info("Pushing ConfirmQuit Modal...")
         self.app.push_screen(ConfirmQuit())
 
     def action_show_settings(self) -> None:
         """Opens the settings."""
+        logging.info("Pushing Settings Screen...")
         self.rates_fetched = False
         self.app.push_screen(Settings())
 
@@ -389,10 +412,16 @@ class MainMenu(Screen):
             # User clicked in balance column
             if event.coordinate.column == 1:
                 if self.last_account_key is None:
+                    logging.info(
+                        "There was not previous selected balance cell. Updating..."
+                    )
                     self.last_account_key = event.cell_key
                     self.last_account_value = str(event.value)
 
                 else:
+                    logging.info(
+                        "Resetting last selected cell value and updating to new value..."
+                    )
                     accounts_table.update_cell(
                         self.last_account_key.row_key,
                         self.last_account_key.column_key,
@@ -403,23 +432,26 @@ class MainMenu(Screen):
                     self.last_account_value = str(event.value)
 
                 # 0.00\xa0USD - format
+                logging.info("Parsing currency from cell...")
                 numbers: str = event.value.split("\xa0")[0]  # type:ignore
                 decimal_value = parse_decimal(
                     numbers,
                     locale=SettingsManager().get_locale(),
                 )
-
+                logging.debug(f"Decimal value: {decimal_value}")
                 account_name = accounts_table.get_cell_at(event.coordinate.left())
                 account = self.DB.get_account_by_name(account_name)
 
                 # Do not show exchange rate of the currency since its the same
                 if account.currency == SettingsManager().get_base_currency():
+                    logging.info("Currency is the same as base currency. Not updating.")
                     return
 
                 main_currency = SettingsManager().get_base_currency()
                 exchange_rate = await CurrencyManager(main_currency).get_exchange(
                     account.currency
                 )
+                logging.info(f"Exchange rate got: {exchange_rate}")
 
                 amt = float(str(decimal_value))
                 formatted_currency = format_currency(
@@ -428,7 +460,6 @@ class MainMenu(Screen):
                     locale=SettingsManager().get_locale(),
                 ).replace("\xa0", " ")
 
-                print(formatted_currency)
                 accounts_table.update_cell(
                     event.cell_key.row_key,
                     event.cell_key.column_key,
@@ -436,9 +467,11 @@ class MainMenu(Screen):
                     update_width=True,
                 )
 
-                print("Updated exchange rate")
+                logging.info(f"Updated exchange rate to: {formatted_currency}")
+
             # User selected other column instead of balance
             elif self.last_account_key is not None:
+                logging.info("Resetting last selected cell value...")
                 accounts_table.update_cell(
                     self.last_account_key.row_key,
                     self.last_account_key.column_key,
@@ -459,4 +492,5 @@ class MainMenu(Screen):
 
     def action_create_transfer(self) -> None:
         """Called when user hits binding to make a transfer"""
+        logging.info("Pushing TransferScreen...")
         self.app.push_screen(TransferScreen())

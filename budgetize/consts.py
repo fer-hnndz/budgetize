@@ -19,6 +19,9 @@ PROD_DB_URL = f"sqlite:///{os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)}"
 # Localization
 TRANSLATIONS_PATH: str = pkg_resources.resource_filename("budgetize", "translations")
 
+if not os.path.exists(APP_FOLDER_PATH):
+    os.makedirs(APP_FOLDER_PATH)
+
 
 # Dummy definition for Babel to extract the strings
 def _(msg: str) -> str:

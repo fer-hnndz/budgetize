@@ -1,6 +1,7 @@
 """Module that defines the InitialConfig screen."""
 
 import gettext
+import logging
 
 import babel
 from textual.app import ComposeResult
@@ -13,7 +14,7 @@ from budgetize.settings_manager import SettingsDict, SettingsManager
 from budgetize.tui.screens.main_menu import MainMenu
 from budgetize.utils import get_select_currencies
 
-# Split any territory data
+# Get default locale, but fallback to English in case of an error.
 default_locale = babel.default_locale(category="LANGUAGE")
 if not default_locale:
     default_locale = "en"
@@ -34,7 +35,8 @@ class InitialConfig(Screen):
     def compose(self) -> ComposeResult:
         """Called when the screen is composed."""
 
-        self.app.sub_title = "Initial Setup"
+        logging.info("Compose InitialConfig Screen...")
+        self.app.sub_title = _("Initial Setup")
         yield Header()
         yield Label(_("Select your Base Currency"), id="currency-label")
         yield Select(get_select_currencies(), id="currency-select", allow_blank=False)
@@ -53,6 +55,8 @@ class InitialConfig(Screen):
                 "language-select", expect_type=Select
             ).value
 
+            logging.debug(f"Selected currency: {currency}")
+            logging.debug(f"Selected language: {language}")
             # This should never happen at runtime
             if isinstance(language, NoSelection) or isinstance(currency, NoSelection):
                 return
@@ -63,6 +67,7 @@ class InitialConfig(Screen):
                 "base_currency": str(currency),
                 "categories": settings.get_categories(),
             }
+            logging.debug(f"Saving settings: {new_settings}")
             settings.save(new_settings)
 
             _ = gettext.translation(
