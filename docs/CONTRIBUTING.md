@@ -20,27 +20,29 @@ cd budgetize
 
 You'll then need to install all dependencies with `poetry`. You may install the tool with pip before installing Budgetize's dependencies. You may refer to this guide [here](https://python-poetry.org/docs/#installation)
 Once installed you may install budgetize's dependencies.
+
 ```bash
-poetry install Pipfile
-poetry shell
+poetry install
 ```
-You'll then activate poetry's virtual environment that will allow you to run Budgetize with
-``` bash
-textual run main.py --dev
+To run Budgetize from source use the command in the root of the project folder:
 ```
-**NOTE: IT IS IMPORTANT YOU RUN THE APP WITH THIS COMMAND SINCE IF IT IS WITHOUT THE `--dev` FLAG OR RAN WITH THE PYTHON INTERPRETER, IT WILL CONNECT TO YOUR REAL BUDGETIZE DB INSTEAD OF THE TEST DATABASE.**\
+poetry run main.py --dev
+```
+**NOTE: IT IS IMPORTANT YOU RUN IN DEV MODE WITH THE `--dev` FLAG. OTHERWISE IT WILL CONNECT TO YOUR REAL BUDGETIZE DB INSTEAD OF THE TEST DATABASE.**\
 You can also spawn a textual console that will allow you to see the app's output.\
-In another terminal, spawn a poetry shell and run:
+In another terminal, run:
 ```bash
-textual console
+poetry run textual console
 ```
 
 ## ✍ Git Workflow
 It is suggested you run `poetry run pre-commit install` so all checks are ran automatically everytime you commit.\
 For contributing, just follow these steps:
 1. Create a branch for the feature you want to implement/bug to fix.
-2. Be sure to comment anything useful for explanation and annotate functions the most you can.
-3. Before committing, run `poetryrun pre-commit run`. (You may skip this if you already installed pre-commit)
+   - Use `feature/feature-name` if you are going to implement a feature
+   - Use `bugfix/bug-name` if you are solving a bug. 
+2. Be sure to comment anything useful for explanation and annotate functions the most you can following the [Google Docstring Style](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html).
+3. Before committing, run `poetry run pre-commit run`. (You may skip this if you already installed pre-commit)
 
 When submitting your pull request make sure to name it accordingly and explain in detail what you changed. Thanks for contributing!
 
