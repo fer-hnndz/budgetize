@@ -18,30 +18,29 @@ git clone https://github.com/fer-hnndz/budgetize.git
 cd budgetize
 ```
 
-You'll then need to install all dependencies with `Pipenv` you may install the tool with pip before installing all dependencies with `pip install pipenv`.\
+You'll then need to install all dependencies with `poetry`. You may install the tool with pip before installing Budgetize's dependencies. You may refer to this guide [here](https://python-poetry.org/docs/#installation)
 Once installed you may install budgetize's dependencies.
 ```bash
-pipenv install Pipfile
-pipenv shell
+poetry install Pipfile
+poetry shell
 ```
-You'll then activate Pipenv's virtual environment that will allow you to run Budgetize with
+You'll then activate poetry's virtual environment that will allow you to run Budgetize with
 ``` bash
 textual run main.py --dev
 ```
 **NOTE: IT IS IMPORTANT YOU RUN THE APP WITH THIS COMMAND SINCE IF IT IS WITHOUT THE `--dev` FLAG OR RAN WITH THE PYTHON INTERPRETER, IT WILL CONNECT TO YOUR REAL BUDGETIZE DB INSTEAD OF THE TEST DATABASE.**\
 You can also spawn a textual console that will allow you to see the app's output.\
-In another terminal, spawn a pipenv shell and run:
+In another terminal, spawn a poetry shell and run:
 ```bash
 textual console
 ```
 
 ## ✍ Git Workflow
-I suggest you run `pre-commit install` so all checks are ran everytime you commit.\
+It is suggested you run `poetry run pre-commit install` so all checks are ran automatically everytime you commit.\
 For contributing, just follow these steps:
 1. Create a branch for the feature you want to implement/bug to fix.
 2. Be sure to comment anything useful for explanation and annotate functions the most you can.
-3. Before committing, run `pre-commit run`.
-4. Be sure to use present tense in commit messages. Example: **"Add/Solve feature x"** instead of **"Added/Solved feature x"**
+3. Before committing, run `poetryrun pre-commit run`. (You may skip this if you already installed pre-commit)
 
 When submitting your pull request make sure to name it accordingly and explain in detail what you changed. Thanks for contributing!
 
@@ -53,33 +52,27 @@ Commands:
 If you need to extract new translations to the template file:
 
 ```bash
-pipenv run pybabel extract ./budgetize -o ./budgetize/translations/TRANSLATION_TEMPLATE.po --project Budgetize
+poetry run pybabel extract ./budgetize -o ./budgetize/translations/TRANSLATION_TEMPLATE.po --project Budgetize
 ```
 
 To create a new translation
+Create a folder called with your locane and add a folder called `LC_MESSAGES`
 
 ```bash
-pipenv run pybabel init -D budgetize -i ./budgetize/translations/TRANSLATION_TEMPLATE.po -o {path_to_your_locale}.po -l {locale}
+poetry run pybabel init -D budgetize -i ./budgetize/translations/TRANSLATION_TEMPLATE.po -o ./budgetize/translations/{locale}/{locale}.po -l {locale}
 ```
 
-Create a folder called `LC_MESSAGES`
 Compilation:
 ```bash
-pipenv run pybabel compile -D budgetize -l {locale} -i {your_translation}.po -d ./budgetize/translations/{locale}
+poetry run pybabel compile -D budgetize -l {locale} -i {your_translation}.po -d ./budgetize/translations/{locale}
 ```
 
 Updating Translations:
 ```bash
-pipenv run pybabel update -i .\budgetize\translations\TRANSLATION_TEMPLATE.po -o .\budgetize\translations\es\es.po -l es --previous --update-header-comment -D budgetize
-pipenv run pybabel compile -D budgetize -l {locale} -i {your_translation}.po -d ./budgetize/translations/
+poetry run pybabel update -i .\budgetize\translations\TRANSLATION_TEMPLATE.po -o .\budgetize\translations\{locale}\{locale}.po -l {locale} --previous --update-header-comment -D budgetize
 ```
 
-Updating Translations:
+Compile Translations
 ```bash
-pipenv run pybabel update -i .\budgetize\translations\TRANSLATION_TEMPLATE.po -o .\budgetize\translations\{locale}\{locale}.po -l {locale} --previous --update-header-comment -D budgetize
-```
-
-To extract new translatable strings
-```bash
-pipenv run pybabel extract budgetize --project BUDGETIZE  -o .\budgetize\translations\TRANSLATION_TEMPLATE.po
+poetry run pybabel compile -D budgetize -l {locale} -i {your_translation}.po -d ./budgetize/translations/
 ```
