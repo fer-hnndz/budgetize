@@ -4,6 +4,7 @@ import logging
 
 from textual.app import App
 
+from budgetize.consts import VERSION
 from budgetize.settings_manager import SettingsManager
 from budgetize.tui.screens.create_account import CreateAccount
 from budgetize.tui.screens.initial_config import InitialConfig
@@ -18,7 +19,7 @@ class TuiApp(App):
 
     def on_mount(self) -> None:
         """Called when the app is mounted"""
-        self.title = "Budgetize"
+        self.title = f"Budgetize (v{VERSION})"
         logging.info("Checking if user has default settings...")
         settings = SettingsManager()
 
