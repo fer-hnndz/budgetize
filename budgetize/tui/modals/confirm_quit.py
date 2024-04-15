@@ -1,16 +1,11 @@
 """Module that defines the ConfirmQuit modal"""
 
-import gettext
-
 from textual.app import ComposeResult
 from textual.containers import Center, Horizontal
 from textual.screen import ModalScreen
 from textual.widgets import Button, Label
 
-t = gettext.translation(
-    "budgetize", localedir="./budgetize/translations", fallback=True
-)
-_ = t.gettext
+from budgetize.utils import _
 
 
 class ConfirmQuit(ModalScreen):
@@ -26,6 +21,7 @@ class ConfirmQuit(ModalScreen):
             Horizontal(
                 Button.error(_("Exit"), id="yes-button"),
                 Button(_("Cancel"), id="no-button", variant="primary"),
+                id="horizontal-container",
             ),
             id="dialog",
         )

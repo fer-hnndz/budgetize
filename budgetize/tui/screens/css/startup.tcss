@@ -1,9 +1,0 @@
-#Loading-Label {
-    text-align: center;
-    padding-top: 1;
-
-}
-
-#Loading-Indicator {
-    max-height: 90vh;
-}

@@ -1,26 +1,21 @@
 """Module that defines the AddTransaction screen"""
 
-import gettext
+import logging
 from datetime import date as date_func
-from traceback import print_exc
+from traceback import format_exc
 from typing import Optional
 
 from arrow import Arrow
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.screen import Screen
-from textual.types import NoSelection
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from budgetize.consts import DEFAULT_CATEGORIES
-from budgetize.db import Database
-from budgetize.db.orm import Transaction
-
-t = gettext.translation(
-    "Budgetize", localedir="./budgetize/translations", languages=["es"]
-)
-_ = t.gettext
+from budgetize.db.database import Database
+from budgetize.db.orm.transactions import Transaction
+from budgetize.settings_manager import SettingsManager
+from budgetize.utils import _
 
 
 class AddTransaction(Screen):
@@ -43,13 +38,16 @@ class AddTransaction(Screen):
         super().__init__()
 
     def compose(self) -> ComposeResult:
+        """Called when screen is composed"""
+
+        logging.info("Composing AddTransaction Screen...")
         self.app.sub_title = (
             "Edit Transaction" if self.transaction else "Add Transaction"
         )
         yield Header()
         yield Footer()
 
-        yield Label("Account", id="account-label")
+        yield Label(_("Account"), id="account-label")
         yield Select(
             self._get_account_options(),
             id="account-select",
@@ -57,7 +55,7 @@ class AddTransaction(Screen):
             value=self.transaction.account_id if self.transaction else Select.BLANK,
             prompt="Select an account",
         )
-        yield Label("Amount", id="amount-label")
+        yield Label(_("Amount"), id="amount-label")
         yield Input(
             type="number",
             placeholder="250",
@@ -74,7 +72,7 @@ class AddTransaction(Screen):
             else today
         )
         # TODO: Implement a day and a time picker
-        yield Label("Date", id="date-label")
+        yield Label(_("Date"), id="date-label")
         yield Input(
             placeholder=today.format("M/D/YYYY"),
             id="date-input",
@@ -85,7 +83,7 @@ class AddTransaction(Screen):
             self.get_category_select_options(), allow_blank=False, id="category-select"
         )
 
-        yield Label("Description", id="description-label")
+        yield Label(_("Description"), id="description-label")
         yield Input(
             max_length=255,
             placeholder="Description for your income/expense",
@@ -93,12 +91,13 @@ class AddTransaction(Screen):
             value=self.transaction.description if self.transaction else "",
         )
 
-        lbl = "Update Transaction" if self.transaction else "Add Transaction"
+        lbl = _("Update Transaction") if self.transaction else _("Add Transaction")
         yield Button(lbl, id="add-transaction-button")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handles button presses"""
 
+        logging.info("Adding Transaction")
         account_selected: int = self.get_widget_by_id("account-select").value  # type: ignore
         account = self.DB.get_account_by_id(account_selected)
         currency = account.currency
@@ -111,17 +110,28 @@ class AddTransaction(Screen):
         # Attempt to parse the date from the user in M/D/YYYY/
         # If parsing fails, use the current date and time for saving the transaction
 
+        logging.debug(
+            f"Amount: {amount}, Category: {category}, Description: {description}"
+        )
         date = Arrow.now()
 
         try:
+            # TODO: Parse date based on locale
+
             date_strs: list[str] = self.get_widget_by_id("date-input").value.split("/")  # type: ignore
             date_from_input = date_func(
                 int(date_strs[2]), int(date_strs[0]), int(date_strs[1])
             )
             date = Arrow.fromdate(date_from_input)
+            logging.warning(
+                "PARSE DATE BASED ON LOCALE. THIS PARSING IS DONE MANUALLY."
+            )
+            logging.debug(f"Parsed Date: {date}")
 
         except Exception:
-            print_exc()
+            traceback_str = format_exc()
+            logging.critical("An error ocurred parsing the date.\n" + traceback_str)
+            logging.info("Using current date and time for transaction")
             date = Arrow.now()
 
         # Clear fields
@@ -138,7 +148,9 @@ class AddTransaction(Screen):
                 timestamp=date.timestamp(),
             )
             self.app.pop_screen()
-            self.app.notify(_("Sucessfully updated transaction!"))
+            self.app.notify(
+                _("Sucessfully updated transaction!"), title=_("Transaction Updated")
+            )
             return
 
         self.DB.add_transaction(
@@ -153,7 +165,8 @@ class AddTransaction(Screen):
         self.app.notify(
             _("Sucessfully added transaction of {currency} {amount}").format(
                 currency=currency, amount=amount
-            )
+            ),
+            title=_("Transaction Added"),
         )
 
     def _get_account_options(self) -> list[tuple[str, int]]:
@@ -163,7 +176,7 @@ class AddTransaction(Screen):
     def get_category_select_options(self) -> list[tuple[str, str]]:
         """Returns a list of tuples (name, id) for the TUI to show"""
         categories = []
-        for category in DEFAULT_CATEGORIES:
+        for category in SettingsManager().get_categories():
             categories.append((category, category))
 
         return categories

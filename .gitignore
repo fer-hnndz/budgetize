@@ -5,4 +5,3 @@ exchange_rates.json
 budgetize.sqlite
 test_db.sqlite
 dist/
-Pipfile.lock

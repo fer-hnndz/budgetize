@@ -1,0 +1,16 @@
+ErrorModal {
+    align: center middle;
+}
+
+#center-modal {
+    height: 18;
+    width: 120;
+}
+
+#title-str {
+    margin-top: 1;
+}
+
+#scroll {
+    border: dashed red;
+}

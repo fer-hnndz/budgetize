@@ -17,7 +17,7 @@ repos:
     rev: v1.8.0
     hooks:
     -   id: mypy
-        additional_dependencies: [textual, arrow, types-requests]
+        additional_dependencies: [textual, arrow, types-requests, types-setuptools, types-beautifulsoup4]
 -   repo: local
     hooks:
     -   id: pylint

@@ -1,6 +1,6 @@
 """Module that defines the CreateAccount screen."""
 
-import gettext
+import logging
 
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -9,14 +9,9 @@ from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from budgetize.consts import CURRENCIES
-from budgetize.db import Database
-from budgetize.db.orm import Account, AccountType
-
-t = gettext.translation(
-    "budgetize", localedir="./budgetize/translations", languages=["es"]
-)
-_ = t.gettext
+from budgetize.db.database import Database
+from budgetize.tui.modals.error_modal import ErrorModal
+from budgetize.utils import _, get_select_currencies
 
 
 class CreateAccount(Screen):
@@ -39,6 +34,7 @@ class CreateAccount(Screen):
     def compose(self) -> ComposeResult:
         """Called when the screen is composed."""
 
+        logging.info("Composing CreateAccount Screen...")
         self.app.sub_title = _("Create Account")
         yield Header()
         yield Footer()
@@ -49,7 +45,7 @@ class CreateAccount(Screen):
                 Label(_("Account Currency"), id="currency-label"),
                 Label(_("Account Name"), id="name-label"),
                 Select(
-                    self.get_currency_choices(), id="currency-select", allow_blank=False
+                    get_select_currencies(), id="currency-select", allow_blank=False
                 ),
                 Input(placeholder=_("Bank Account"), id="account-name-input"),
             ),
@@ -65,13 +61,6 @@ class CreateAccount(Screen):
                     )
                 ],
             ),
-            Label(_("Account Type"), id="account-type-label"),
-            Select(
-                # TODO: Localize this
-                self.get_account_type_choices(),
-                id="account-type-select",
-                allow_blank=False,
-            ),
             Horizontal(
                 Button.success(_("Create Account"), id="create-account-button"),
                 Button.error(_("Cancel"), id="cancel-button"),
@@ -84,37 +73,34 @@ class CreateAccount(Screen):
         if event.button.id == "create-account-button":
             name: str = self.get_widget_by_id("account-name-input").value  # type: ignore
             currency: str = self.get_widget_by_id("currency-select").value  # type: ignore
-            balance: float = self.get_widget_by_id("balance-input").value  # type: ignore
-            account_type_name: str = self.get_widget_by_id("account-type-select").value  # type: ignore #pylint: disable=line-too-long
+            starting_balance: float = self.get_widget_by_id("balance-input").value  # type: ignore
 
-            new_account = Account(
-                account_type_name=account_type_name.upper(),
+            logging.debug(f"Creating Account: {name} {currency} {starting_balance}")
+
+            if self.DB.account_name_exists(name):
+                logging.warning("Account Name already exists! Showing error")
+                self.app.push_screen(
+                    ErrorModal(
+                        _("Account Name already Exists"),
+                        traceback_msg=_(
+                            "You cannot have 2 accounts with the same name!"
+                        ),
+                    )
+                )
+                return
+
+            self.DB.add_account(
                 name=name,
                 currency=currency,
-                balance=balance,
+                starting_balance=starting_balance,
             )
 
-            self.DB.add_account(new_account)
-            self.app.pop_screen()
             self.notify(_("Account created successfully."), title="Account Created")
-
-        elif event.button.id == "cancel-button":
             self.get_widget_by_id("account-name-input").value = ""  # type: ignore
             self.get_widget_by_id("balance-input").value = ""  # type: ignore
             self.app.pop_screen()
-
-    def get_currency_choices(self) -> list[tuple[str, str]]:
-        """Returns a list of tuples for the currency select widget"""
-        res = []
-        for curr in CURRENCIES:
-            res.append((f"({curr[0]}) {curr[1]}", curr[0]))
-
-        return res
-
-    def get_account_type_choices(self) -> list[tuple[str, str]]:
-        """Returns a list of tuples for the account type select widget"""
-        res = []
-        for acc in AccountType:
-            res.append((acc.name.capitalize(), acc.name.capitalize()))
-
-        return res
+        else:
+            # Clear the input fields
+            self.get_widget_by_id("account-name-input").value = ""  # type: ignore
+            self.get_widget_by_id("balance-input").value = ""  # type: ignore
+            self.app.pop_screen()
