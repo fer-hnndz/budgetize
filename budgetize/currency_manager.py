@@ -215,12 +215,13 @@ class CurrencyManager:
                     logging.critical("Could not find digits span in response html.")
                     return -1
 
-                digits_str: str = digits_span.get_text()
+                digits_str: str = digits_span.get_text().replace(",", "")
+                logging.debug(f"Faded Digits from SPAN: {digits_str}")
                 parent_div = digits_span.parent  # type:ignore
 
                 # Get first element of the iterator
                 for child in parent_div.children:  # type:ignore
-                    rate_p = str(child)
+                    rate_p = str(child).replace(",", "")
                     break
 
                 amount_of_zero = len(rate_p.split(".")[-1])
