@@ -11,7 +11,7 @@ A Terminal User Interface (TUI) that allows you to manage your finances made wit
 - Visualize your monthly balance
 - Works with different currencies and automatically fetches exchange rates.
 
-<img src = "docs/budgetize_hero.png" width = "70%">
+![](docs/budgetize_hero.png)
 
 # ⚙ Installation
 
