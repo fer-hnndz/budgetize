@@ -210,6 +210,8 @@ class MainMenu(Screen):
 
         if event.button.id == "create-account-button":
             self.app.push_screen("create_account")
+            # Set rates as not fetched in case user creates an account with a new currency
+            self.rates_fetched = False
         if event.button.id == "manage-accounts-button":
             accounts = self.DB.get_accounts()
             if sum(1 for _ in accounts) > 0:  # Get the length of the generator
@@ -432,10 +434,16 @@ class MainMenu(Screen):
                     self.last_account_value = str(event.value)
 
                 # 0.00\xa0USD - format
-                logging.info("Parsing currency from cell...")
-                numbers: str = event.value.split("\xa0")[0]  # type:ignore
+                logging.info(f"Parsing currency from cell: {event.value}")
+                detected_decimal = ""
+                for char in str(event.value):
+                    if char.strip().isdigit() or char.strip() in [",", "."]:
+                        detected_decimal += char
+
+                logging.debug(f"Detected decimals: {detected_decimal}")
+
                 decimal_value = parse_decimal(
-                    numbers,
+                    detected_decimal,
                     locale=SettingsManager().get_locale(),
                 )
                 logging.debug(f"Decimal value: {decimal_value}")
@@ -480,9 +488,6 @@ class MainMenu(Screen):
 
                 self.last_account_key = None
                 self.last_account_value = ""
-
-        if event.control.id == "recent-transactions-table":
-            pass
 
     def action_refresh_currencies(self) -> None:
         """Called when user hits the binding to refresh currencies"""

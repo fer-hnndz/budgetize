@@ -95,10 +95,12 @@ class CreateAccount(Screen):
                 starting_balance=starting_balance,
             )
 
-            self.app.pop_screen()
             self.notify(_("Account created successfully."), title="Account Created")
-
-        # Clear the input fields
-        self.get_widget_by_id("account-name-input").value = ""  # type: ignore
-        self.get_widget_by_id("balance-input").value = ""  # type: ignore
-        self.app.pop_screen()
+            self.get_widget_by_id("account-name-input").value = ""  # type: ignore
+            self.get_widget_by_id("balance-input").value = ""  # type: ignore
+            self.app.pop_screen()
+        else:
+            # Clear the input fields
+            self.get_widget_by_id("account-name-input").value = ""  # type: ignore
+            self.get_widget_by_id("balance-input").value = ""  # type: ignore
+            self.app.pop_screen()
