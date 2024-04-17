@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from textual.app import App
 
 from budgetize import CurrencyManager, SettingsManager
-from budgetize.consts import APP_FOLDER_PATH, DB_FILE_NAME, PROD_DB_URL
+from budgetize.consts import APP_FOLDER_PATH, BACKUPS_FOLDER, DB_FILE_NAME, PROD_DB_URL
 from budgetize.db.orm._base import Base
 from budgetize.db.orm.account import Account
 from budgetize.db.orm.transactions import Transaction
@@ -48,24 +48,24 @@ class Database:
     def _backup_database(self) -> None:
         """Creates a backup of the current database into the backups folder"""
         logging.info("Backing up database...")
-        backups_folder = os.path.join(APP_FOLDER_PATH, "backups")
         now = Arrow.now()
         prod_db_path = os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)
-        logging.debug("Backups Folder Path: " + backups_folder)
         logging.debug("Production Database Path: " + prod_db_path)
 
         if not os.path.exists(prod_db_path):
             return
 
-        if not os.path.exists(backups_folder):
-            os.makedirs(backups_folder)
+        if not os.path.exists(BACKUPS_FOLDER):
+            os.makedirs(BACKUPS_FOLDER)
 
-        db_backup_filename = f"budgetize-backup-{str(round(now.timestamp()))}.sqlite"
+        db_backup_filename = (
+            f"budgetize-backup-{now.format('DD-MM-YYYY (HH.MM)')}.sqlite"
+        )
         logging.debug("Backup filename: " + db_backup_filename)
 
         with open(prod_db_path, mode="rb") as f:
             with open(
-                os.path.join(backups_folder, db_backup_filename), mode="wb"
+                os.path.join(BACKUPS_FOLDER, db_backup_filename), mode="wb"
             ) as backup:
                 backup.write(f.read())
 

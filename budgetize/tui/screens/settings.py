@@ -6,10 +6,11 @@ from textual.screen import Screen
 from textual.types import NoSelection
 from textual.widgets import Button, Footer, Header, Label, Select
 
-from budgetize.consts import AVAILABLE_LANGUAGES
+from budgetize.consts import AVAILABLE_LANGUAGES, BACKUPS_FOLDER
 from budgetize.db.database import Database
 from budgetize.settings_manager import SettingsDict, SettingsManager
 from budgetize.tui.modals.categories_modal import CategoriesModal
+from budgetize.tui.modals.file_selector_modal import FileSelectorModal
 from budgetize.utils import _, get_select_currencies
 
 
@@ -59,6 +60,7 @@ class Settings(Screen):
             allow_blank=False,
         )
         yield Button(_("Manage Categories"), id="categories-btn", variant="primary")
+        yield Button(_("Revert Accounts & Transactions from Backup"), id="backup-btn")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button press handler"""
@@ -66,6 +68,12 @@ class Settings(Screen):
         if event.button.id == "categories-btn":
             logging.info("Showing Categories Settings...")
             self.app.push_screen(CategoriesModal())
+        if event.button.id == "backup-btn":
+            self.app.push_screen(
+                FileSelectorModal(
+                    BACKUPS_FOLDER, message=_("Select the backup you want to revert to")
+                )
+            )
 
     def action_save_settings(self) -> None:
         """Action to run when user hits save settings"""
