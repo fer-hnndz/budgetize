@@ -1,0 +1,12 @@
+FileSelectorModal {
+    align: center middle;
+}
+
+#center {
+    height: 15;
+    width: 90;
+}
+#msg {
+    margin-top: 1;
+    margin-bottom: 1;
+}
