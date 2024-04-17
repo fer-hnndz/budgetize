@@ -1,5 +1,7 @@
 """Definition of Database class that handles database operations"""
 
+import logging
+import os
 from typing import Iterator, Optional
 
 from arrow import Arrow
@@ -8,7 +10,7 @@ from sqlalchemy.orm import Session
 from textual.app import App
 
 from budgetize import CurrencyManager, SettingsManager
-from budgetize.consts import PROD_DB_URL
+from budgetize.consts import APP_FOLDER_PATH, DB_FILE_NAME, PROD_DB_URL
 from budgetize.db.orm._base import Base
 from budgetize.db.orm.account import Account
 from budgetize.db.orm.transactions import Transaction
@@ -20,6 +22,7 @@ class Database:
     """
 
     engine = create_engine(PROD_DB_URL)
+    backup_done = False
 
     def __init__(self, app: Optional[App] = None):
         """Initializes a Database instance.
@@ -35,8 +38,39 @@ class Database:
                 if not "devtools" in app.features
                 else "sqlite:///test_db.sqlite"
             )
+
+            if not "devtools" in app.features and not Database.backup_done:
+                self._backup_database()
+
         Base.metadata.create_all(self.engine)
         self.settings = SettingsManager()
+
+    def _backup_database(self) -> None:
+        """Creates a backup of the current database into the backups folder"""
+        logging.info("Backing up database...")
+        backups_folder = os.path.join(APP_FOLDER_PATH, "backups")
+        now = Arrow.now()
+        prod_db_path = os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)
+        logging.debug("Backups Folder Path: " + backups_folder)
+        logging.debug("Production Database Path: " + prod_db_path)
+
+        if not os.path.exists(prod_db_path):
+            return
+
+        if not os.path.exists(backups_folder):
+            os.makedirs(backups_folder)
+
+        db_backup_filename = f"budgetize-backup-{str(round(now.timestamp()))}.sqlite"
+        logging.debug("Backup filename: " + db_backup_filename)
+
+        with open(prod_db_path, mode="rb") as f:
+            with open(
+                os.path.join(backups_folder, db_backup_filename), mode="wb"
+            ) as backup:
+                backup.write(f.read())
+
+        Database.backup_done = True
+        logging.info("Backed up database successfully!")
 
     def get_transactions_from_account(self, account_id: int) -> Iterator[Transaction]:
         """Returns an iterator of transactions from the specified account.
