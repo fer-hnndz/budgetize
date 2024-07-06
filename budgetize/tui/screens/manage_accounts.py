@@ -128,7 +128,10 @@ class ManageAccounts(Screen):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button push handler"""
 
-        if event.button.id == "delete-acc":
+        if event.button.id is None:
+            return
+
+        if "delete-acc" in event.button.id:
             # Format of btn is delete-acc-{Account.id}
 
             account_id = int(event.button.id.split("-")[-1])

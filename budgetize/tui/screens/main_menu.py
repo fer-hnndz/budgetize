@@ -70,6 +70,7 @@ class MainMenu(Screen):
         MainMenu.DB = Database(self.app)
         self.rates_fetched = False
 
+        # Keys for storing actual values to show main currency
         self.last_account_key: Optional[CellKey] = None
         self.last_account_value: str = "None"
         self.last_recent_transactions_key: Optional[CellKey] = None
@@ -202,6 +203,13 @@ class MainMenu(Screen):
 
     def on_screen_resume(self) -> None:
         """Called when the screen is now the current screen"""
+
+        # Reset key values to avoid crashes
+        self.last_account_key = None
+        self.last_account_value = "None"
+        self.last_recent_transactions_key = None
+        self.last_recent_transactions_value = "None"
+
         self.app.sub_title = _("Main Menu")
         self.run_worker(self.update_ui_info, exclusive=True)  # type: ignore
 
