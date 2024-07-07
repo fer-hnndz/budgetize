@@ -266,6 +266,7 @@ class Database:
             "timestamp": timestamp,
         }
 
+        logging.info(f"Updating transaction with values: {values}")
         with Session(Database.engine) as session:
             upd = (
                 update(Transaction)

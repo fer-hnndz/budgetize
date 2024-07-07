@@ -32,7 +32,11 @@ class AddTransaction(Screen):
     ]
 
     def __init__(self, transaction: Optional[Transaction] = None) -> None:
-        """Creates a new AddTransaction screen"""
+        """Creates a new AddTransaction screen
+
+        transaction `Transaction`:
+            If a transaction is passed, all those details are loaded for the user to edit it.
+        """
         AddTransaction.DB = Database(self.app)
         self.transaction = transaction
         super().__init__()
