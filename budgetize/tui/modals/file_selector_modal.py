@@ -1,6 +1,8 @@
 """Module that defines the FileSelectorModal"""
 
 import logging
+from pathlib import Path
+from typing import Optional
 
 from textual.app import ComposeResult
 from textual.containers import Center, Horizontal, Vertical
@@ -28,6 +30,8 @@ class FileSelectorModal(ModalScreen):
         self.msg = message
         self.path = path
 
+        self.selected_path: Optional[Path] = None
+
     def compose(self) -> ComposeResult:
         logging.info("Composing FileSelectorModa")
         with Center(id="center"):
@@ -37,3 +41,39 @@ class FileSelectorModal(ModalScreen):
             with Horizontal(id="btns"):
                 yield Button(_("Accept"), id="accept-btn", variant="primary")
                 yield Button.error(_("Cancel"), id="cancel-btn")
+
+    def on_directory_tree_file_selected(
+        self, event: DirectoryTree.FileSelected
+    ) -> None:
+        """Triggered when selected file is changed"""
+
+        self.selected_path = event.path
+        print(f"Selected Path: {self.selected_path}")
+        logging.debug(
+            f"Selected Path: {self.selected_path}",
+        )
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Button press handler"""
+
+        print(self.selected_path)
+        if event.button.id == "accept-btn":
+            if self.selected_path is None:
+                self.notify(
+                    title=_("Recover From Backup"),
+                    message=_("Please select a backup file to recover from."),
+                    severity="error",
+                )
+                return
+
+            if not self.selected_path.is_file():
+                self.notify(
+                    title=_("Recover From Backup"),
+                    message=_("Please select a valid backup file to recover from."),
+                    severity="error",
+                )
+                return
+
+            self.dismiss(self.selected_path)
+        elif event.button.id == "cancel-btn":
+            self.dismiss(None)

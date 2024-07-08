@@ -1,4 +1,6 @@
 import logging
+from pathlib import Path
+from typing import Optional
 
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -11,6 +13,7 @@ from budgetize.db.database import Database
 from budgetize.settings_manager import SettingsDict, SettingsManager
 from budgetize.tui.modals.categories_modal import CategoriesModal
 from budgetize.tui.modals.file_selector_modal import FileSelectorModal
+from budgetize.tui.modals.message_modal import MessageModal
 from budgetize.utils import _, get_select_currencies
 
 
@@ -72,8 +75,29 @@ class Settings(Screen):
             self.app.push_screen(
                 FileSelectorModal(
                     BACKUPS_FOLDER, message=_("Select the backup you want to revert to")
-                )
+                ),
+                self.load_backup,
             )
+
+    def load_backup(self, backup: Optional[Path]) -> None:
+        """Load a backup file
+
+        Args:
+            backup (str): The path to the backup file
+        """
+        if backup is None:
+            self.notify(
+                title=_("Recover From Backup"),
+                message=_("No backup selected."),
+                severity="warning",
+            )
+            return
+
+        Settings.DB.revert_from_backup(backup)
+        message_modal = MessageModal(
+            message=_("Backup loaded successfully.\nPlease restart Budgetize.")
+        )
+        self.app.push_screen(message_modal)
 
     def action_save_settings(self) -> None:
         """Action to run when user hits save settings"""

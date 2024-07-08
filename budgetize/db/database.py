@@ -2,6 +2,7 @@
 
 import logging
 import os
+from pathlib import Path
 from typing import Iterator, Optional
 
 from arrow import Arrow
@@ -30,44 +31,53 @@ class Database:
         Args:
             app (App): The application instance.
         """
-        if app is None:
+        self.app = app
+        self.settings = SettingsManager()
+        self.dev_db = True
+        self._init_connection()
+
+    def _init_connection(self) -> None:
+        """Initializes the connection to the database."""
+
+        logging.info("Initializing database connection...")
+        if self.app is None:
             Database.engine = create_engine("sqlite:///test_db.sqlite")
+            self.dev_db = True
         else:
             Database.engine = create_engine(
                 PROD_DB_URL
-                if not "devtools" in app.features
+                if not "devtools" in self.app.features
                 else "sqlite:///test_db.sqlite"
             )
+            self.dev_db = True if "devtools" in self.app.features else False
 
-            if not "devtools" in app.features and not Database.backup_done:
+            if not "devtools" in self.app.features and not Database.backup_done:
                 self._backup_database()
 
-        Base.metadata.create_all(self.engine)
-        self.settings = SettingsManager()
+        Base.metadata.create_all(Database.engine)
 
     def _backup_database(self) -> None:
         """Creates a backup of the current database into the backups folder"""
+
+        print("Backing up database...")
         logging.info("Backing up database...")
         now = Arrow.now()
-        prod_db_path = os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)
-        logging.debug("Production Database Path: " + prod_db_path)
-
-        if not os.path.exists(prod_db_path):
-            return
+        db_path = os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)
+        logging.debug("Production Database Path: " + db_path)
 
         if not os.path.exists(BACKUPS_FOLDER):
             os.makedirs(BACKUPS_FOLDER)
 
         db_backup_filename = (
-            f"budgetize-backup-{now.format('DD-MM-YYYY (HH.MM)')}.sqlite"
+            f"budgetize-backup-{now.format('DD-MM-YYYY (HH.mm)')}.sqlite"
         )
         logging.debug("Backup filename: " + db_backup_filename)
 
-        with open(prod_db_path, mode="rb") as f:
+        with open(db_path, mode="rb") as original_db:
             with open(
                 os.path.join(BACKUPS_FOLDER, db_backup_filename), mode="wb"
             ) as backup:
-                backup.write(f.read())
+                backup.write(original_db.read())
 
         Database.backup_done = True
         logging.info("Backed up database successfully!")
@@ -390,6 +400,24 @@ class Database:
 
         return round(expense, 2)
 
+    async def get_amount_in_base_currency(self, amount: float, currency: str) -> float:
+        """(Coroutine) Returns the amount in the base currency.
+
+        Args:
+            amount (float): The amount to convert.
+            currency (str): The currency of the amount.
+
+        Returns:
+            float: The amount in the base currency.
+        """
+        if currency == self.settings.get_base_currency():
+            return amount
+
+        exchange_rate = await CurrencyManager(
+            self.settings.get_base_currency()
+        ).get_exchange(currency)
+        return amount / exchange_rate
+
     def delete_transaction(self, transaction_id: int) -> Transaction:
         """Deletes the specified transaction from the DB and returns it.
 
@@ -408,3 +436,24 @@ class Database:
             session.delete(selected_transaction)
             session.commit()
             return selected_transaction
+
+    def revert_from_backup(self, backup_file: Path) -> bool:
+        """Reverts the database to the specified backup file."""
+
+        # Close connections to the current database.
+        Database.engine.dispose()
+        Database.engine = None
+
+        # Write backup file to the database file
+
+        contents: bytes
+
+        with open(backup_file, mode="rb") as f:
+            contents = f.read()
+
+        db_path = os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)
+        with open(db_path, mode="wb") as f:
+            f.write(contents)
+
+        self._init_connection()
+        return True
