@@ -6,15 +6,16 @@ from pathlib import Path
 from typing import Iterator, Optional
 
 from arrow import Arrow
-from sqlalchemy import create_engine, select, update
-from sqlalchemy.orm import Session
-from textual.app import App
-
 from budgetize import CurrencyManager, SettingsManager
 from budgetize.consts import APP_FOLDER_PATH, BACKUPS_FOLDER, DB_FILE_NAME, PROD_DB_URL
 from budgetize.db.orm._base import Base
 from budgetize.db.orm.account import Account
 from budgetize.db.orm.transactions import Transaction
+from sqlalchemy import create_engine, select, update
+from sqlalchemy.orm import Session
+from textual.app import App
+
+logger = logging.getLogger(__name__)
 
 
 class Database:
@@ -29,7 +30,9 @@ class Database:
         """Initializes a Database instance.
 
         Args:
+        ----
             app (App): The application instance.
+
         """
         self.app = app
         self.settings = SettingsManager()
@@ -38,32 +41,30 @@ class Database:
 
     def _init_connection(self) -> None:
         """Initializes the connection to the database."""
-
-        logging.info("Initializing database connection...")
+        logger.info("Initializing database connection...")
         if self.app is None:
             Database.engine = create_engine("sqlite:///test_db.sqlite")
             self.dev_db = True
         else:
             Database.engine = create_engine(
                 PROD_DB_URL
-                if not "devtools" in self.app.features
-                else "sqlite:///test_db.sqlite"
+                if "devtools" not in self.app.features
+                else "sqlite:///test_db.sqlite",
             )
             self.dev_db = True if "devtools" in self.app.features else False
 
-            if not "devtools" in self.app.features and not Database.backup_done:
+            if "devtools" not in self.app.features and not Database.backup_done:
                 self._backup_database()
 
         Base.metadata.create_all(Database.engine)
 
     def _backup_database(self) -> None:
         """Creates a backup of the current database into the backups folder"""
-
         print("Backing up database...")
-        logging.info("Backing up database...")
+        logger.info("Backing up database...")
         now = Arrow.now()
         db_path = os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)
-        logging.debug("Production Database Path: " + db_path)
+        logger.debug("Production Database Path: " + db_path)
 
         if not os.path.exists(BACKUPS_FOLDER):
             os.makedirs(BACKUPS_FOLDER)
@@ -71,25 +72,29 @@ class Database:
         db_backup_filename = (
             f"budgetize-backup-{now.format('DD-MM-YYYY (HH.mm)')}.sqlite"
         )
-        logging.debug("Backup filename: " + db_backup_filename)
+        logger.debug("Backup filename: " + db_backup_filename)
 
         with open(db_path, mode="rb") as original_db:
             with open(
-                os.path.join(BACKUPS_FOLDER, db_backup_filename), mode="wb"
+                os.path.join(BACKUPS_FOLDER, db_backup_filename),
+                mode="wb",
             ) as backup:
                 backup.write(original_db.read())
 
         Database.backup_done = True
-        logging.info("Backed up database successfully!")
+        logger.info("Backed up database successfully!")
 
     def get_transactions_from_account(self, account_id: int) -> Iterator[Transaction]:
         """Returns an iterator of transactions from the specified account.
 
         Args:
+        ----
             account_id (int): The ID of the account.
 
         Yields:
+        ------
             Transaction: A transaction from the specified account.
+
         """
         stmt = select(Transaction).where(Transaction.account_id == account_id)
 
@@ -98,17 +103,23 @@ class Database:
                 yield transaction
 
     def get_monthly_transactions_from_account(
-        self, account_id: int, month: str, year: str
+        self,
+        account_id: int,
+        month: str,
+        year: str,
     ) -> Iterator[Transaction]:
         """Returns an iterator of transactions from the specified account within the specified month and year.
 
         Args:
+        ----
             account_id (int): The ID of the account.
             month (str): The month in format 'MM'.
             year (str): The year in format 'YYYY'.
 
         Yields:
+        ------
             Transaction: A transaction from the specified account within the specified month and year.
+
         """
         transactions = self.get_transactions_from_account(account_id)
 
@@ -122,8 +133,10 @@ class Database:
     def get_accounts(self) -> Iterator[Account]:
         """Returns an iterator of all accounts.
 
-        Yields:
+        Yields
+        ------
             Account: An account from the database.
+
         """
         stmt = select(Account)
 
@@ -135,10 +148,13 @@ class Database:
         """Returns the account with the specified ID.
 
         Args:
+        ----
             account_id (int): The ID of the account.
 
         Returns:
+        -------
             Account: The account with the specified ID.
+
         """
         with Session(Database.engine) as session:
             found_account: Account = session.get_one(Account, account_id)
@@ -148,10 +164,13 @@ class Database:
         """Returns the account with the specified name.
 
         Args:
+        ----
             name (str): The name of the account.
 
         Returns:
+        -------
             Account: The account with the specified name.
+
         """
         with Session(Database.engine) as session:
             stmt = select(Account).where(Account.name == name)
@@ -162,10 +181,13 @@ class Database:
         """Returns True if an account with the specified name exists, False otherwise.
 
         Args:
+        ----
             name (str): The name of the account.
 
         Returns:
+        -------
             bool: True if an account with the specified name exists, False otherwise.
+
         """
         with Session(Database.engine) as session:
             stmt = select(Account).where(Account.name == name)
@@ -176,14 +198,18 @@ class Database:
         """Returns the transaction with the specified ID.
 
         Args:
+        ----
             transaction_id (int): The ID of the transaction.
 
         Returns:
+        -------
             Transaction: The transaction with the specified ID.
+
         """
         with Session(Database.engine) as session:
             found_transaction: Transaction = session.get_one(
-                Transaction, transaction_id
+                Transaction,
+                transaction_id,
             )
             return found_transaction
 
@@ -196,12 +222,13 @@ class Database:
         """Adds a new account to the user.
 
         Args:
+        ----
             name (str): The name of the account.
             currency (str): The currency of the account.
             starting_balance (float): The starting balance of the account.
             account_type_name (str): The type of the account.
-        """
 
+        """
         with Session(Database.engine) as session:
             new_account = Account(name=name, currency=currency)
             session.add(new_account)
@@ -230,11 +257,13 @@ class Database:
         """Registers a new transaction.
 
         Args:
+        ----
             account_id (int): The ID of the account.
             amount (float): The amount of the transaction.
             description (str): The description of the transaction.
             category (str): The category of the transaction.
             timestamp (float): The timestamp of the transaction.
+
         """
         transaction = Transaction(
             account_id=account_id,
@@ -261,12 +290,14 @@ class Database:
         """Updates the specified transaction in the database.
 
         Args:
+        ----
             transaction_id (int): The ID of the transaction to update.
             account_id (int): The ID of the account.
             amount (float): The new amount of the transaction.
             description (str): The new description of the transaction.
             category (str): The new category of the transaction.
             timestamp (float): The new timestamp of the transaction.
+
         """
         values = {
             "account_id": account_id,
@@ -276,7 +307,7 @@ class Database:
             "timestamp": timestamp,
         }
 
-        logging.info(f"Updating transaction with values: {values}")
+        logger.info(f"Updating transaction with values: {values}")
         with Session(Database.engine) as session:
             upd = (
                 update(Transaction)
@@ -289,8 +320,10 @@ class Database:
     def get_all_recent_transactions(self) -> list[Transaction]:
         """Returns a list with the last 5 transactions saved across all accounts.
 
-        Returns:
+        Returns
+        -------
             list[Transaction]: A list of recent transactions.
+
         """
         with Session(Database.engine) as session:
             stmt = (
@@ -306,12 +339,14 @@ class Database:
         """Returns the balance of the specified account.
 
         Args:
+        ----
             account_id (int): The ID of the account.
 
         Returns:
+        -------
             float: The balance of the account.
-        """
 
+        """
         stmt = select(Transaction).where(Transaction.account_id == account_id)
         with Session(Database.engine) as session:
             transactions = session.execute(stmt).scalars().all()
@@ -325,22 +360,25 @@ class Database:
     async def get_monthly_income(self) -> float:
         """(Coroutine) Returns the total income for the current month.
 
-        Returns:
+        Returns
+        -------
             float: The total income for the current month.
+
         """
         now = Arrow.now()
 
         income = 0.0
         for account in self.get_accounts():
-
             exchange_rate = 1.0
             if account.currency != self.settings.get_base_currency():
                 exchange_rate = await CurrencyManager(
-                    self.settings.get_base_currency()
+                    self.settings.get_base_currency(),
                 ).get_exchange(account.currency)
 
             for transaction in self.get_monthly_transactions_from_account(
-                account.id, now.format("M"), now.format("YYYY")
+                account.id,
+                now.format("M"),
+                now.format("YYYY"),
             ):
                 if transaction.amount > 0 and transaction.visible:
                     income += transaction.amount / exchange_rate
@@ -351,7 +389,9 @@ class Database:
         """Deletes the specified account from the database.
 
         Args:
+        ----
             account_id (int): The ID of the account to delete.
+
         """
         stmt = select(Account).where(Account.id == account_id)
 
@@ -367,7 +407,7 @@ class Database:
 
             # Delete transactions from the account
             transaction_stmt = select(Transaction).where(
-                Transaction.account_id == account_id
+                Transaction.account_id == account_id,
             )
             transaction_rows = session.execute(transaction_stmt).fetchall()
 
@@ -380,8 +420,10 @@ class Database:
     async def get_monthly_expense(self) -> float:
         """(Coroutine) Returns the total expenses for the current month.
 
-        Returns:
+        Returns
+        -------
             float: The total expenses for the current month.
+
         """
         now = Arrow.now()
 
@@ -390,10 +432,12 @@ class Database:
             rate = 1.0
             if account.currency != self.settings.get_base_currency():
                 rate = await CurrencyManager(
-                    self.settings.get_base_currency()
+                    self.settings.get_base_currency(),
                 ).get_exchange(account.currency)
             for transaction in self.get_monthly_transactions_from_account(
-                account.id, now.format("M"), now.format("YYYY")
+                account.id,
+                now.format("M"),
+                now.format("YYYY"),
             ):
                 if transaction.amount < 0 and transaction.visible:
                     expense += transaction.amount / rate
@@ -404,17 +448,20 @@ class Database:
         """(Coroutine) Returns the amount in the base currency.
 
         Args:
+        ----
             amount (float): The amount to convert.
             currency (str): The currency of the amount.
 
         Returns:
+        -------
             float: The amount in the base currency.
+
         """
         if currency == self.settings.get_base_currency():
             return amount
 
         exchange_rate = await CurrencyManager(
-            self.settings.get_base_currency()
+            self.settings.get_base_currency(),
         ).get_exchange(currency)
         return amount / exchange_rate
 
@@ -422,10 +469,13 @@ class Database:
         """Deletes the specified transaction from the DB and returns it.
 
         Args:
+        ----
             transaction_id (int): The ID of the transaction to delete.
 
         Returns:
+        -------
             Transaction: The deleted transaction.
+
         """
         stmt = select(Transaction).where(Transaction.id == transaction_id)
         with Session(Database.engine) as session:
@@ -439,7 +489,6 @@ class Database:
 
     def revert_from_backup(self, backup_file: Path) -> bool:
         """Reverts the database to the specified backup file."""
-
         # Close connections to the current database.
         Database.engine.dispose()
         Database.engine = None

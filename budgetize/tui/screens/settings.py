@@ -2,12 +2,6 @@ import logging
 from pathlib import Path
 from typing import Optional
 
-from textual.app import ComposeResult
-from textual.binding import Binding
-from textual.screen import Screen
-from textual.types import NoSelection
-from textual.widgets import Button, Footer, Header, Label, Select
-
 from budgetize.consts import AVAILABLE_LANGUAGES, BACKUPS_FOLDER
 from budgetize.db.database import Database
 from budgetize.settings_manager import SettingsDict, SettingsManager
@@ -15,6 +9,13 @@ from budgetize.tui.modals.categories_modal import CategoriesModal
 from budgetize.tui.modals.file_selector_modal import FileSelectorModal
 from budgetize.tui.modals.message_modal import MessageModal
 from budgetize.utils import _, get_select_currencies
+from textual.app import ComposeResult
+from textual.binding import Binding
+from textual.screen import Screen
+from textual.types import NoSelection
+from textual.widgets import Button, Footer, Header, Label, Select
+
+logger = logging.getLogger(__name__)
 
 
 class Settings(Screen):
@@ -42,7 +43,7 @@ class Settings(Screen):
 
     def compose(self) -> ComposeResult:
         """Composes the Settings Screen"""
-        logging.info("Composing Settings Screen...")
+        logger.info("Composing Settings Screen...")
 
         yield Header()
         yield Footer()
@@ -67,14 +68,14 @@ class Settings(Screen):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button press handler"""
-
         if event.button.id == "categories-btn":
-            logging.info("Showing Categories Settings...")
+            logger.info("Showing Categories Settings...")
             self.app.push_screen(CategoriesModal())
         if event.button.id == "backup-btn":
             self.app.push_screen(
                 FileSelectorModal(
-                    BACKUPS_FOLDER, message=_("Select the backup you want to revert to")
+                    BACKUPS_FOLDER,
+                    message=_("Select the backup you want to revert to"),
                 ),
                 self.load_backup,
             )
@@ -83,7 +84,9 @@ class Settings(Screen):
         """Load a backup file
 
         Args:
+        ----
             backup (str): The path to the backup file
+
         """
         if backup is None:
             self.notify(
@@ -95,13 +98,12 @@ class Settings(Screen):
 
         Settings.DB.revert_from_backup(backup)
         message_modal = MessageModal(
-            message=_("Backup loaded successfully.\nPlease restart Budgetize.")
+            message=_("Backup loaded successfully.\nPlease restart Budgetize."),
         )
         self.app.push_screen(message_modal)
 
     def action_save_settings(self) -> None:
         """Action to run when user hits save settings"""
-
         language = self.get_child_by_id("language-select", expect_type=Select).value
         currency = self.get_child_by_id("currency-select", expect_type=Select).value
 
@@ -118,7 +120,7 @@ class Settings(Screen):
             "categories": self.manager.get_categories(),
         }
 
-        logging.debug("Saving settings: " + str(new_settings))
+        logger.debug("Saving settings: " + str(new_settings))
 
         if language_changed:
             self.notify(
@@ -127,6 +129,6 @@ class Settings(Screen):
             )
 
         self.manager.save(new_settings)
-        logging.info("Settings saved.")
+        logger.info("Settings saved.")
         self.app.pop_screen()
         self.notify(_("Settings saved."), title=_("Settings Changed"))
