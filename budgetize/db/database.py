@@ -56,10 +56,11 @@ class Database:
 
         Base.metadata.create_all(Database.engine)
 
+    # ======================== Backups/Reverts ========================
+
     def _backup_database(self) -> None:
         """Creates a backup of the current database into the backups folder"""
 
-        print("Backing up database...")
         logging.info("Backing up database...")
         now = Arrow.now()
         db_path = os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)
@@ -81,6 +82,29 @@ class Database:
 
         Database.backup_done = True
         logging.info("Backed up database successfully!")
+
+    def revert_from_backup(self, backup_file: Path) -> bool:
+        """Reverts the database to the specified backup file."""
+
+        # Close connections to the current database.
+        Database.engine.dispose()
+        Database.engine = None
+
+        # Write backup file to the database file
+
+        contents: bytes
+
+        with open(backup_file, mode="rb") as f:
+            contents = f.read()
+
+        db_path = os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)
+        with open(db_path, mode="wb") as f:
+            f.write(contents)
+
+        self._init_connection()
+        return True
+
+    # ======================== GET INFO ========================
 
     def get_transactions_from_account(self, account_id: int) -> Iterator[Transaction]:
         """Returns an iterator of transactions from the specified account.
@@ -144,20 +168,6 @@ class Database:
             found_account: Account = session.get_one(Account, account_id)
             return found_account
 
-    def get_account_by_name(self, name: str) -> Account:
-        """Returns the account with the specified name.
-
-        Args:
-            name (str): The name of the account.
-
-        Returns:
-            Account: The account with the specified name.
-        """
-        with Session(Database.engine) as session:
-            stmt = select(Account).where(Account.name == name)
-            account: Account = session.execute(stmt).scalars().first()  # type:ignore
-            return account
-
     def account_name_exists(self, name: str) -> bool:
         """Returns True if an account with the specified name exists, False otherwise.
 
@@ -171,6 +181,20 @@ class Database:
             stmt = select(Account).where(Account.name == name)
             account = session.execute(stmt).scalars().first()
             return account is not None
+
+    def get_account_by_name(self, name: str) -> Account:
+        """Returns the account with the specified name.
+
+        Args:
+            name (str): The name of the account.
+
+        Returns:
+            Account: The account with the specified name.
+        """
+        with Session(Database.engine) as session:
+            stmt = select(Account).where(Account.name == name)
+            account: Account = session.execute(stmt).scalars().first()  # type:ignore
+            return account
 
     def get_transaction_by_id(self, transaction_id: int) -> Transaction:
         """Returns the transaction with the specified ID.
@@ -186,6 +210,121 @@ class Database:
                 Transaction, transaction_id
             )
             return found_transaction
+
+    def get_all_recent_transactions(self) -> list[Transaction]:
+        """Returns a list with the last 5 transactions saved across all accounts.
+
+        Returns:
+            list[Transaction]: A list of recent transactions.
+        """
+        with Session(Database.engine) as session:
+            stmt = (
+                select(Transaction)
+                .where(Transaction.visible == True)
+                .order_by(Transaction.timestamp.desc())
+                .limit(5)
+            )
+            transactions: list[Transaction] = session.execute(stmt).scalars().all()  # type: ignore
+            return transactions
+
+    def get_account_balance(self, account_id: int) -> float:
+        """Returns the balance of the specified account.
+
+        Args:
+            account_id (int): The ID of the account.
+
+        Returns:
+            float: The balance of the account.
+        """
+
+        stmt = select(Transaction).where(Transaction.account_id == account_id)
+        with Session(Database.engine) as session:
+            transactions = session.execute(stmt).scalars().all()
+
+            balance = 0.0
+            for transaction in transactions:
+                balance += transaction.amount
+
+            return balance
+
+    async def get_monthly_income(self) -> float:
+        """(Coroutine) Returns the total income for the current month.
+
+        Returns:
+            float: The total income for the current month.
+        """
+        now = Arrow.now()
+
+        income = 0.0
+        for account in self.get_accounts():
+            for transaction in self.get_monthly_transactions_from_account(
+                account.id, now.format("M"), now.format("YYYY")
+            ):
+                if transaction.amount > 0 and transaction.visible:
+                    income += await self.get_amount_in_base_currency(
+                        amount=transaction.amount, currency=account.currency
+                    )
+
+        return round(income, 2)
+
+    async def get_monthly_expense(self) -> float:
+        """(Coroutine) Returns the total expenses for the current month.
+
+        Returns:
+            float: The total expenses for the current month.
+        """
+        now = Arrow.now()
+
+        expense = 0.0
+        for account in self.get_accounts():
+            for transaction in self.get_monthly_transactions_from_account(
+                account.id, now.format("M"), now.format("YYYY")
+            ):
+                if transaction.amount < 0 and transaction.visible:
+                    expense += await self.get_amount_in_base_currency(
+                        amount=transaction.amount, currency=account.currency
+                    )
+
+        return round(expense, 2)
+
+    async def get_amount_in_base_currency(self, amount: float, currency: str) -> float:
+        """(Coroutine) Returns the amount in the base currency.
+
+        Args:
+            amount (float): The amount to convert.
+            currency (str): The currency of the amount.
+
+        Returns:
+            float: The amount in the base currency.
+        """
+        if currency == self.settings.get_base_currency():
+            return amount
+
+        exchange_rate = await CurrencyManager(
+            self.settings.get_base_currency()
+        ).get_exchange(currency)
+        return amount / exchange_rate
+
+    def delete_transaction(self, transaction_id: int) -> Transaction:
+        """Deletes the specified transaction from the DB and returns it.
+
+        Args:
+            transaction_id (int): The ID of the transaction to delete.
+
+        Returns:
+            Transaction: The deleted transaction.
+        """
+        stmt = select(Transaction).where(Transaction.id == transaction_id)
+        with Session(Database.engine) as session:
+            res = session.execute(stmt)
+            row = res.fetchone()
+
+            selected_transaction: Transaction = row.tuple()[0]  # type: ignore
+            session.delete(selected_transaction)
+            session.commit()
+            return selected_transaction
+
+    # ======================== ADD/UPDATE INFO ========================
 
     def add_account(
         self,
@@ -286,67 +425,6 @@ class Database:
             session.execute(upd)
             session.commit()
 
-    def get_all_recent_transactions(self) -> list[Transaction]:
-        """Returns a list with the last 5 transactions saved across all accounts.
-
-        Returns:
-            list[Transaction]: A list of recent transactions.
-        """
-        with Session(Database.engine) as session:
-            stmt = (
-                select(Transaction)
-                .where(Transaction.visible == True)
-                .order_by(Transaction.timestamp.desc())
-                .limit(5)
-            )
-            transactions: list[Transaction] = session.execute(stmt).scalars().all()  # type: ignore
-            return transactions
-
-    def get_account_balance(self, account_id: int) -> float:
-        """Returns the balance of the specified account.
-
-        Args:
-            account_id (int): The ID of the account.
-
-        Returns:
-            float: The balance of the account.
-        """
-
-        stmt = select(Transaction).where(Transaction.account_id == account_id)
-        with Session(Database.engine) as session:
-            transactions = session.execute(stmt).scalars().all()
-
-            balance = 0.0
-            for transaction in transactions:
-                balance += transaction.amount
-
-            return balance
-
-    async def get_monthly_income(self) -> float:
-        """(Coroutine) Returns the total income for the current month.
-
-        Returns:
-            float: The total income for the current month.
-        """
-        now = Arrow.now()
-
-        income = 0.0
-        for account in self.get_accounts():
-
-            exchange_rate = 1.0
-            if account.currency != self.settings.get_base_currency():
-                exchange_rate = await CurrencyManager(
-                    self.settings.get_base_currency()
-                ).get_exchange(account.currency)
-
-            for transaction in self.get_monthly_transactions_from_account(
-                account.id, now.format("M"), now.format("YYYY")
-            ):
-                if transaction.amount > 0 and transaction.visible:
-                    income += transaction.amount / exchange_rate
-
-        return round(income, 2)
-
     def delete_account(self, account_id: int) -> None:
         """Deletes the specified account from the database.
 
@@ -376,84 +454,3 @@ class Database:
                 session.delete(transaction_obj)
 
             session.commit()
-
-    async def get_monthly_expense(self) -> float:
-        """(Coroutine) Returns the total expenses for the current month.
-
-        Returns:
-            float: The total expenses for the current month.
-        """
-        now = Arrow.now()
-
-        expense = 0.0
-        for account in self.get_accounts():
-            rate = 1.0
-            if account.currency != self.settings.get_base_currency():
-                rate = await CurrencyManager(
-                    self.settings.get_base_currency()
-                ).get_exchange(account.currency)
-            for transaction in self.get_monthly_transactions_from_account(
-                account.id, now.format("M"), now.format("YYYY")
-            ):
-                if transaction.amount < 0 and transaction.visible:
-                    expense += transaction.amount / rate
-
-        return round(expense, 2)
-
-    async def get_amount_in_base_currency(self, amount: float, currency: str) -> float:
-        """(Coroutine) Returns the amount in the base currency.
-
-        Args:
-            amount (float): The amount to convert.
-            currency (str): The currency of the amount.
-
-        Returns:
-            float: The amount in the base currency.
-        """
-        if currency == self.settings.get_base_currency():
-            return amount
-
-        exchange_rate = await CurrencyManager(
-            self.settings.get_base_currency()
-        ).get_exchange(currency)
-        return amount / exchange_rate
-
-    def delete_transaction(self, transaction_id: int) -> Transaction:
-        """Deletes the specified transaction from the DB and returns it.
-
-        Args:
-            transaction_id (int): The ID of the transaction to delete.
-
-        Returns:
-            Transaction: The deleted transaction.
-        """
-        stmt = select(Transaction).where(Transaction.id == transaction_id)
-        with Session(Database.engine) as session:
-            res = session.execute(stmt)
-            row = res.fetchone()
-
-            selected_transaction: Transaction = row.tuple()[0]  # type: ignore
-            session.delete(selected_transaction)
-            session.commit()
-            return selected_transaction
-
-    def revert_from_backup(self, backup_file: Path) -> bool:
-        """Reverts the database to the specified backup file."""
-
-        # Close connections to the current database.
-        Database.engine.dispose()
-        Database.engine = None
-
-        # Write backup file to the database file
-
-        contents: bytes
-
-        with open(backup_file, mode="rb") as f:
-            contents = f.read()
-
-        db_path = os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)
-        with open(db_path, mode="wb") as f:
-            f.write(contents)
-
-        self._init_connection()
-        return True
