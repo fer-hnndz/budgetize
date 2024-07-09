@@ -5,7 +5,7 @@ import os
 import pkg_resources
 from babel import Locale
 
-VERSION = "0.1.0"
+VERSION = "0.2.0a0"
 VALID_EXCHANGE_TIMESTAMP = 7 * 24 * 60 * 60  # 1 week in seconds
 # Database
 
