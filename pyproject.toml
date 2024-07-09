@@ -20,24 +20,24 @@ classifiers = [
 budgetize = "budgetize.console:run"
 
 [tool.poetry.dependencies]
-python = "^3.10"
-textual = "^0.56.3"
+python = "^3.9"
+textual = "*"
 SQLAlchemy = "^2.0.29"
 arrow = "^1.3.0"
 Babel = "^2.14.0"
 beautifulsoup4 = "^4.12.3"
 asyncio = "^3.4.3"
-httpx = "^0.27.0"
+httpx = "*"
 pyperclip = "^1.8.2"
 
 [tool.poetry.group.dev.dependencies]
 types-setuptools = "^69.2.0.20240317"
 pre-commit = "^3.7.0"
-black = "^24.3.0"
+black = "*"
 mypy = "^1.9.0"
 isort = "^5.13.2"
 pylint = "^3.1.0"
-textual-dev = "^1.5.1"
+textual-dev = "*"
 
 [build-system]
 requires = ["poetry-core"]

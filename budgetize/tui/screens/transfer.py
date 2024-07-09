@@ -4,15 +4,16 @@ import logging
 
 from arrow import Arrow
 from babel.numbers import format_currency
+from budgetize import CurrencyManager, SettingsManager
+from budgetize.db.database import Database
+from budgetize.utils import _
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from budgetize import CurrencyManager, SettingsManager
-from budgetize.db.database import Database
-from budgetize.utils import _
+logger = logging.getLogger(__name__)
 
 
 class TransferScreen(Screen):
@@ -28,7 +29,7 @@ class TransferScreen(Screen):
 
     def compose(self) -> ComposeResult:
         """Called when screen needs to be composed"""
-        logging.info("Composing TransferScreen")
+        logger.info("Composing TransferScreen")
         yield Header()
         yield Footer()
 
@@ -72,25 +73,24 @@ class TransferScreen(Screen):
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button handler"""
-
         if event.button.id == "transfer-btn":
-            logging.info("User clicked on transfer button.")
+            logger.info("User clicked on transfer button.")
             origin_select: Select = self.get_widget_by_id(
-                "origin-select"
+                "origin-select",
             )  # type:ignore
             origin_account = TransferScreen.DB.get_account_by_id(
-                int(str(origin_select.value))
+                int(str(origin_select.value)),
             )
 
             destination_select: Select = self.get_widget_by_id(
-                "destination-select"
+                "destination-select",
             )  # type:ignore
             destination_account = TransferScreen.DB.get_account_by_id(
-                int(str(destination_select.value))
+                int(str(destination_select.value)),
             )
 
             if origin_account.id == destination_account.id:
-                logging.info("User attempted transfering to same account.")
+                logger.info("User attempted transfering to same account.")
                 self.app.notify(
                     title=_("Error Transfering Funds"),
                     message=_("Origin and Destination Accounts can not be the same."),
@@ -109,8 +109,8 @@ class TransferScreen(Screen):
                 return
 
             origin_balance = TransferScreen.DB.get_account_balance(origin_account.id)
-            logging.debug(
-                f"Transfer Funds: {str(transfer_funds)} | Origin Account Balance: {str(origin_balance)}"
+            logger.debug(
+                f"Transfer Funds: {transfer_funds!s} | Origin Account Balance: {origin_balance!s}",
             )
             if transfer_funds > origin_balance:
                 self.app.notify(
@@ -123,7 +123,7 @@ class TransferScreen(Screen):
             exchange_rate = 1.0
             if destination_account.currency != origin_account.currency:
                 exchange_rate = await CurrencyManager(
-                    origin_account.currency
+                    origin_account.currency,
                 ).get_exchange(destination_account.currency)
 
             TransferScreen.DB.add_transaction(
@@ -150,10 +150,10 @@ class TransferScreen(Screen):
                 severity="information",
             )
             self.app.pop_screen()
-            logging.info("Transfer has been registered.")
+            logger.info("Transfer has been registered.")
 
         if event.button.id == "cancel-btn":
-            logging.info("User canceled transfer. Popping screen.")
+            logger.info("User canceled transfer. Popping screen.")
             self.app.pop_screen()
 
     def get_transfer_funds(self) -> float:
@@ -161,18 +161,18 @@ class TransferScreen(Screen):
         amount_input: Input = self.get_widget_by_id("transfer-input")  # type:ignore
         funds_to_transfer = 0.0
 
-        logging.debug(f"Amount Field Input: {amount_input}")
+        logger.debug(f"Amount Field Input: {amount_input}")
         try:
             funds_to_transfer = float(amount_input.value)
 
             if funds_to_transfer < 0:
                 funds_to_transfer = 0
 
-            logging.info(f"Parsed funds to: {str(funds_to_transfer)}")
+            logger.info(f"Parsed funds to: {funds_to_transfer!s}")
             return funds_to_transfer
         except ValueError:
-            logging.critical(
-                "There was an error trying to parse input as a float. Returning 0."
+            logger.critical(
+                "There was an error trying to parse input as a float. Returning 0.",
             )
             return 0
 
@@ -189,7 +189,7 @@ class TransferScreen(Screen):
         origin_select: Select = self.get_widget_by_id("origin-select")  # type:ignore
 
         origin_account = TransferScreen.DB.get_account_by_id(
-            int(str(origin_select.value))
+            int(str(origin_select.value)),
         )
         origin_label: Label = self.get_widget_by_id("origin-balance")  # type:ignore
 
@@ -199,8 +199,8 @@ class TransferScreen(Screen):
         if funds_to_transfer > origin_balance:
             origin_label.update(
                 _(
-                    "Origin Account ({account_name}) New Balance\n[bold red]Insufficient funds."
-                ).format(account_name=origin_account.name)
+                    "Origin Account ({account_name}) New Balance\n[bold red]Insufficient funds.",
+                ).format(account_name=origin_account.name),
             )
             return
 
@@ -212,39 +212,39 @@ class TransferScreen(Screen):
 
         origin_label.update(
             _(
-                "Origin Account ({account_name}) New Balance\n{color}{formatted_new_balance}"
+                "Origin Account ({account_name}) New Balance\n{color}{formatted_new_balance}",
             ).format(
                 account_name=origin_account.name,
                 color="[red]" if funds_to_transfer > 0 else "[cyan]",
                 formatted_new_balance=origin_formatted_balance,
-            )
+            ),
         )
 
         destination_select: Select = self.get_widget_by_id(
-            "destination-select"
+            "destination-select",
         )  # type:ignore
 
         destination_account = TransferScreen.DB.get_account_by_id(
-            int(str(destination_select.value))
+            int(str(destination_select.value)),
         )
         destination_label: Label = self.get_widget_by_id("destination-balance")  # type: ignore
 
         if destination_account.id == origin_account.id:
             destination_label.update(
                 _(
-                    "Destination Account New Balance\n[bold red]Please select a different account."
-                )
+                    "Destination Account New Balance\n[bold red]Please select a different account.",
+                ),
             )
             return
 
         exchange_rate = 1.0
         if destination_account.currency != origin_account.currency:
             exchange_rate = await CurrencyManager(origin_account.currency).get_exchange(
-                destination_account.currency
+                destination_account.currency,
             )
 
         destination_balance = TransferScreen.DB.get_account_balance(
-            destination_account.id
+            destination_account.id,
         )
         destination_formatted_balance = format_currency(
             number=destination_balance + (funds_to_transfer * exchange_rate),
@@ -254,12 +254,12 @@ class TransferScreen(Screen):
 
         destination_label.update(
             _(
-                "Destination Account ({account_name}) New Balance\n{color}{formatted_new_balance}"
+                "Destination Account ({account_name}) New Balance\n{color}{formatted_new_balance}",
             ).format(
                 account_name=destination_account.name,
                 color="[green]" if funds_to_transfer > 0 else "[cyan]",
                 formatted_new_balance=destination_formatted_balance,
-            )
+            ),
         )
 
     def get_accounts_for_select(self) -> list[tuple[str, int]]:

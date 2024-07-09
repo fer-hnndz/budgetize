@@ -26,7 +26,7 @@ poetry install
 ```
 To run Budgetize from source use the command in the root of the project folder:
 ```
-poetry run main.py --dev
+poetry run textual run main.py --dev
 ```
 **NOTE: IT IS IMPORTANT YOU RUN IN DEV MODE WITH THE `--dev` FLAG. OTHERWISE IT WILL CONNECT TO YOUR REAL BUDGETIZE DB INSTEAD OF THE TEST DATABASE.**\
 You can also spawn a textual console that will allow you to see the app's output.\

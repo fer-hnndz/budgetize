@@ -6,16 +6,17 @@ from traceback import format_exc
 from typing import Optional
 
 from arrow import Arrow
+from budgetize.db.database import Database
+from budgetize.db.orm.transactions import Transaction
+from budgetize.settings_manager import SettingsManager
+from budgetize.utils import _
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
-from budgetize.db.database import Database
-from budgetize.db.orm.transactions import Transaction
-from budgetize.settings_manager import SettingsManager
-from budgetize.utils import _
+logger = logging.getLogger(__name__)
 
 
 class AddTransaction(Screen):
@@ -32,15 +33,18 @@ class AddTransaction(Screen):
     ]
 
     def __init__(self, transaction: Optional[Transaction] = None) -> None:
-        """Creates a new AddTransaction screen"""
+        """Creates a new AddTransaction screen
+
+        transaction `Transaction`:
+            If a transaction is passed, all those details are loaded for the user to edit it.
+        """
         AddTransaction.DB = Database(self.app)
         self.transaction = transaction
         super().__init__()
 
     def compose(self) -> ComposeResult:
         """Called when screen is composed"""
-
-        logging.info("Composing AddTransaction Screen...")
+        logger.info("Composing AddTransaction Screen...")
         self.app.sub_title = (
             "Edit Transaction" if self.transaction else "Add Transaction"
         )
@@ -80,7 +84,9 @@ class AddTransaction(Screen):
         )
 
         yield Select(
-            self.get_category_select_options(), allow_blank=False, id="category-select"
+            self.get_category_select_options(),
+            allow_blank=False,
+            id="category-select",
         )
 
         yield Label(_("Description"), id="description-label")
@@ -96,8 +102,7 @@ class AddTransaction(Screen):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handles button presses"""
-
-        logging.info("Adding Transaction")
+        logger.info("Adding Transaction")
         account_selected: int = self.get_widget_by_id("account-select").value  # type: ignore
         account = self.DB.get_account_by_id(account_selected)
         currency = account.currency
@@ -110,8 +115,8 @@ class AddTransaction(Screen):
         # Attempt to parse the date from the user in M/D/YYYY/
         # If parsing fails, use the current date and time for saving the transaction
 
-        logging.debug(
-            f"Amount: {amount}, Category: {category}, Description: {description}"
+        logger.debug(
+            f"Amount: {amount}, Category: {category}, Description: {description}",
         )
         date = Arrow.now()
 
@@ -120,18 +125,20 @@ class AddTransaction(Screen):
 
             date_strs: list[str] = self.get_widget_by_id("date-input").value.split("/")  # type: ignore
             date_from_input = date_func(
-                int(date_strs[2]), int(date_strs[0]), int(date_strs[1])
+                int(date_strs[2]),
+                int(date_strs[0]),
+                int(date_strs[1]),
             )
             date = Arrow.fromdate(date_from_input)
-            logging.warning(
-                "PARSE DATE BASED ON LOCALE. THIS PARSING IS DONE MANUALLY."
+            logger.warning(
+                "PARSE DATE BASED ON LOCALE. THIS PARSING IS DONE MANUALLY.",
             )
-            logging.debug(f"Parsed Date: {date}")
+            logger.debug(f"Parsed Date: {date}")
 
         except Exception:
             traceback_str = format_exc()
-            logging.critical("An error ocurred parsing the date.\n" + traceback_str)
-            logging.info("Using current date and time for transaction")
+            logger.critical("An error ocurred parsing the date.\n" + traceback_str)
+            logger.info("Using current date and time for transaction")
             date = Arrow.now()
 
         # Clear fields
@@ -149,7 +156,8 @@ class AddTransaction(Screen):
             )
             self.app.pop_screen()
             self.app.notify(
-                _("Sucessfully updated transaction!"), title=_("Transaction Updated")
+                _("Sucessfully updated transaction!"),
+                title=_("Transaction Updated"),
             )
             return
 
@@ -164,7 +172,8 @@ class AddTransaction(Screen):
         self.app.pop_screen()
         self.app.notify(
             _("Sucessfully added transaction of {currency} {amount}").format(
-                currency=currency, amount=amount
+                currency=currency,
+                amount=amount,
             ),
             title=_("Transaction Added"),
         )
