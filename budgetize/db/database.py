@@ -16,6 +16,8 @@ from budgetize.db.orm._base import Base
 from budgetize.db.orm.account import Account
 from budgetize.db.orm.transactions import Transaction
 
+logger = logging.getLogger(__name__)
+
 
 class Database:
     """This class is the API for interacting with the database.
@@ -29,7 +31,9 @@ class Database:
         """Initializes a Database instance.
 
         Args:
+        ----
             app (App): The application instance.
+
         """
         self.app = app
         self.settings = SettingsManager()
@@ -38,20 +42,21 @@ class Database:
 
     def _init_connection(self) -> None:
         """Initializes the connection to the database."""
-
-        logging.info("Initializing database connection...")
+        logger.info("Initializing database connection...")
         if self.app is None:
             Database.engine = create_engine("sqlite:///test_db.sqlite")
             self.dev_db = True
         else:
             Database.engine = create_engine(
-                PROD_DB_URL
-                if not "devtools" in self.app.features
-                else "sqlite:///test_db.sqlite"
+                (
+                    PROD_DB_URL
+                    if "devtools" not in self.app.features
+                    else "sqlite:///test_db.sqlite"
+                ),
             )
             self.dev_db = True if "devtools" in self.app.features else False
 
-            if not "devtools" in self.app.features and not Database.backup_done:
+            if "devtools" not in self.app.features and not Database.backup_done:
                 self._backup_database()
 
         Base.metadata.create_all(Database.engine)
@@ -60,11 +65,11 @@ class Database:
 
     def _backup_database(self) -> None:
         """Creates a backup of the current database into the backups folder"""
-
-        logging.info("Backing up database...")
+        print("Backing up database...")
+        logger.info("Backing up database...")
         now = Arrow.now()
         db_path = os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)
-        logging.debug("Production Database Path: " + db_path)
+        logger.debug("Production Database Path: " + db_path)
 
         if not os.path.exists(BACKUPS_FOLDER):
             os.makedirs(BACKUPS_FOLDER)
@@ -72,16 +77,17 @@ class Database:
         db_backup_filename = (
             f"budgetize-backup-{now.format('DD-MM-YYYY (HH.mm)')}.sqlite"
         )
-        logging.debug("Backup filename: " + db_backup_filename)
+        logger.debug("Backup filename: " + db_backup_filename)
 
         with open(db_path, mode="rb") as original_db:
             with open(
-                os.path.join(BACKUPS_FOLDER, db_backup_filename), mode="wb"
+                os.path.join(BACKUPS_FOLDER, db_backup_filename),
+                mode="wb",
             ) as backup:
                 backup.write(original_db.read())
 
         Database.backup_done = True
-        logging.info("Backed up database successfully!")
+        logger.info("Backed up database successfully!")
 
     def revert_from_backup(self, backup_file: Path) -> bool:
         """Reverts the database to the specified backup file."""
@@ -110,10 +116,13 @@ class Database:
         """Returns an iterator of transactions from the specified account.
 
         Args:
+        ----
             account_id (int): The ID of the account.
 
         Yields:
+        ------
             Transaction: A transaction from the specified account.
+
         """
         stmt = select(Transaction).where(Transaction.account_id == account_id)
 
@@ -122,17 +131,23 @@ class Database:
                 yield transaction
 
     def get_monthly_transactions_from_account(
-        self, account_id: int, month: str, year: str
+        self,
+        account_id: int,
+        month: str,
+        year: str,
     ) -> Iterator[Transaction]:
         """Returns an iterator of transactions from the specified account within the specified month and year.
 
         Args:
+        ----
             account_id (int): The ID of the account.
             month (str): The month in format 'MM'.
             year (str): The year in format 'YYYY'.
 
         Yields:
+        ------
             Transaction: A transaction from the specified account within the specified month and year.
+
         """
         transactions = self.get_transactions_from_account(account_id)
 
@@ -146,8 +161,10 @@ class Database:
     def get_accounts(self) -> Iterator[Account]:
         """Returns an iterator of all accounts.
 
-        Yields:
+        Yields
+        ------
             Account: An account from the database.
+
         """
         stmt = select(Account)
 
@@ -159,55 +176,68 @@ class Database:
         """Returns the account with the specified ID.
 
         Args:
+        ----
             account_id (int): The ID of the account.
 
         Returns:
+        -------
             Account: The account with the specified ID.
+
         """
         with Session(Database.engine) as session:
             found_account: Account = session.get_one(Account, account_id)
             return found_account
 
-    def account_name_exists(self, name: str) -> bool:
-        """Returns True if an account with the specified name exists, False otherwise.
-
-        Args:
-            name (str): The name of the account.
-
-        Returns:
-            bool: True if an account with the specified name exists, False otherwise.
-        """
-        with Session(Database.engine) as session:
-            stmt = select(Account).where(Account.name == name)
-            account = session.execute(stmt).scalars().first()
-            return account is not None
-
     def get_account_by_name(self, name: str) -> Account:
         """Returns the account with the specified name.
 
         Args:
+        ----
             name (str): The name of the account.
 
         Returns:
+        -------
             Account: The account with the specified name.
+
         """
         with Session(Database.engine) as session:
             stmt = select(Account).where(Account.name == name)
             account: Account = session.execute(stmt).scalars().first()  # type:ignore
             return account
 
+    def account_name_exists(self, name: str) -> bool:
+        """Returns True if an account with the specified name exists, False otherwise.
+
+        Args:
+        ----
+            name (str): The name of the account.
+
+        Returns:
+        -------
+            bool: True if an account with the specified name exists, False otherwise.
+
+        """
+        with Session(Database.engine) as session:
+            stmt = select(Account).where(Account.name == name)
+            account = session.execute(stmt).scalars().first()
+            return account is not None
+
     def get_transaction_by_id(self, transaction_id: int) -> Transaction:
         """Returns the transaction with the specified ID.
 
         Args:
+        ----
             transaction_id (int): The ID of the transaction.
 
         Returns:
+        -------
             Transaction: The transaction with the specified ID.
+
         """
         with Session(Database.engine) as session:
             found_transaction: Transaction = session.get_one(
-                Transaction, transaction_id
+                Transaction,
+                transaction_id,
             )
             return found_transaction
 
@@ -305,25 +335,6 @@ class Database:
         ).get_exchange(currency)
         return amount / exchange_rate
 
-    def delete_transaction(self, transaction_id: int) -> Transaction:
-        """Deletes the specified transaction from the DB and returns it.
-
-        Args:
-            transaction_id (int): The ID of the transaction to delete.
-
-        Returns:
-            Transaction: The deleted transaction.
-        """
-        stmt = select(Transaction).where(Transaction.id == transaction_id)
-        with Session(Database.engine) as session:
-            res = session.execute(stmt)
-            row = res.fetchone()
-
-            selected_transaction: Transaction = row.tuple()[0]  # type: ignore
-            session.delete(selected_transaction)
-            session.commit()
-            return selected_transaction
-
     # ======================== ADD/UPDATE INFO ========================
 
     def add_account(
@@ -335,12 +346,13 @@ class Database:
         """Adds a new account to the user.
 
         Args:
+        ----
             name (str): The name of the account.
             currency (str): The currency of the account.
             starting_balance (float): The starting balance of the account.
             account_type_name (str): The type of the account.
-        """
 
+        """
         with Session(Database.engine) as session:
             new_account = Account(name=name, currency=currency)
             session.add(new_account)
@@ -369,11 +381,13 @@ class Database:
         """Registers a new transaction.
 
         Args:
+        ----
             account_id (int): The ID of the account.
             amount (float): The amount of the transaction.
             description (str): The description of the transaction.
             category (str): The category of the transaction.
             timestamp (float): The timestamp of the transaction.
+
         """
         transaction = Transaction(
             account_id=account_id,
@@ -400,12 +414,14 @@ class Database:
         """Updates the specified transaction in the database.
 
         Args:
+        ----
             transaction_id (int): The ID of the transaction to update.
             account_id (int): The ID of the account.
             amount (float): The new amount of the transaction.
             description (str): The new description of the transaction.
             category (str): The new category of the transaction.
             timestamp (float): The new timestamp of the transaction.
+
         """
         values = {
             "account_id": account_id,
@@ -415,7 +431,7 @@ class Database:
             "timestamp": timestamp,
         }
 
-        logging.info(f"Updating transaction with values: {values}")
+        logger.info(f"Updating transaction with values: {values}")
         with Session(Database.engine) as session:
             upd = (
                 update(Transaction)
@@ -429,7 +445,9 @@ class Database:
         """Deletes the specified account from the database.
 
         Args:
+        ----
             account_id (int): The ID of the account to delete.
+
         """
         stmt = select(Account).where(Account.id == account_id)
 
@@ -445,7 +463,7 @@ class Database:
 
             # Delete transactions from the account
             transaction_stmt = select(Transaction).where(
-                Transaction.account_id == account_id
+                Transaction.account_id == account_id,
             )
             transaction_rows = session.execute(transaction_stmt).fetchall()
 
@@ -454,3 +472,22 @@ class Database:
                 session.delete(transaction_obj)
 
             session.commit()
+
+    def delete_transaction(self, transaction_id: int) -> Transaction:
+        """Deletes the specified transaction from the DB and returns it.
+
+        Args:
+            transaction_id (int): The ID of the transaction to delete.
+
+        Returns:
+            Transaction: The deleted transaction.
+        """
+        stmt = select(Transaction).where(Transaction.id == transaction_id)
+        with Session(Database.engine) as session:
+            res = session.execute(stmt)
+            row = res.fetchone()
+
+            selected_transaction: Transaction = row.tuple()[0]  # type: ignore
+            session.delete(selected_transaction)
+            session.commit()
+            return selected_transaction
