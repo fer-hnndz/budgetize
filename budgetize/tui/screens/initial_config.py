@@ -4,15 +4,16 @@ import gettext
 import logging
 
 import babel
+from budgetize.consts import AVAILABLE_LANGUAGES, TRANSLATIONS_PATH
+from budgetize.settings_manager import SettingsDict, SettingsManager
+from budgetize.tui.screens.main_menu import MainMenu
+from budgetize.utils import get_select_currencies
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.types import NoSelection
 from textual.widgets import Button, Header, Label, Select
 
-from budgetize.consts import AVAILABLE_LANGUAGES, TRANSLATIONS_PATH
-from budgetize.settings_manager import SettingsDict, SettingsManager
-from budgetize.tui.screens.main_menu import MainMenu
-from budgetize.utils import get_select_currencies
+logger = logging.getLogger(__name__)
 
 # Get default locale, but fallback to English in case of an error.
 default_locale = babel.default_locale(category="LANGUAGE")
@@ -22,7 +23,10 @@ else:
     default_locale = default_locale.split("_")[0]
 
 t = gettext.translation(
-    "budgetize", localedir=TRANSLATIONS_PATH, languages=[default_locale], fallback=True
+    "budgetize",
+    localedir=TRANSLATIONS_PATH,
+    languages=[default_locale],
+    fallback=True,
 )
 _ = t.gettext
 
@@ -34,8 +38,7 @@ class InitialConfig(Screen):
 
     def compose(self) -> ComposeResult:
         """Called when the screen is composed."""
-
-        logging.info("Compose InitialConfig Screen...")
+        logger.info("Compose InitialConfig Screen...")
         self.app.sub_title = _("Initial Setup")
         yield Header()
         yield Label(_("Select your Base Currency"), id="currency-label")
@@ -46,17 +49,18 @@ class InitialConfig(Screen):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button press handler"""
-
         if event.button.id == "save-button":
             currency = self.get_widget_by_id(
-                "currency-select", expect_type=Select
+                "currency-select",
+                expect_type=Select,
             ).value
             language = self.get_widget_by_id(
-                "language-select", expect_type=Select
+                "language-select",
+                expect_type=Select,
             ).value
 
-            logging.debug(f"Selected currency: {currency}")
-            logging.debug(f"Selected language: {language}")
+            logger.debug(f"Selected currency: {currency}")
+            logger.debug(f"Selected language: {language}")
             # This should never happen at runtime
             if isinstance(language, NoSelection) or isinstance(currency, NoSelection):
                 return
@@ -67,7 +71,7 @@ class InitialConfig(Screen):
                 "base_currency": str(currency),
                 "categories": settings.get_categories(),
             }
-            logging.debug(f"Saving settings: {new_settings}")
+            logger.debug(f"Saving settings: {new_settings}")
             settings.save(new_settings)
 
             _ = gettext.translation(
