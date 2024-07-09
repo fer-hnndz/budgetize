@@ -7,6 +7,7 @@ from budgetize.consts import APP_FOLDER_PATH
 from budgetize.tui import TuiApp
 
 if __name__ == "__main__":
+
     log_path = os.path.join(APP_FOLDER_PATH, "budgetize.log")
 
     logging.basicConfig(

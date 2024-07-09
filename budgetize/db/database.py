@@ -60,6 +60,7 @@ class Database:
                 self._backup_database()
 
         Base.metadata.create_all(Database.engine)
+        logger.info("Connected to database successfully!")
 
     # ======================== Backups/Reverts ========================
 
