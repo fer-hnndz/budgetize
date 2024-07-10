@@ -63,7 +63,9 @@ class CurrencyManager:
             float: The exchange rate.
         """
 
-        logger.info(f"Retrieving exchange rate for {self.base_currency}-{currency}...")
+        logger.info(
+            "Retrieving exchange rate for {}-{}...".format(self.base_currency, currency)
+        )
 
         if self.base_currency not in CurrencyManager.CURRENT_RATES:
             return await self.fetch_and_save_rate(currency)
@@ -89,7 +91,9 @@ class CurrencyManager:
                 continue
 
             logger.info(
-                f"Rate for {self.base_currency}-{currency} has expired. Updating...",
+                "Rate for {}-{} has expired. Updating...".format(
+                    self.base_currency, currency
+                )
             )
             rate = await self.fetch_and_save_rate(currency)
             logger.info("Saving fetched exchange rate...")
@@ -154,10 +158,10 @@ class CurrencyManager:
         """
         async with httpx.AsyncClient() as client:
             url = f"https://www.xe.com/currencyconverter/convert/?Amount=1&From={self.base_currency.upper()}&To={currency.upper()}"
-            logger.info(f"Attempting to fetch exchange rate at {url}")
+            logger.info("Attempting to fetch exchange rate at {}".format(url))
             try:
                 r = await client.get(url, timeout=8)
-                logger.debug(f"Response status code: {r.status_code}")
+                logger.debug("Response status code: {}".format(r.status_code))
                 logger.info("Saving response HMTL...")
                 self._save_last_html_response(r.text)
 
@@ -167,7 +171,7 @@ class CurrencyManager:
                 if not main_element:
                     logger.error("Could not find main element in response html.")
                     raise ExchangeRateFetchError(
-                        "Could not find main element in response html.",
+                        "Could not find main element in response html."
                     )
 
                 digits_span = soup.find("span", class_="faded-digits")
@@ -179,7 +183,7 @@ class CurrencyManager:
                     )
 
                 digits_str: str = digits_span.get_text().replace(",", "")
-                logger.debug(f"Faded Digits from SPAN: {digits_str}")
+                logger.debug("Faded Digits from SPAN: {}".format(digits_str))
                 parent_div = digits_span.parent  # type:ignore
 
                 # Get first element of the iterator
@@ -190,25 +194,33 @@ class CurrencyManager:
                 amount_of_zero = len(rate_p.split(".")[-1])
                 digits_to_sum = ("0." + ("0" * amount_of_zero)) + digits_str
                 rate = float(rate_p) + float(digits_to_sum)
-                logger.info("Retrieved exchange rate: " + str(rate))
+                logger.info("Retrieved exchange rate: {}".format(rate))
                 return rate
 
             except TimeoutException as e:
-                msg = f"The request timed out fetching the exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
+                msg = "The request timed out fetching the exchange rate for {}.\n{}".format(
+                    currency.upper(), traceback.format_exc()
+                )
                 logger.critical(msg)
                 raise ExchangeRateFetchError(msg) from e
 
             except NetworkError as e:
-                msg = f"A network error has ocurred trying to fetch the exchange rate for {currency.upper()}.\nPlease check your internet connection."
+                msg = "A network error has ocurred trying to fetch the exchange rate for {}.\nPlease check your internet connection.".format(
+                    currency.upper()
+                )
                 logger.critical(msg)
                 raise ExchangeRateFetchError(msg) from e
 
             except HTTPStatusError as e:
-                msg = f"Server responded with an error when fetching exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
+                msg = "Server responded with an error when fetching exchange rate for {}.\n{}".format(
+                    currency.upper(), traceback.format_exc()
+                )
                 logger.critical(msg)
                 raise ExchangeRateFetchError(msg) from e
             except Exception as e:
-                msg = f"An unkown error has ocurred trying to fetch the exchange rate for {currency.upper()}.\n{traceback.format_exc()}"
+                msg = "An unkown error has ocurred trying to fetch the exchange rate for {}.\n{}".format(
+                    currency.upper(), traceback.format_exc()
+                )
                 logger.critical(msg)
                 raise ExchangeRateFetchError(msg) from e
 
@@ -235,9 +247,11 @@ class CurrencyManager:
 
         """
         logger.info(
-            f"Saving exchange rate for {self.base_currency}-{currency} at {exchange}...",
+            "Saving exchange rate for {}-{} at {}...".format(
+                self.base_currency, currency, exchange
+            )
         )
-        logger.debug(f"Current rates: {CurrencyManager.CURRENT_RATES}")
+        logger.debug("Current rates: {}".format(CurrencyManager.CURRENT_RATES))
         exchange_obj = ExchangeRate(
             currency=currency,
             rate=exchange,

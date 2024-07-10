@@ -20,7 +20,9 @@ class TuiApp(App):
         """Called when the app is mounted"""
         self.title = f"Budgetize (v{VERSION})"
         logger.info(
-            f"======================= STARTING A NEW BUDGETIZE v{VERSION} INSTANCE =======================\n\n\n"
+            "======================= STARTING A NEW BUDGETIZE v{} INSTANCE =======================\n\n\n".format(
+                VERSION
+            )
         )
         logger.info("Checking if user has default settings...")
         settings = SettingsManager()
