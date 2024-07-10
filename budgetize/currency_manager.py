@@ -4,115 +4,139 @@ import json
 import logging
 import os
 import traceback
-from typing import TypedDict
+from typing import Optional
 
 import httpx
 from arrow import Arrow
 from bs4 import BeautifulSoup
-from budgetize.consts import APP_FOLDER_PATH, VALID_EXCHANGE_TIMESTAMP
-from budgetize.exceptions import ExchangeRateFetchError
 from httpx import HTTPStatusError, NetworkError, TimeoutException
+
+from budgetize.consts import APP_FOLDER_PATH
+from budgetize.exceptions import ExchangeRateFetchError
+from budgetize.exchange_rate import ExchangeRate
 
 logger = logging.getLogger(__name__)
 
 
-class RatesData(TypedDict):
-    """Dict that represents how are curreny data saved."""
-
-    retrieve_timestamp: int
-    rate: float
-
-
 class CurrencyManager:
-    """Class that handles requests to the currency exchanges API and saves it to disk."""
+    """
+    Class that handles requests to the currency exchanges API and saves it to disk.
 
-    CURRENT_RATES: dict[str, dict[str, RatesData]] = {}
-    # {main_currency}: {
-    #     {currency}: {
-    #         "retrieve_timestamp": {timestamp},
-    #         "rate": {rate}
-    # }
+    Format of the CURRENT_RATES dict:
+        "main_currency": {
+            "currency": ExchangeRate
+        }
 
-    # Example
+    Example
+    "USD": {
+        "EUR": ExchangeRate<"EUR", 0.85, 0>
+    }
 
-    # USD: {
-    #     EUR: {
-    #         "retrieve_timestamp": 00000000,
-    #         "rate": 0.8
-    #     }
-    # }
-    #
+    Parameters
+    ----------
+    base_currency : str
+        The base currency to convert from.
+    """
+
+    CURRENT_RATES: dict[str, dict[str, ExchangeRate]] = {}
 
     def __init__(self, base_currency: str):
-        """Creates a new CurrencyManager object.
-
-        Retrieves currency exchanges using requests with Google search.
-
-        Args:
-        ----
-            base_currency (str): The base currency.
-
-        """
         self.file_path = os.path.join(APP_FOLDER_PATH, "currency_exchanges.json")
         self.base_currency = base_currency
 
-    async def update_invalid_rates(self) -> bool:
-        """(Coroutine) Updates all the rates that have expired. Returns True if successful."""
-        logger.info("Checking for invalid rates...")
-        CurrencyManager.CURRENT_RATES = self._get_all_local_rates()
-        logger.debug(f"Current rates: {CurrencyManager.CURRENT_RATES}")
+        self._update_rates_from_disk()
 
-        if not CurrencyManager.CURRENT_RATES:
-            logger.info("No rates found. Returning True.")
-            return True
+    # ============== PUBLIC METHODS ==============
+
+    async def get_exchange(self, currency: str) -> float:
+        """(Coroutine) Retrieves the exchange rate between the base currency and the given currency.
+
+        Attempts to get it from the disk to avoid fetching it from the internet, but if the exchange is not valid, it
+        is updated from the internet.
+
+        Args:
+        ----
+            currency (str): The currency to convert to.
+
+        Returns:
+        -------
+            float: The exchange rate.
+        """
+
+        logger.info(f"Retrieving exchange rate for {self.base_currency}-{currency}...")
 
         if self.base_currency not in CurrencyManager.CURRENT_RATES:
-            logger.info("Base currency not found in rates. Creating new dict.")
-            CurrencyManager.CURRENT_RATES[self.base_currency] = {}
+            return await self.fetch_and_save_rate(currency)
 
-        for base_currency, data in CurrencyManager.CURRENT_RATES[
+        if currency not in CurrencyManager.CURRENT_RATES[self.base_currency]:
+            return await self.fetch_and_save_rate(currency)
+
+        return CurrencyManager.CURRENT_RATES[self.base_currency][currency].rate
+
+    async def update_invalid_rates(self) -> bool:
+        """(Coroutine) Updates all the rates that have expired. Returns True if successful."""
+
+        if not self.has_expired_rates():
+            logger.info("No rates have expired. Skipping...")
+            return True
+
+        logger.warning("Some rates have expired. Updating...")
+
+        for currency, exchange in CurrencyManager.CURRENT_RATES[
             self.base_currency
         ].items():
-            if self.has_expired(data["retrieve_timestamp"]):
-                logger.info(
-                    f"Rate for {self.base_currency}-{base_currency} has expired. Updating...",
-                )
-                exchange = await self._request_exchange(base_currency)
-                if exchange < 0:
-                    logger.critical(
-                        f"Error fetching exchange rate for {self.base_currency}-{base_currency}. Skipping...",
-                    )
-                    return False
+            if not exchange.is_expired():
+                continue
 
-                logger.info("Saving fetched exchange rate...")
-                self._save_exchange(self.base_currency, base_currency, exchange)
+            logger.info(
+                f"Rate for {self.base_currency}-{currency} has expired. Updating...",
+            )
+            rate = await self.fetch_and_save_rate(currency)
+            logger.info("Saving fetched exchange rate...")
+            self._save_exchange(currency, rate)
 
         return True
 
     def has_expired_rates(self) -> bool:
         """Returns True if there is a rate that has expired."""
-        rates = self._get_all_local_rates()
-        if not rates:
+
+        logger.info("Checking for invalid rates...")
+        self._update_rates_from_disk()
+        if not CurrencyManager.CURRENT_RATES:
             return False
 
-        if self.base_currency not in rates.values():
+        if self.base_currency not in CurrencyManager.CURRENT_RATES.values():
             return True
 
-        for _, data in rates[self.base_currency].items():
-            if self.has_expired(data["retrieve_timestamp"]):
+        for _, data in CurrencyManager.CURRENT_RATES[self.base_currency].items():
+            if data.is_expired():
                 return True
         return False
 
-    async def update_rate(self, currency: str) -> float:
-        """(Coroutine) Forces a currency rate update."""
-        exchange = await self._request_exchange(currency)
+    # =============== Exchange Rate Internet-Based Fetch Methods ===============
+
+    async def fetch_and_save_rate(self, currency: str) -> float:
+        """
+        (Coroutine) Fetches the currency exchange rate between the base currency and the given currency.
+        Rate is then saved to the local disk.
+
+        Args
+        ----
+            currency (str): The currency to convert to.
+
+        Returns
+        -------
+            float: The exchange rate retrieved. Returns -1 if an error ocurred.
+        """
+
+        exchange = await self._retrieve_exchange_rate(currency)
         if exchange < 0:
             return -1
-        self._save_exchange(self.base_currency, currency, exchange)
+        self._save_exchange(currency, exchange)
         return exchange
 
-    async def get_exchange(self, currency: str) -> float:
-        """(Coroutine) Retrieves the exchange rate between the base currency and the given currency.
+    async def _retrieve_exchange_rate(self, currency: str) -> float:
+        """(Coroutine) Retrieves from the internet the exchange rate between the base currency and the given currency.
 
         Args:
         ----
@@ -122,79 +146,10 @@ class CurrencyManager:
         -------
             float: The exchange rate.
 
-        """
-        logger.info(f"Retrieving exchange rate for {self.base_currency}-{currency}...")
-        if not CurrencyManager.CURRENT_RATES:
-            logger.info("Currency dict is empty. Updating from local...")
+        Raises
+        ------
+            ExchangeRateFetchError: If an error ocurred while fetching the exchange rate.
 
-            CurrencyManager.CURRENT_RATES = self._get_all_local_rates()
-            if not CurrencyManager.CURRENT_RATES:
-                logger.info(
-                    "CURRENT_RATES dict is still empty after fetching from local rates, fetching online...",
-                )
-                return await self.update_rate(currency)
-
-        if self.base_currency not in CurrencyManager.CURRENT_RATES:
-            logger.info("Base currency not found in local rates. Updating...")
-            return await self.update_rate(currency)
-
-        if CurrencyManager.CURRENT_RATES[self.base_currency] == {}:
-            logger.info("Base currency dict is empty. Updating from local...")
-            CurrencyManager.CURRENT_RATES = self._get_all_local_rates()
-            logger.info(f"Retrieved local rates: {CurrencyManager.CURRENT_RATES}")
-
-        if currency not in CurrencyManager.CURRENT_RATES[self.base_currency].keys():
-            logger.info("Currency not found in local rates. Updating...")
-            return await self.update_rate(currency)
-
-        rate_data = CurrencyManager.CURRENT_RATES[self.base_currency][currency]
-
-        # If the exchange rate is older than 1 week, retrieve it again
-
-        try:
-            if self.has_expired(rate_data["retrieve_timestamp"]):
-                logger.info("Currency rate has expired. Updating...")
-                return await self.update_rate(currency)
-
-            logger.info("Currency rate found in local rates. Returning local")
-            return CurrencyManager.CURRENT_RATES[self.base_currency][currency]["rate"]
-        except ExchangeRateFetchError:
-            logger.critical("Error fetching currency rate. Returning current")
-            return rate_data["rate"]
-
-    def has_expired(self, timestamp: int) -> bool:
-        """Checks if the timestamp has expired.
-
-        Args:
-        ----
-            timestamp (int): The timestamp to check.
-
-        Returns:
-        -------
-            bool: True if the timestamp has expired, False otherwise.
-
-        """
-        return timestamp > Arrow.now().timestamp() + VALID_EXCHANGE_TIMESTAMP
-
-    def _save_last_html_response(self, response: str) -> None:
-        """Saves last HTML in a file"""
-        with open(
-            os.path.join(APP_FOLDER_PATH, "last_html_response.html"),
-            "w",
-            encoding="utf-8",
-        ) as f:
-            f.write(response)
-
-    async def _request_exchange(self, currency: str) -> float:
-        """(Coroutine) Retrieves the exchange rate between the base currency and the given currency.
-
-        Args:
-        ----
-            currency (str): The currency to convert to.
-
-        Returns:
-        -------
-            float: The exchange rate.
 
         """
         async with httpx.AsyncClient() as client:
@@ -219,7 +174,9 @@ class CurrencyManager:
 
                 if digits_span is None:
                     logger.critical("Could not find digits span in response html.")
-                    return -1
+                    raise ExchangeRateFetchError(
+                        "Could not scrape exchange rate. Please look at last_html_response.html in Budgetize's folder"
+                    )
 
                 digits_str: str = digits_span.get_text().replace(",", "")
                 logger.debug(f"Faded Digits from SPAN: {digits_str}")
@@ -255,25 +212,16 @@ class CurrencyManager:
                 logger.critical(msg)
                 raise ExchangeRateFetchError(msg) from e
 
-    def _get_all_local_rates(self) -> dict[str, dict[str, RatesData]]:
-        """Retrieves the exchange rates from a local file.
+    def _save_last_html_response(self, response: str) -> None:
+        """Saves last HTML in a file"""
+        path = os.path.join(APP_FOLDER_PATH, "last_html_response.html")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(response)
 
-        Returns
-        -------
-            dict: The exchange rates.
-
-        """
-        if not os.path.exists(self.file_path):
-            return {}
-
-        with open(self.file_path, encoding="UTF-8") as f:
-            rates: dict[str, dict[str, RatesData]] = json.load(f)
-
-        return rates
+    # ==================== Disk Operation Methods ====================
 
     def _save_exchange(
         self,
-        base_currency: str,
         currency: str,
         exchange: float,
     ) -> None:
@@ -287,37 +235,94 @@ class CurrencyManager:
 
         """
         logger.info(
-            f"Saving exchange rate for {base_currency}-{currency} at {exchange}...",
+            f"Saving exchange rate for {self.base_currency}-{currency} at {exchange}...",
         )
-        logger.info("Retrieving local rates to save...")
-        CurrencyManager.CURRENT_RATES = self._get_all_local_rates()
         logger.debug(f"Current rates: {CurrencyManager.CURRENT_RATES}")
+        exchange_obj = ExchangeRate(
+            currency=currency,
+            rate=exchange,
+            retrieve_timestamp=round(Arrow.now().timestamp()),
+        )
 
-        # In case the rates file is not created.
         if not CurrencyManager.CURRENT_RATES:
             CurrencyManager.CURRENT_RATES = {
-                base_currency: {
-                    currency: {
-                        "retrieve_timestamp": round(Arrow.now().timestamp()),
-                        "rate": exchange,
-                    },
-                },
+                self.base_currency: {currency: exchange_obj},
             }
 
-            with open(self.file_path, "w", encoding="utf-8") as f:
-                json.dump(CurrencyManager.CURRENT_RATES, f, indent=4)
-
-            return
-
-        if base_currency not in CurrencyManager.CURRENT_RATES:
-            CurrencyManager.CURRENT_RATES[base_currency] = {}
-
-        CurrencyManager.CURRENT_RATES[base_currency][currency] = {
-            "retrieve_timestamp": round(Arrow.now().timestamp()),
-            "rate": exchange,
-        }
+        if self.base_currency not in CurrencyManager.CURRENT_RATES:
+            CurrencyManager.CURRENT_RATES[self.base_currency] = {currency: exchange_obj}
+        else:
+            CurrencyManager.CURRENT_RATES[self.base_currency][currency] = exchange_obj
 
         with open(self.file_path, "w", encoding="utf-8") as f:
-            json.dump(CurrencyManager.CURRENT_RATES, f, indent=4)
+            json.dump(self.__current_rates_to_json(), f, indent=4)
 
         logger.info("Exchange rate saved successfully.")
+
+    def get_exchange_from_disk(self, currency: str) -> Optional[ExchangeRate]:
+        """Retrieves the exchange rate between the base currency and the given currency from disk.
+        NOTE: No checks for outdated rates are made.
+
+        Args:
+        ----
+            currency (str): The currency to convert to.
+
+        Returns:
+        -------
+            float: The exchange rate.
+
+        """
+
+        logger.info("Retrieving exchange rate from disk...")
+        self._update_rates_from_disk()
+
+        if not CurrencyManager.CURRENT_RATES:
+            return None
+
+        if self.base_currency not in CurrencyManager.CURRENT_RATES:
+            return None
+
+        return CurrencyManager.CURRENT_RATES[self.base_currency].get(currency, None)
+
+    def __current_rates_to_json(self) -> dict:
+        """Converts the CURRENT_RATES dict to a valid json.
+
+        Returns
+        -------
+            dict: The CURRENT_RATES dict.
+
+        """
+
+        json_dict: dict[str, dict] = {}
+
+        for base_currency, _ in CurrencyManager.CURRENT_RATES.items():
+            json_dict[base_currency] = {}
+
+            for currency, data in CurrencyManager.CURRENT_RATES[base_currency].items():
+                json_dict[base_currency][currency] = data.to_dict()
+
+        return json_dict
+
+    def _update_rates_from_disk(self) -> None:
+        """Updates the exchange rates from a local file.
+
+        Returns
+        -------
+            dict: The exchange rates.
+
+        """
+
+        if not os.path.exists(self.file_path):
+            return
+
+        with open(self.file_path, encoding="UTF-8") as f:
+            rates: dict[str, dict[str, dict]] = json.load(f)
+
+            # Convert the rates to ExchangeRate objects
+            for base_currency, currencies in rates.items():
+                CurrencyManager.CURRENT_RATES[base_currency] = {}
+
+                for currency, data in currencies.items():
+                    CurrencyManager.CURRENT_RATES[base_currency][
+                        currency
+                    ] = ExchangeRate.from_dict(data)

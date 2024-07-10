@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Iterator, Optional
 
 from arrow import Arrow
-from sqlalchemy import create_engine, select, update
+from sqlalchemy import Engine, create_engine, select, update
 from sqlalchemy.orm import Session
 from textual.app import App
 
@@ -95,7 +95,6 @@ class Database:
 
         # Close connections to the current database.
         Database.engine.dispose()
-        Database.engine = None
 
         # Write backup file to the database file
 
