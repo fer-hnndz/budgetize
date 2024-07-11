@@ -101,7 +101,7 @@ class Settings(Screen):
         data["settings"] = self.manager.get_settings_dict()  # type: ignore
         data["database"] = Settings.DB.get_db_as_dict()
 
-        path = os.path.join(APP_FOLDER_PATH, "exported.json")
+        path = os.path.join(APP_FOLDER_PATH, "exported.budgetize")
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
 

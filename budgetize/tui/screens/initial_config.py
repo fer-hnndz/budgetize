@@ -2,26 +2,33 @@
 
 import gettext
 import logging
+import os
 
 import babel
 from textual.app import ComposeResult
+from textual.containers import Center
 from textual.screen import Screen
 from textual.types import NoSelection
-from textual.widgets import Button, Header, Label, Select
+from textual.widgets import Button, Header, Label, Rule, Select
 
 from budgetize.consts import AVAILABLE_LANGUAGES, TRANSLATIONS_PATH
 from budgetize.settings_manager import SettingsDict, SettingsManager
-from budgetize.tui.screens.main_menu import MainMenu
+from budgetize.tui.modals.file_selector_modal import FileSelectorModal
 from budgetize.utils import get_select_currencies
 
 logger = logging.getLogger(__name__)
 
 # Get default locale, but fallback to English in case of an error.
-default_locale = babel.default_locale(category="LANGUAGE")
-if not default_locale:
+locale_retrieved = babel.default_locale(category="LANGUAGE")
+default_locale = "" if not locale_retrieved else locale_retrieved
+try:
+    if not default_locale:
+        default_locale = "en"
+    else:
+        default_locale = default_locale.split("_")[0]
+except Exception as e:
+    logger.error(f"Error getting default locale: {e}")
     default_locale = "en"
-else:
-    default_locale = default_locale.split("_")[0]
 
 t = gettext.translation(
     "budgetize",
@@ -42,11 +49,21 @@ class InitialConfig(Screen):
         logger.info("Compose InitialConfig Screen...")
         self.app.sub_title = _("Initial Setup")
         yield Header()
-        yield Label(_("Select your Base Currency"), id="currency-label")
-        yield Select(get_select_currencies(), id="currency-select", allow_blank=False)
-        yield Label(_("Select a language"), id="language-label")
-        yield Select(AVAILABLE_LANGUAGES, id="language-select", allow_blank=False)
-        yield Button.success(_("Save"), id="save-button")
+
+        with Center():
+            yield Label(_("Select your Base Currency"), id="currency-label")
+            yield Select(
+                get_select_currencies(), id="currency-select", allow_blank=False
+            )
+            yield Label(_("Select a language"), id="language-label")
+            yield Select(AVAILABLE_LANGUAGES, id="language-select", allow_blank=False)
+            yield Button.success(_("Save"), id="save-button")
+
+            yield Label(
+                _("Or import your data from a Budgetize file"), id="import-label"
+            )
+            yield Rule(line_style="dashed")
+            yield Button(_("Import"), id="import-button")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button press handler"""
@@ -87,3 +104,22 @@ class InitialConfig(Screen):
                     "Welcome to Budgetize. Restart the app to apply selected language."
                 )
             )
+
+        if event.button.id == "import-button":
+
+            _ = gettext.translation(
+                "budgetize",
+                localedir=TRANSLATIONS_PATH,
+                languages=[default_locale],
+                fallback=True,
+            ).gettext
+
+            fs = FileSelectorModal(
+                os.path.expanduser("~"), message=_("Select a Budgetize file to import")
+            )
+
+            self.app.push_screen(fs, callback=self.process_file_selector_result)
+
+    def process_file_selector_result(self, result: str) -> None:
+        """Process the result of the file selector modal."""
+        ...

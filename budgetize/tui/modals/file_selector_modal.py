@@ -4,12 +4,13 @@ import logging
 from pathlib import Path
 from typing import Optional
 
-from budgetize.consts import APP_FOLDER_PATH, BACKUPS_FOLDER
-from budgetize.utils import _
 from textual.app import ComposeResult
 from textual.containers import Center, Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, DirectoryTree, Label
+
+from budgetize.consts import APP_FOLDER_PATH, BACKUPS_FOLDER
+from budgetize.utils import _
 
 logger = logging.getLogger(__name__)
 
@@ -57,12 +58,12 @@ class FileSelectorModal(ModalScreen):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button press handler"""
-        print(self.selected_path)
+
         if event.button.id == "accept-btn":
             if self.selected_path is None:
                 self.notify(
-                    title=_("Recover From Backup"),
-                    message=_("Please select a backup file to recover from."),
+                    title=_("File Selector"),
+                    message=_("Please select a file."),
                     severity="error",
                 )
                 return
@@ -70,7 +71,7 @@ class FileSelectorModal(ModalScreen):
             if not self.selected_path.is_file():
                 self.notify(
                     title=_("Recover From Backup"),
-                    message=_("Please select a valid backup file to recover from."),
+                    message=_("Please select file."),
                     severity="error",
                 )
                 return

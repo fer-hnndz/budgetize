@@ -1,0 +1,13 @@
+Button, Label {
+    width: 100%;
+    text-align: center;
+    margin: 1 0 1 0;
+}
+
+#import-label {
+    color: cyan;
+}
+
+#import-button {
+    background: $warning-darken-1;
+}

@@ -27,6 +27,9 @@ class TuiApp(App):
         logger.info("Checking if user has default settings...")
         settings = SettingsManager()
 
+        self.push_screen(InitialConfig())
+        return
+
         if settings.is_default_settings():
             logger.info("User has default settings. Redirecting to InitialConfig...")
             self.push_screen(InitialConfig())
