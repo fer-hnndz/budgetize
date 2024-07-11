@@ -25,7 +25,7 @@ class Settings(Screen):
         Binding(
             key="q,Q",
             key_display="Q",
-            action="pop_screen",
+            action="quit_screen",
             description=_("Quit without saving"),
         ),
         Binding(
@@ -43,6 +43,10 @@ class Settings(Screen):
         Settings.DB = Database(app=self.app)
         self.manager = SettingsManager()
         super().__init__()
+
+    def action_quit_screen(self) -> None:
+        """Action to run when user hits quit screen"""
+        self.app.pop_screen()
 
     def compose(self) -> ComposeResult:
         """Composes the Settings Screen"""

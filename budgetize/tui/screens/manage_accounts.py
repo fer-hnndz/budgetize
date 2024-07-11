@@ -6,10 +6,6 @@ from typing import Generator
 
 from arrow import Arrow
 from babel.numbers import format_currency
-from budgetize import SettingsManager
-from budgetize.db.database import Database
-from budgetize.tui.modals.transaction_details import TransactionDetails
-from budgetize.utils import _
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.screen import Screen
@@ -23,6 +19,11 @@ from textual.widgets import (
     TabPane,
 )
 
+from budgetize import SettingsManager
+from budgetize.db.database import Database
+from budgetize.tui.modals.transaction_details import TransactionDetails
+from budgetize.utils import _
+
 logger = logging.getLogger(__name__)
 
 
@@ -30,7 +31,14 @@ class ManageAccounts(Screen):
     """Screen that allows the user to manage their accounts."""
 
     DB: Database = None  # type: ignore
-    BINDINGS = [Binding("Q,q", "pop_screen", _("Back to Main Menu"), key_display="Q")]
+    BINDINGS = [
+        Binding(
+            key="q,Q",
+            action="quit_screen",
+            description=_("Back to Main Menu"),
+            key_display="Q",
+        )
+    ]
 
     def __init__(self) -> None:
         """Creates a new ManageAccounts Screen"""
@@ -61,6 +69,10 @@ class ManageAccounts(Screen):
                     )
                     yield self.get_transactions_table(acc.id)
                     yield Button.error(_("Delete Account"), id=f"delete-acc-{acc.id}")
+
+    def action_quit_screen(self) -> None:
+        """Quits the application"""
+        self.app.pop_screen()
 
     def generate_accounts_tab(self) -> Generator:
         """Generates the accounts tab including all user accounts"""
