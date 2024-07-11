@@ -1,10 +1,22 @@
+Header {
+    background: $panel;
+}
+
+#accounts-table {
+    width: 50%;
+}
+
 Label {
     width: 100%;
     text-align: center;
 }
 
-#accounts-table {
-    width: 50%;
+#create-account-button, #transaction-button {
+    background: $accent-lighten-3;
+}
+
+#manage-accounts-button, #transfer-btn {
+    background: $warning-darken-2;
 }
 
 Rule {

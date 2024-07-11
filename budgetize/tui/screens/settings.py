@@ -2,6 +2,12 @@ import logging
 from pathlib import Path
 from typing import Optional
 
+from textual.app import ComposeResult
+from textual.binding import Binding
+from textual.screen import Screen
+from textual.types import NoSelection
+from textual.widgets import Button, Footer, Header, Label, Select
+
 from budgetize.consts import AVAILABLE_LANGUAGES, BACKUPS_FOLDER
 from budgetize.db.database import Database
 from budgetize.settings_manager import SettingsDict, SettingsManager
@@ -9,11 +15,6 @@ from budgetize.tui.modals.categories_modal import CategoriesModal
 from budgetize.tui.modals.file_selector_modal import FileSelectorModal
 from budgetize.tui.modals.message_modal import MessageModal
 from budgetize.utils import _, get_select_currencies
-from textual.app import ComposeResult
-from textual.binding import Binding
-from textual.screen import Screen
-from textual.types import NoSelection
-from textual.widgets import Button, Footer, Header, Label, Select
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,8 @@ class Settings(Screen):
             description=_("Save and Quit"),
         ),
     ]
+
+    CSS_PATH = "css/settings.tcss"
 
     def __init__(self) -> None:
         self.app.sub_title = _("Settings")

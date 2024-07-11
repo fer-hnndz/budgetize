@@ -1,0 +1,7 @@
+#categories-btn {
+    background: $accent-lighten-2;
+}
+
+#backup-btn {
+    background: $warning-darken-2;
+}
