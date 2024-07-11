@@ -4,14 +4,15 @@ import gettext
 import logging
 
 import babel
-from budgetize.consts import AVAILABLE_LANGUAGES, TRANSLATIONS_PATH
-from budgetize.settings_manager import SettingsDict, SettingsManager
-from budgetize.tui.screens.main_menu import MainMenu
-from budgetize.utils import get_select_currencies
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.types import NoSelection
 from textual.widgets import Button, Header, Label, Select
+
+from budgetize.consts import AVAILABLE_LANGUAGES, TRANSLATIONS_PATH
+from budgetize.settings_manager import SettingsDict, SettingsManager
+from budgetize.tui.screens.main_menu import MainMenu
+from budgetize.utils import get_select_currencies
 
 logger = logging.getLogger(__name__)
 
@@ -81,10 +82,8 @@ class InitialConfig(Screen):
                 fallback=True,
             ).gettext
 
-            self.app.pop_screen()
-            self.app.install_screen(MainMenu(), "main_menu")
-            self.app.push_screen("main_menu")
-            self.app.notify(
-                _("Welcome to Budgetize. Restart the app to apply selected language."),
-                title=_("Settings Applied"),
+            self.app.exit(
+                message=_(
+                    "Welcome to Budgetize. Restart the app to apply selected language."
+                )
             )

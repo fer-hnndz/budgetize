@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-07-09 13:51-0600\n"
+"POT-Creation-Date: 2024-07-11 12:05-0600\n"
 "PO-Revision-Date: 2024-02-21 12:20-0600\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.14.0\n"
+"Generated-By: Babel 2.15.0\n"
 
 #: budgetize/consts.py:33
 msgid "Income"
@@ -110,7 +110,7 @@ msgstr "Aceptar"
 
 #: budgetize/tui/modals/file_selector_modal.py:64
 #: budgetize/tui/modals/file_selector_modal.py:72
-#: budgetize/tui/screens/settings.py:93
+#: budgetize/tui/screens/settings.py:96
 msgid "Recover From Backup"
 msgstr "Restaurar desde Respaldo"
 
@@ -179,24 +179,24 @@ msgid "Cancel Transaction"
 msgstr "Cancelar Transacción"
 
 #: budgetize/tui/screens/add_transaction.py:54
-#: budgetize/tui/screens/main_menu.py:255
+#: budgetize/tui/screens/main_menu.py:249
 msgid "Account"
 msgstr "Cuenta"
 
 #: budgetize/tui/screens/add_transaction.py:62
-#: budgetize/tui/screens/main_menu.py:256
+#: budgetize/tui/screens/main_menu.py:250
 #: budgetize/tui/screens/manage_accounts.py:89
 msgid "Amount"
 msgstr "Cantidad"
 
 #: budgetize/tui/screens/add_transaction.py:79
-#: budgetize/tui/screens/main_menu.py:257
+#: budgetize/tui/screens/main_menu.py:251
 #: budgetize/tui/screens/manage_accounts.py:89
 msgid "Date"
 msgstr "Fecha"
 
 #: budgetize/tui/screens/add_transaction.py:92
-#: budgetize/tui/screens/main_menu.py:259
+#: budgetize/tui/screens/main_menu.py:253
 #: budgetize/tui/screens/manage_accounts.py:89
 msgid "Description"
 msgstr "Descripción"
@@ -207,14 +207,13 @@ msgid "Update Transaction"
 msgstr "Actualizar Transacción"
 
 #: budgetize/tui/screens/add_transaction.py:100
-#: budgetize/tui/screens/main_menu.py:46
 msgid "Add Transaction"
 msgstr "Agregar Transacción"
 
 # | msgid "Cancel Transaction"
 #: budgetize/tui/screens/add_transaction.py:159
-msgid "Sucessfully updated transaction#"
-msgstr "Cancelar Transacción"
+msgid "Sucessfully updated transaction!"
+msgstr "Transacción Actualizada Exitosamente"
 
 # | msgid "Transaction Deleted"
 #: budgetize/tui/screens/add_transaction.py:160
@@ -241,7 +240,7 @@ msgid "Account Currency"
 msgstr "Moneda de la Cuenta"
 
 #: budgetize/tui/screens/create_account.py:49
-#: budgetize/tui/screens/main_menu.py:289
+#: budgetize/tui/screens/main_menu.py:283
 msgid "Account Name"
 msgstr "Nombre de la Cuenta"
 
@@ -293,49 +292,55 @@ msgstr ""
 "Bienvenido a Budgetize. Reinicia la app para aplicar el idioma "
 "seleccionado."
 
-#: budgetize/tui/screens/initial_config.py:89
-msgid "Settings Applied"
-msgstr "Configuración Aplicada"
-
-#: budgetize/tui/screens/main_menu.py:40
+#: budgetize/tui/screens/main_menu.py:50
 msgid "Quit Budgetize"
 msgstr "Salir de Budgetize"
 
-#: budgetize/tui/screens/main_menu.py:52
-msgid "Open Settings"
-msgstr "Abrir Configuración"
-
-#: budgetize/tui/screens/main_menu.py:58
+#: budgetize/tui/screens/main_menu.py:56
 msgid "Force Exchange Rate Update"
 msgstr "Forzar Actualización de Tasas de Cambio"
 
-#: budgetize/tui/screens/main_menu.py:64
-msgid "Create a new Transfer"
-msgstr "Crear nueva Transferencia"
+#: budgetize/tui/screens/main_menu.py:62
+msgid "Open Settings"
+msgstr "Abrir Configuración"
 
-#: budgetize/tui/screens/main_menu.py:84 budgetize/tui/screens/main_menu.py:215
+#: budgetize/tui/screens/main_menu.py:82 budgetize/tui/screens/main_menu.py:209
 msgid "Main Menu"
 msgstr "Menú Principal"
 
-#: budgetize/tui/screens/main_menu.py:110
-msgid "Transfer between Accounts"
-msgstr "Transferir entre Cuentas"
+#: budgetize/tui/screens/main_menu.py:86
+msgid "Accounts"
+msgstr "Cuentas"
 
-#: budgetize/tui/screens/main_menu.py:114
+#: budgetize/tui/screens/main_menu.py:113
 #: budgetize/tui/screens/manage_accounts.py:43
 msgid "Manage Accounts"
 msgstr "Administrar Cuentas"
 
-#: budgetize/tui/screens/main_menu.py:116
+#: budgetize/tui/screens/main_menu.py:119
+msgid "New Transanction"
+msgstr "Nueva Transacción"
+
+#: budgetize/tui/screens/main_menu.py:124
+msgid "Transfer between Accounts"
+msgstr "Transferir entre Cuentas"
+
+#: budgetize/tui/screens/main_menu.py:129
 msgid "Recent Transactions"
 msgstr "Transacciones Recientes"
 
-#: budgetize/tui/screens/main_menu.py:177
-#: budgetize/tui/screens/main_menu.py:200
+#: budgetize/tui/screens/main_menu.py:131
+msgid ""
+"[bold][sandy_brown]Tip:[/bold][/sandy_brown] [italic]Click on a "
+"transaction to manage it."
+msgstr ""
+
+#: budgetize/tui/screens/main_menu.py:167
+#: budgetize/tui/screens/main_menu.py:194
 msgid "Updating Currency Rates"
 msgstr "Actualizando Cambios de Moneda"
 
-#: budgetize/tui/screens/main_menu.py:178
+#: budgetize/tui/screens/main_menu.py:168
 msgid ""
 "Please wait while we retrieve the latest currency conversion rates for "
 "you."
@@ -343,43 +348,33 @@ msgstr ""
 "Por favor espera mientras obtenemos las últimas conversiones de moneda "
 "para tí."
 
-#: budgetize/tui/screens/main_menu.py:190
-msgid ""
-"\n"
-"\n"
-" Using outdated exchange rates for now."
-msgstr ""
-"\n"
-"\n"
-"Usando tasas de cambio expiradas por ahora."
-
-#: budgetize/tui/screens/main_menu.py:192
-#: budgetize/tui/screens/main_menu.py:370
+#: budgetize/tui/screens/main_menu.py:188
+#: budgetize/tui/screens/main_menu.py:364
 msgid "Error Fetching Exchange Rates"
 msgstr "Error Obteniendo Tasas de Cambio"
 
-#: budgetize/tui/screens/main_menu.py:201
+#: budgetize/tui/screens/main_menu.py:195
 msgid "Updated all currency rates."
 msgstr "Se actualizaron todas las tasas de cambio."
 
-#: budgetize/tui/screens/main_menu.py:231
+#: budgetize/tui/screens/main_menu.py:225
 msgid "Cannot Manage Accounts"
 msgstr "No se puede Administrar las Cuents"
 
-#: budgetize/tui/screens/main_menu.py:232
+#: budgetize/tui/screens/main_menu.py:226
 msgid "You must need atleast one account to manage accounts."
 msgstr "Necesitas almenos una cuenta para administrar cuentas."
 
-#: budgetize/tui/screens/main_menu.py:258
+#: budgetize/tui/screens/main_menu.py:252
 #: budgetize/tui/screens/manage_accounts.py:89
 msgid "Category"
 msgstr "Categoría"
 
-#: budgetize/tui/screens/main_menu.py:290
+#: budgetize/tui/screens/main_menu.py:284
 msgid "Balance"
 msgstr "Balance"
 
-#: budgetize/tui/screens/main_menu.py:332
+#: budgetize/tui/screens/main_menu.py:326
 msgid ""
 "Income this Month\n"
 "{income_color}{monthly_income}"
@@ -387,7 +382,7 @@ msgstr ""
 "Ingresos este Mes\n"
 "{income_color}{monthly_income}"
 
-#: budgetize/tui/screens/main_menu.py:343
+#: budgetize/tui/screens/main_menu.py:337
 msgid ""
 "Balance\n"
 "{balance_color}{balance}"
@@ -395,7 +390,7 @@ msgstr ""
 "Balance\n"
 "{balance_color}{balance}"
 
-#: budgetize/tui/screens/main_menu.py:353
+#: budgetize/tui/screens/main_menu.py:347
 msgid ""
 "Expenses this Month\n"
 "{expense_color}{monthly_expense}"
@@ -403,7 +398,7 @@ msgstr ""
 "Gastos este Mes\n"
 "{expense_color}{monthly_expense}"
 
-#: budgetize/tui/screens/main_menu.py:365
+#: budgetize/tui/screens/main_menu.py:359
 msgid ""
 "\n"
 "\n"
@@ -415,11 +410,11 @@ msgstr ""
 "Conéctate al internet para poder usar Budgetize. O puedes crear un issue "
 "en Github para obtener soporte."
 
-#: budgetize/tui/screens/main_menu.py:396
+#: budgetize/tui/screens/main_menu.py:385
 msgid "Cannot add a Transaction"
 msgstr "No se puede agregar una Transacción"
 
-#: budgetize/tui/screens/main_menu.py:397
+#: budgetize/tui/screens/main_menu.py:386
 msgid "You must need atleast one account to add a transaction."
 msgstr "Necesitas almenos una cuenta para agregar una transacción."
 
@@ -445,61 +440,61 @@ msgstr "{account_name} ha sido eliminada."
 msgid "Account Deleted"
 msgstr "Cuenta Eliminada"
 
-#: budgetize/tui/screens/settings.py:28
+#: budgetize/tui/screens/settings.py:29
 msgid "Quit without saving"
 msgstr "Salir sin guardar"
 
-#: budgetize/tui/screens/settings.py:34
+#: budgetize/tui/screens/settings.py:35
 msgid "Save and Quit"
 msgstr "Guardar y Salir"
 
-#: budgetize/tui/screens/settings.py:39
+#: budgetize/tui/screens/settings.py:42
 msgid "Settings"
 msgstr "Configuración"
 
-#: budgetize/tui/screens/settings.py:51
+#: budgetize/tui/screens/settings.py:54
 msgid "Language"
 msgstr "Idioma"
 
-#: budgetize/tui/screens/settings.py:59
+#: budgetize/tui/screens/settings.py:62
 msgid "Main Currency"
 msgstr "Moneda Principal"
 
-#: budgetize/tui/screens/settings.py:66
+#: budgetize/tui/screens/settings.py:69
 msgid "Manage Categories"
 msgstr "Administrar Categorías"
 
-#: budgetize/tui/screens/settings.py:67
+#: budgetize/tui/screens/settings.py:70
 msgid "Revert Accounts & Transactions from Backup"
 msgstr ""
 
-#: budgetize/tui/screens/settings.py:78
+#: budgetize/tui/screens/settings.py:81
 msgid "Select the backup you want to revert to"
 msgstr ""
 
-#: budgetize/tui/screens/settings.py:94
+#: budgetize/tui/screens/settings.py:97
 msgid "No backup selected."
 msgstr ""
 
-#: budgetize/tui/screens/settings.py:101
+#: budgetize/tui/screens/settings.py:104
 msgid ""
 "Backup loaded successfully.\n"
 "Please restart Budgetize."
 msgstr ""
 
-#: budgetize/tui/screens/settings.py:127
+#: budgetize/tui/screens/settings.py:130
 msgid "Close Budgetize to apply the new language."
 msgstr "Cierra Budgetize para aplicar el nuevo idioma."
 
-#: budgetize/tui/screens/settings.py:128
+#: budgetize/tui/screens/settings.py:131
 msgid "Language Change"
 msgstr "Cambio de Idioma"
 
-#: budgetize/tui/screens/settings.py:134
+#: budgetize/tui/screens/settings.py:137
 msgid "Settings saved."
 msgstr "Configuración guardada."
 
-#: budgetize/tui/screens/settings.py:134
+#: budgetize/tui/screens/settings.py:137
 msgid "Settings Changed"
 msgstr "Configuración Modificada"
 
@@ -579,3 +574,18 @@ msgid ""
 msgstr ""
 "Balance Nuevo de la Cuenta Destino ({account_name})\n"
 "{color}{formatted_new_balance}"
+
+#~ msgid "Settings Applied"
+#~ msgstr "Configuración Aplicada"
+
+#~ msgid "Create a new Transfer"
+#~ msgstr "Crear nueva Transferencia"
+
+#~ msgid ""
+#~ "\n"
+#~ "\n"
+#~ " Using outdated exchange rates for now."
+#~ msgstr ""
+#~ "\n"
+#~ "\n"
+#~ "Usando tasas de cambio expiradas por ahora."

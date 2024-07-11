@@ -66,7 +66,7 @@ class Database:
 
     def _backup_database(self) -> None:
         """Creates a backup of the current database into the backups folder"""
-        print("Backing up database...")
+
         logger.info("Backing up database...")
         now = Arrow.now()
         db_path = os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)
@@ -74,6 +74,10 @@ class Database:
 
         if not os.path.exists(BACKUPS_FOLDER):
             os.makedirs(BACKUPS_FOLDER)
+
+        if not os.path.exists(db_path):
+            logger.warning("Database file not found. Skipping backup...")
+            return
 
         db_backup_filename = (
             f"budgetize-backup-{now.format('DD-MM-YYYY (HH.mm)')}.sqlite"
