@@ -3,6 +3,10 @@ Label {
     text-align: center;
 }
 
+#accounts-table {
+    width: 50%;
+}
+
 Rule {
     margin: 0;
 }
@@ -12,5 +16,5 @@ Horizontal {
 }
 
 Button {
-    margin: 1 2;
+    margin: 1 1;
 }

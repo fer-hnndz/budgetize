@@ -10,7 +10,16 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
-from textual.widgets import Button, DataTable, Footer, Header, Label, Rule
+from textual.widgets import (
+    Button,
+    DataTable,
+    Footer,
+    Header,
+    Label,
+    Rule,
+    TabbedContent,
+    TabPane,
+)
 from textual.widgets.data_table import CellKey
 
 from budgetize import CurrencyManager, SettingsManager
@@ -41,28 +50,16 @@ class MainMenu(Screen):
             description=_("Quit Budgetize"),
         ),
         Binding(
-            key="n,N",
-            key_display="N",
-            action="verify_add_transaction()",
-            description=_("Add Transaction"),
-        ),
-        Binding(
-            key="i,I",
-            key_display="I",
-            action="show_settings()",
-            description=_("Open Settings"),
-        ),
-        Binding(
             key="r,R",
             key_display="R",
             action="refresh_currencies()",
             description=_("Force Exchange Rate Update"),
         ),
         Binding(
-            key="t,T",
-            key_display="T",
-            action="create_transfer()",
-            description=_("Create a new Transfer"),
+            key="s,S",
+            key_display="S",
+            action="show_settings()",
+            description=_("Open Settings"),
         ),
     ]
 
@@ -85,41 +82,58 @@ class MainMenu(Screen):
         self.app.sub_title = _("Main Menu")
         yield Header()
         yield Footer()
-        yield Label("Accounts", id="accounts-label")
-        yield Rule(orientation="horizontal", line_style="heavy")
-        yield Horizontal(
-            DataTable(id="accounts-table"),
-            # TODO: Convert all other currencies to main currency
-            Vertical(
-                Label(
-                    "...",
-                    id="monthly-income",
-                ),
-                Label(
-                    "...",
-                    id="monthly-balance",
-                ),
-                Label(
-                    "...",
-                    id="monthly-expense",
-                ),
-                id="balance-labels",
-            ),
-            Vertical(
-                Button(_("Create Account"), id="create-account-button"),
-                Button(_("Manage Accounts"), id="manage-accounts-button"),
-                Button(
-                    _("Transfer between Accounts"), id="transfer-btn", variant="primary"
-                ),
-            ),
-        )
-        yield Label(_("Recent Transactions"), id="recent-transactions-label")
+        with TabbedContent(id="tabs"):
+            with TabPane(_("Accounts"), id="accounts-tab"):
+                with Horizontal():
+                    yield DataTable(id="accounts-table")
+                    # Monthly balances
+                    yield Vertical(
+                        Label(
+                            "...",
+                            id="monthly-income",
+                        ),
+                        Label(
+                            "...",
+                            id="monthly-balance",
+                        ),
+                        Label(
+                            "...",
+                            id="monthly-expense",
+                        ),
+                        id="balance-labels",
+                    )
 
-        # Generate last 5 transactions
-        # TODO: Replace the place holders
-        yield DataTable(id="recent-transactions-table")
+                with Horizontal():
+                    yield Button(
+                        _("Create Account"),
+                        id="create-account-button",
+                        variant="success",
+                    )
+                    yield Button(
+                        _("Manage Accounts"),
+                        id="manage-accounts-button",
+                        variant="primary",
+                    )
+                with Horizontal():
+                    yield Button(
+                        _("New Transanction"),
+                        id="transaction-button",
+                        variant="success",
+                    )
+                    yield Button(
+                        _("Transfer between Accounts"),
+                        id="transfer-btn",
+                        variant="primary",
+                    )
 
-        yield Rule(orientation="horizontal")
+            with TabPane(_("Recent Transactions"), id="transactions-tab"):
+                yield Label(
+                    _(
+                        "[bold][sandy_brown]Tip:[/bold][/sandy_brown] [italic]Click on a transaction to manage it."
+                    ),
+                    id="transaction-tip",
+                )
+                yield DataTable(id="recent-transactions-table")
 
     async def on_mount(self) -> None:
         """Called when the screen is about to be shown"""
@@ -130,13 +144,15 @@ class MainMenu(Screen):
         self.last_recent_transactions_value = ""
 
         logger.info("Runnning background worker for updating UI...")
+
+    def after_layout(self) -> None:
         self.run_worker(self.update_ui_info, exclusive=True)  # type: ignore
 
     async def update_ui_info(self) -> None:
         """Lets the user now that the app is about to update exchange rates and update UI elements"""
-        # TODO: Show error log when the exchange couldnt be fetched.
 
-        labels_container = self.get_widget_by_id("balance-labels", expect_type=Vertical)
+        labels_container = self.query_one("#balance-labels", expect_type=Vertical)
+        logger.debug(labels_container.children)
         labels_container.loading = True
         try:
             base_currency = SettingsManager().get_base_currency()
