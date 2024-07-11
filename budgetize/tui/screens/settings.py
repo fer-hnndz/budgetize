@@ -1,4 +1,6 @@
+import json
 import logging
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -8,7 +10,7 @@ from textual.screen import Screen
 from textual.types import NoSelection
 from textual.widgets import Button, Footer, Header, Label, Select
 
-from budgetize.consts import AVAILABLE_LANGUAGES, BACKUPS_FOLDER
+from budgetize.consts import APP_FOLDER_PATH, AVAILABLE_LANGUAGES, BACKUPS_FOLDER
 from budgetize.db.database import Database
 from budgetize.settings_manager import SettingsDict, SettingsManager
 from budgetize.tui.modals.categories_modal import CategoriesModal
@@ -72,12 +74,14 @@ class Settings(Screen):
         )
         yield Button(_("Manage Categories"), id="categories-btn", variant="primary")
         yield Button(_("Revert Accounts & Transactions from Backup"), id="backup-btn")
+        yield Button(_("Export all Budgetize Data"), id="export-btn")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button press handler"""
         if event.button.id == "categories-btn":
             logger.info("Showing Categories Settings...")
             self.app.push_screen(CategoriesModal())
+
         if event.button.id == "backup-btn":
             self.app.push_screen(
                 FileSelectorModal(
@@ -86,6 +90,25 @@ class Settings(Screen):
                 ),
                 self.load_backup,
             )
+
+        if event.button.id == "export-btn":
+            self.export_data()
+
+    def export_data(self) -> None:
+        """Export all Budgetize data"""
+        data: dict[str, dict] = {}
+
+        data["settings"] = self.manager.get_settings_dict()  # type: ignore
+        data["database"] = Settings.DB.get_db_as_dict()
+
+        path = os.path.join(APP_FOLDER_PATH, "exported.json")
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4)
+
+        modal = MessageModal(
+            _("All data has been exported to {path}").format(path=path)
+        )
+        self.app.push_screen(modal)
 
     def load_backup(self, backup: Optional[Path]) -> None:
         """Load a backup file

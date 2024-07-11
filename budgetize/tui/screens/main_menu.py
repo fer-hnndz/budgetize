@@ -84,6 +84,7 @@ class MainMenu(Screen):
         self.app.sub_title = _("Main Menu")
         yield Header()
         yield Footer()
+
         with TabbedContent(id="tabs"):
             with TabPane(_("Accounts"), id="accounts-tab"):
                 with Horizontal():
@@ -212,8 +213,8 @@ class MainMenu(Screen):
             self._update_recent_transactions_table()
             await self._update_balance_labels()
 
-            progress = self.query_one("#budget-progress", expect_type=ProgressBar)
-            progress.advance(MainMenu.TOTAL_SPENT)
+            # progress = self.query_one("#budget-progress", expect_type=ProgressBar)
+            # progress.advance(MainMenu.TOTAL_SPENT)
 
         except ExchangeRateFetchError as e:
             msg = f"{e}\n\n Using outdated exchange rates for now."

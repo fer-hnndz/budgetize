@@ -339,6 +339,54 @@ class Database:
         ).get_exchange(currency)
         return amount / exchange_rate
 
+    def get_db_as_dict(self) -> dict[int, dict]:
+        """Returns the database as a dictionary.
+
+        Format:
+        ```
+        {
+            account_id: {
+                "name": account_name,
+                "currency": account_currency,
+                "transactions": {
+                    transaction_id: {
+                        "amount": transaction_amount,
+                        "description": transaction_description,
+                        "category": transaction_category,
+                        "timestamp": transaction_timestamp,
+                        "visible": transaction_visibility,
+                    },
+                    ...
+                }
+            ...
+        }
+        ```
+        Returns
+        --------
+            dict: The database as a dictionary.
+        """
+
+        d: dict[int, dict] = {}
+        accounts = self.get_accounts()
+
+        for account in accounts:
+            d[account.id] = {
+                "name": account.name,
+                "currency": account.currency,
+                "transactions": {},
+            }
+
+            for transaction in self.get_transactions_from_account(account.id):
+                d[account.id]["transactions"][transaction.id] = {
+                    "amount": transaction.amount,
+                    "description": transaction.description,
+                    "category": transaction.category,
+                    "timestamp": transaction.timestamp,
+                    "visible": transaction.visible,
+                }
+
+        return d
+
     # ======================== ADD/UPDATE INFO ========================
 
     def add_account(
