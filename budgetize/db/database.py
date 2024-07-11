@@ -19,6 +19,7 @@ from budgetize.db.orm.transactions import Transaction
 logger = logging.getLogger(__name__)
 
 
+# TODO: Improve function and class docstrings
 class Database:
     """This class is the API for interacting with the database.
     All read and writes are done here which may include utilities for converting currencies, for example.
@@ -387,6 +388,33 @@ class Database:
 
         return d
 
+    def populate_from_dict(self, data: dict[str, dict]) -> None:
+        """Populates the database from a dictionary.
+
+        Args:
+        ----
+            data (dict): The dictionary to populate the database from.
+
+        """
+        for account_id, account_data in data.items():
+            self._add_account(
+                id=int(account_id),
+                name=account_data["name"],
+                currency=account_data["currency"],
+            )
+
+            for transaction_id, transaction_data in account_data[
+                "transactions"
+            ].items():
+                self.add_transaction(
+                    account_id=int(account_id),
+                    amount=transaction_data["amount"],
+                    description=transaction_data["description"],
+                    category=transaction_data["category"],
+                    timestamp=transaction_data["timestamp"],
+                    visible=transaction_data["visible"],
+                )
+
     # ======================== ADD/UPDATE INFO ========================
 
     def add_account(
@@ -419,6 +447,24 @@ class Database:
                 visible=False,
             )
             session.add(initial_balance_transaction)
+            session.commit()
+
+    def _add_account(self, id: int, name: str, currency: str) -> None:
+        """Adds a new account to the user.
+        This function is used to populate the DB when importing data.
+
+        Args:
+        ----
+            id (int): The ID of the account.
+            name (str): The name of the account.
+            currency (str): The currency of the account.
+            starting_balance (float): The starting balance of the account.
+            account_type_name (str): The type of the account.
+
+        """
+        with Session(Database.engine) as session:
+            new_account = Account(id=id, name=name, currency=currency)
+            session.add(new_account)
             session.commit()
 
     def add_transaction(

@@ -1,8 +1,10 @@
 """Module that defines the InitialConfig screen."""
 
 import gettext
+import json
 import logging
 import os
+from pathlib import Path
 
 import babel
 from textual.app import ComposeResult
@@ -12,6 +14,7 @@ from textual.types import NoSelection
 from textual.widgets import Button, Header, Label, Rule, Select
 
 from budgetize.consts import AVAILABLE_LANGUAGES, TRANSLATIONS_PATH
+from budgetize.db.database import Database
 from budgetize.settings_manager import SettingsDict, SettingsManager
 from budgetize.tui.modals.file_selector_modal import FileSelectorModal
 from budgetize.utils import get_select_currencies
@@ -120,6 +123,33 @@ class InitialConfig(Screen):
 
             self.app.push_screen(fs, callback=self.process_file_selector_result)
 
-    def process_file_selector_result(self, result: str) -> None:
+    def process_file_selector_result(self, path: Path) -> None:
         """Process the result of the file selector modal."""
-        ...
+        logging.debug(f"Exported Data selected: {path}")
+
+        _ = gettext.translation(
+            "budgetize",
+            localedir=TRANSLATIONS_PATH,
+            languages=[default_locale],
+            fallback=True,
+        ).gettext
+
+        if path.suffix != ".budgetize":
+            self.app.notify(
+                _("Invalid file selected. Please select a [red].budgetize[/red] file.")
+            )
+            return
+
+        data = self.dict_from_data(path)
+        settings = SettingsManager()
+        db = Database(self.app)
+
+        db.populate_from_dict(data["database"])
+        settings.save(data["settings"])  # type: ignore
+
+    def dict_from_data(self, path: Path) -> dict[str, dict]:
+        """Create a dictionary from the data in the file."""
+
+        with open(path, "r", encoding="utf-8") as f:
+            data: dict[str, dict] = json.load(f)
+            return data

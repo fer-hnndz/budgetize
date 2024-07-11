@@ -15,6 +15,7 @@ from budgetize.utils import _
 logger = logging.getLogger(__name__)
 
 
+# TODO: Add a parameter to only allow files by extension?
 class FileSelectorModal(ModalScreen):
     """A modal that allows a user to select a file/folder"""
 
