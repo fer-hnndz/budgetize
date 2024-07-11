@@ -60,6 +60,17 @@ DEFAULT_SETTINGS = {
     "base_currency": "",
 }
 
+RICH_COLORS = [
+    "green3",
+    "cyan1",
+    "blue_violet",
+    "cornflower_blue",
+    "medium_violet_red",
+    "orange3",
+    "yellow1",
+    "dodger_blue",
+    "dark_olive_green1",
+]
 
 CURRENCIES: list[tuple[str, str]] = [
     ("SHP", "St. Helena Pound"),

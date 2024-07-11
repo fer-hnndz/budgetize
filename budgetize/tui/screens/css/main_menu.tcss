@@ -7,8 +7,13 @@ Header {
 }
 
 Label {
-    width: 100%;
     text-align: center;
+}
+
+#balance-labels Label {
+    text-align: center;
+    text-align: center;
+    width: 100%;
 }
 
 #create-account-button, #transaction-button {
@@ -19,14 +24,25 @@ Label {
     background: $warning-darken-2;
 }
 
-Rule {
-    margin: 0;
-}
-
 Horizontal {
     align: center top;
 }
 
 Button {
     margin: 1 1;
+}
+
+#goal-label{
+    text-align: center;
+    width: 100%;
+}
+
+#budget-categories Label {
+    text-align: center;
+    width: auto;
+    margin: 1 5 1 5;
+}
+
+#budget-categories {
+    height: auto;
 }

@@ -1,14 +1,14 @@
 """Module that defines the main menu screen"""
 
-import asyncio
 import logging
+from random import choice, randint
 from typing import Optional
 
 from arrow import Arrow
 from babel.numbers import format_currency, parse_decimal
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, Vertical
+from textual.containers import Center, Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import (
     Button,
@@ -16,13 +16,14 @@ from textual.widgets import (
     Footer,
     Header,
     Label,
-    Rule,
+    ProgressBar,
     TabbedContent,
     TabPane,
 )
 from textual.widgets.data_table import CellKey
 
 from budgetize import CurrencyManager, SettingsManager
+from budgetize.consts import RICH_COLORS
 from budgetize.db.database import Database
 from budgetize.exceptions import ExchangeRateFetchError
 from budgetize.tui.modals.confirm_quit import ConfirmQuit
@@ -40,6 +41,7 @@ logger = logging.getLogger(__name__)
 class MainMenu(Screen):
     """Screen that displays the main menu"""
 
+    TOTAL_SPENT = 0
     DB: Database = None  # type: ignore
     CSS_PATH = "css/main_menu.tcss"
     BINDINGS = [
@@ -102,7 +104,6 @@ class MainMenu(Screen):
                         ),
                         id="balance-labels",
                     )
-
                 with Horizontal():
                     yield Button(
                         _("Create Account"),
@@ -135,6 +136,36 @@ class MainMenu(Screen):
                 )
                 yield DataTable(id="recent-transactions-table")
 
+            with TabPane(_("Budgets"), id="budgets-tab"):
+
+                with Center():
+                    yield Label(
+                        "[bold][lime]Monthly Goal:[/lime][/bold] $1000", id="goal-label"
+                    )
+
+                    with Horizontal(id="budget-categories"):
+                        # Loop through Budget categories
+                        spend_limit = [250, 700, 50]
+                        i = 0
+                        for category in ["Food", "Entertainment", "Transportation"]:
+                            color = choice(RICH_COLORS)
+                            spent = randint(10, round(spend_limit[i] * 1.15))
+                            MainMenu.TOTAL_SPENT += spent
+                            balance_color = (
+                                "[green]" if spent < spend_limit[i] else "[red]"
+                            )
+
+                            yield Label(
+                                f"[{color}]{category}[/{color}]\nLimit: [{color}]{spend_limit[i]}[/{color}]\nCurrent Spent:{balance_color}{spent}",
+                            )
+                            i += 1
+
+                    with Center():
+                        yield Label("Budget Progress")
+                        yield ProgressBar(
+                            total=1000, show_eta=False, id="budget-progress"
+                        )
+
     async def on_mount(self) -> None:
         """Called when the screen is about to be shown"""
         logger.info("Mounting MainMenu...")
@@ -150,7 +181,6 @@ class MainMenu(Screen):
 
     async def update_ui_info(self) -> None:
         """Lets the user now that the app is about to update exchange rates and update UI elements"""
-
         labels_container = self.query_one("#balance-labels", expect_type=Vertical)
         logger.debug(labels_container.children)
         labels_container.loading = True
@@ -181,6 +211,9 @@ class MainMenu(Screen):
             self._update_account_tables()
             self._update_recent_transactions_table()
             await self._update_balance_labels()
+
+            progress = self.query_one("#budget-progress", expect_type=ProgressBar)
+            progress.advance(MainMenu.TOTAL_SPENT)
 
         except ExchangeRateFetchError as e:
             msg = f"{e}\n\n Using outdated exchange rates for now."
