@@ -6,10 +6,6 @@ Header {
     width: 50%;
 }
 
-Label {
-    text-align: center;
-}
-
 #balance-labels Label {
     text-align: center;
     text-align: center;
@@ -24,11 +20,11 @@ Label {
     background: $warning-darken-2;
 }
 
-Horizontal {
+#tabs Horizontal {
     align: center top;
 }
 
-Button {
+#tabs Button {
     margin: 1 1;
 }
 

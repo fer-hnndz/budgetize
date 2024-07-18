@@ -8,7 +8,7 @@ from arrow import Arrow
 from babel.numbers import format_currency, parse_decimal
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Center, Horizontal, Vertical
+from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import (
     Button,
@@ -26,7 +26,7 @@ from budgetize import CurrencyManager, SettingsManager
 from budgetize.consts import RICH_COLORS
 from budgetize.db.database import Database
 from budgetize.exceptions import ExchangeRateFetchError
-from budgetize.tui.modals.confirm_quit import ConfirmQuit
+from budgetize.tui.modals.confirm_modal import ConfirmModal
 from budgetize.tui.modals.error_modal import ErrorModal
 from budgetize.tui.modals.transaction_details import TransactionDetails
 from budgetize.tui.screens.add_transaction import AddTransaction
@@ -70,6 +70,7 @@ class MainMenu(Screen):
         super().__init__()
         MainMenu.DB = Database(self.app)
         self.rates_fetched = False
+        self.is_quitting = False
 
         # Keys for storing actual values to show main currency
         self.last_account_key: Optional[CellKey] = None
@@ -182,6 +183,10 @@ class MainMenu(Screen):
 
     async def update_ui_info(self) -> None:
         """Lets the user now that the app is about to update exchange rates and update UI elements"""
+
+        if self.is_quitting:
+            return
+
         labels_container = self.query_one("#balance-labels", expect_type=Vertical)
         logger.debug(labels_container.children)
         labels_container.loading = True
@@ -420,10 +425,20 @@ class MainMenu(Screen):
                 message=_("You must need atleast one account to add a transaction."),
             )
 
+    def quit_callback(self, quit: bool) -> None:
+        """Called when the user confirms the quit modal"""
+
+        if quit:
+            self.is_quitting = True
+            self.app.exit()
+
     def action_request_quit(self) -> None:
         """Shows the modal to quit the app"""
         logger.info("Pushing ConfirmQuit Modal...")
-        self.app.push_screen(ConfirmQuit())
+        self.app.push_screen(
+            ConfirmModal(message=_("Are you sure you want to quit?"), warn_accept=True),
+            callback=self.quit_callback,
+        )
 
     def action_show_settings(self) -> None:
         """Opens the settings."""
