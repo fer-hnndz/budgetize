@@ -26,4 +26,4 @@ class MessageModal(ModalScreen):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button press handler"""
-        self.dismiss()
+        self.dismiss(True)

@@ -17,6 +17,7 @@ from budgetize.consts import AVAILABLE_LANGUAGES, TRANSLATIONS_PATH
 from budgetize.db.database import Database
 from budgetize.settings_manager import SettingsDict, SettingsManager
 from budgetize.tui.modals.file_selector_modal import FileSelectorModal
+from budgetize.tui.modals.message_modal import MessageModal
 from budgetize.utils import get_select_currencies
 
 logger = logging.getLogger(__name__)
@@ -95,18 +96,7 @@ class InitialConfig(Screen):
             logger.debug(f"Saving settings: {new_settings}")
             settings.save(new_settings)
 
-            _ = gettext.translation(
-                "budgetize",
-                localedir=TRANSLATIONS_PATH,
-                languages=[language],
-                fallback=True,
-            ).gettext
-
-            self.app.exit(
-                message=_(
-                    "Welcome to Budgetize. Restart the app to apply selected language."
-                )
-            )
+            self.show_modal(language)
 
         if event.button.id == "import-button":
 
@@ -140,16 +130,40 @@ class InitialConfig(Screen):
             )
             return
 
-        data = self.dict_from_data(path)
+        data = self.get_export_data_as_dict(path)
         settings = SettingsManager()
         db = Database(self.app)
 
         db.populate_from_dict(data["database"])
         settings.save(data["settings"])  # type: ignore
 
-    def dict_from_data(self, path: Path) -> dict[str, dict]:
+        self.show_modal(language=data["settings"]["language"])
+
+    def get_export_data_as_dict(self, path: Path) -> dict[str, dict]:
         """Create a dictionary from the data in the file."""
 
         with open(path, "r", encoding="utf-8") as f:
             data: dict[str, dict] = json.load(f)
             return data
+
+    def show_modal(self, language: str) -> None:
+        """Shows modal to restart the app to apply language changes."""
+
+        _ = gettext.translation(
+            "budgetize",
+            localedir=TRANSLATIONS_PATH,
+            languages=[language],
+            fallback=True,
+        ).gettext
+
+        modal = MessageModal(
+            message=_(
+                "Welcome to Budgetize. Restart the app to apply selected language."
+            )
+        )
+
+        self.app.push_screen(modal, callback=self.quit_callback)
+
+    def quit_callback(self, data: str = "") -> None:
+        """Callback to quit the app. NOTE: PARAMTER IS NOT USED."""
+        self.app.exit()
