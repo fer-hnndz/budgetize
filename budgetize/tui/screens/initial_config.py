@@ -13,7 +13,11 @@ from textual.screen import Screen
 from textual.types import NoSelection
 from textual.widgets import Button, Header, Label, Rule, Select
 
-from budgetize.consts import AVAILABLE_LANGUAGES, TRANSLATIONS_PATH
+from budgetize.consts import (
+    AVAILABLE_LANGUAGES,
+    EXPORT_DATA_EXTENSION,
+    TRANSLATIONS_PATH,
+)
 from budgetize.db.database import Database
 from budgetize.settings_manager import SettingsDict, SettingsManager
 from budgetize.tui.modals.file_selector_modal import FileSelectorModal
@@ -124,9 +128,11 @@ class InitialConfig(Screen):
             fallback=True,
         ).gettext
 
-        if path.suffix != ".budgetize":
+        if path.suffix != ".{EXPORT_DATA_EXTENSION}":
             self.app.notify(
-                _("Invalid file selected. Please select a [red].budgetize[/red] file.")
+                _(
+                    "Invalid file selected. Please select a [red].{EXPORT_DATA_EXTENSION}[/red] file."
+                ).format(EXPORT_DATA_EXTENSION)
             )
             return
 

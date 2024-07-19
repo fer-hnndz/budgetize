@@ -14,6 +14,7 @@ APP_FOLDER_NAME = ".budgetize"
 user_folder = os.path.expanduser("~")
 APP_FOLDER_PATH = os.path.join(user_folder, ".budgetize")
 DB_FILE_NAME = "budgetize.sqlite"
+EXPORT_DATA_EXTENSION = "bdgz"
 PROD_DB_URL = f"sqlite:///{os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)}"
 BACKUPS_FOLDER = os.path.join(APP_FOLDER_PATH, "backups")
 

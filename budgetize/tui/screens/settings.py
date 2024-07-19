@@ -10,7 +10,12 @@ from textual.screen import Screen
 from textual.types import NoSelection
 from textual.widgets import Button, Footer, Header, Label, Select
 
-from budgetize.consts import APP_FOLDER_PATH, AVAILABLE_LANGUAGES, BACKUPS_FOLDER
+from budgetize.consts import (
+    APP_FOLDER_PATH,
+    AVAILABLE_LANGUAGES,
+    BACKUPS_FOLDER,
+    EXPORT_DATA_EXTENSION,
+)
 from budgetize.db.database import Database
 from budgetize.settings_manager import SettingsDict, SettingsManager
 from budgetize.tui.modals.categories_modal import CategoriesModal
@@ -101,7 +106,7 @@ class Settings(Screen):
         data["settings"] = self.manager.get_settings_dict()  # type: ignore
         data["database"] = Settings.DB.get_db_as_dict()
 
-        path = os.path.join(APP_FOLDER_PATH, "exported.budgetize")
+        path = os.path.join(APP_FOLDER_PATH, f"exported.{EXPORT_DATA_EXTENSION}")
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
 
