@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Iterator, Optional
 
 from arrow import Arrow
-from sqlalchemy import create_engine, select, update
+from sqlalchemy import Engine, create_engine, select, update
 from sqlalchemy.orm import Session
 from textual.app import App
 
@@ -19,6 +19,7 @@ from budgetize.db.orm.transactions import Transaction
 logger = logging.getLogger(__name__)
 
 
+# TODO: Improve function and class docstrings
 class Database:
     """This class is the API for interacting with the database.
     All read and writes are done here which may include utilities for converting currencies, for example.
@@ -66,7 +67,7 @@ class Database:
 
     def _backup_database(self) -> None:
         """Creates a backup of the current database into the backups folder"""
-        print("Backing up database...")
+
         logger.info("Backing up database...")
         now = Arrow.now()
         db_path = os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)
@@ -74,6 +75,10 @@ class Database:
 
         if not os.path.exists(BACKUPS_FOLDER):
             os.makedirs(BACKUPS_FOLDER)
+
+        if not os.path.exists(db_path):
+            logger.warning("Database file not found. Skipping backup...")
+            return
 
         db_backup_filename = (
             f"budgetize-backup-{now.format('DD-MM-YYYY (HH.mm)')}.sqlite"
@@ -95,7 +100,6 @@ class Database:
 
         # Close connections to the current database.
         Database.engine.dispose()
-        Database.engine = None
 
         # Write backup file to the database file
 
@@ -336,6 +340,81 @@ class Database:
         ).get_exchange(currency)
         return amount / exchange_rate
 
+    def get_db_as_dict(self) -> dict[int, dict]:
+        """Returns the database as a dictionary.
+
+        Format:
+        ```
+        {
+            account_id: {
+                "name": account_name,
+                "currency": account_currency,
+                "transactions": {
+                    transaction_id: {
+                        "amount": transaction_amount,
+                        "description": transaction_description,
+                        "category": transaction_category,
+                        "timestamp": transaction_timestamp,
+                        "visible": transaction_visibility,
+                    },
+                    ...
+                }
+            ...
+        }
+        ```
+        Returns
+        --------
+            dict: The database as a dictionary.
+        """
+
+        d: dict[int, dict] = {}
+        accounts = self.get_accounts()
+
+        for account in accounts:
+            d[account.id] = {
+                "name": account.name,
+                "currency": account.currency,
+                "transactions": {},
+            }
+
+            for transaction in self.get_transactions_from_account(account.id):
+                d[account.id]["transactions"][transaction.id] = {
+                    "amount": transaction.amount,
+                    "description": transaction.description,
+                    "category": transaction.category,
+                    "timestamp": transaction.timestamp,
+                    "visible": transaction.visible,
+                }
+
+        return d
+
+    def populate_from_dict(self, data: dict[str, dict]) -> None:
+        """Populates the database from a dictionary.
+
+        Args:
+        ----
+            data (dict): The dictionary to populate the database from.
+
+        """
+        for account_id, account_data in data.items():
+            self._add_account(
+                id=int(account_id),
+                name=account_data["name"],
+                currency=account_data["currency"],
+            )
+
+            for transaction_id, transaction_data in account_data[
+                "transactions"
+            ].items():
+                self.add_transaction(
+                    account_id=int(account_id),
+                    amount=transaction_data["amount"],
+                    description=transaction_data["description"],
+                    category=transaction_data["category"],
+                    timestamp=transaction_data["timestamp"],
+                    visible=transaction_data["visible"],
+                )
+
     # ======================== ADD/UPDATE INFO ========================
 
     def add_account(
@@ -368,6 +447,24 @@ class Database:
                 visible=False,
             )
             session.add(initial_balance_transaction)
+            session.commit()
+
+    def _add_account(self, id: int, name: str, currency: str) -> None:
+        """Adds a new account to the user.
+        This function is used to populate the DB when importing data.
+
+        Args:
+        ----
+            id (int): The ID of the account.
+            name (str): The name of the account.
+            currency (str): The currency of the account.
+            starting_balance (float): The starting balance of the account.
+            account_type_name (str): The type of the account.
+
+        """
+        with Session(Database.engine) as session:
+            new_account = Account(id=id, name=name, currency=currency)
+            session.add(new_account)
             session.commit()
 
     def add_transaction(

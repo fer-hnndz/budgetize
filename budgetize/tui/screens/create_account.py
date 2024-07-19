@@ -2,15 +2,16 @@
 
 import logging
 
-from budgetize.db.database import Database
-from budgetize.tui.modals.error_modal import ErrorModal
-from budgetize.utils import _, get_select_currencies
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Grid, Horizontal, VerticalScroll
 from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
+
+from budgetize.db.database import Database
+from budgetize.tui.modals.error_modal import ErrorModal
+from budgetize.utils import _, get_select_currencies
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,10 @@ class CreateAccount(Screen):
         """Creates a new CreateAccount Screen"""
         CreateAccount.DB = Database(self.app)
         super().__init__()
+
+    def action_pop_screen(self) -> None:
+        """Action to run when user hits cancel button"""
+        self.app.pop_screen()
 
     def compose(self) -> ComposeResult:
         """Called when the screen is composed."""

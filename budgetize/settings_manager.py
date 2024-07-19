@@ -91,3 +91,7 @@ class SettingsManager:
         self._settings = settings
         with open(self._settings_path, "w", encoding="utf-8") as f:
             json.dump(settings, f, indent=4)
+
+    def get_settings_dict(self) -> SettingsDict:
+        """Returns a COPY of the Settings dict."""
+        return self._settings.copy()

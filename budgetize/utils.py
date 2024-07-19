@@ -22,7 +22,7 @@ def get_select_currencies() -> list[tuple[str, str]]:
     """
     res = []
     for curr in CURRENCIES:
-        res.append((f"({curr[0]}) {curr[1]}", curr[0]))
+        res.append((f"{curr[0]} - {curr[1]}", curr[0]))
 
     res.sort()
     return res

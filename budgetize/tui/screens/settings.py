@@ -1,19 +1,27 @@
+import json
 import logging
+import os
 from pathlib import Path
 from typing import Optional
 
-from budgetize.consts import AVAILABLE_LANGUAGES, BACKUPS_FOLDER
+from textual.app import ComposeResult
+from textual.binding import Binding
+from textual.screen import Screen
+from textual.types import NoSelection
+from textual.widgets import Button, Footer, Header, Label, Select
+
+from budgetize.consts import (
+    APP_FOLDER_PATH,
+    AVAILABLE_LANGUAGES,
+    BACKUPS_FOLDER,
+    EXPORT_DATA_EXTENSION,
+)
 from budgetize.db.database import Database
 from budgetize.settings_manager import SettingsDict, SettingsManager
 from budgetize.tui.modals.categories_modal import CategoriesModal
 from budgetize.tui.modals.file_selector_modal import FileSelectorModal
 from budgetize.tui.modals.message_modal import MessageModal
 from budgetize.utils import _, get_select_currencies
-from textual.app import ComposeResult
-from textual.binding import Binding
-from textual.screen import Screen
-from textual.types import NoSelection
-from textual.widgets import Button, Footer, Header, Label, Select
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +32,7 @@ class Settings(Screen):
         Binding(
             key="q,Q",
             key_display="Q",
-            action="pop_screen",
+            action="quit_screen",
             description=_("Quit without saving"),
         ),
         Binding(
@@ -35,11 +43,17 @@ class Settings(Screen):
         ),
     ]
 
+    CSS_PATH = "css/settings.tcss"
+
     def __init__(self) -> None:
         self.app.sub_title = _("Settings")
         Settings.DB = Database(app=self.app)
         self.manager = SettingsManager()
         super().__init__()
+
+    def action_quit_screen(self) -> None:
+        """Action to run when user hits quit screen"""
+        self.app.pop_screen()
 
     def compose(self) -> ComposeResult:
         """Composes the Settings Screen"""
@@ -65,12 +79,14 @@ class Settings(Screen):
         )
         yield Button(_("Manage Categories"), id="categories-btn", variant="primary")
         yield Button(_("Revert Accounts & Transactions from Backup"), id="backup-btn")
+        yield Button(_("Export all Budgetize Data"), id="export-btn")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button press handler"""
         if event.button.id == "categories-btn":
             logger.info("Showing Categories Settings...")
             self.app.push_screen(CategoriesModal())
+
         if event.button.id == "backup-btn":
             self.app.push_screen(
                 FileSelectorModal(
@@ -79,6 +95,25 @@ class Settings(Screen):
                 ),
                 self.load_backup,
             )
+
+        if event.button.id == "export-btn":
+            self.export_data()
+
+    def export_data(self) -> None:
+        """Export all Budgetize data"""
+        data: dict[str, dict] = {}
+
+        data["settings"] = self.manager.get_settings_dict()  # type: ignore
+        data["database"] = Settings.DB.get_db_as_dict()
+
+        path = os.path.join(APP_FOLDER_PATH, f"exported.{EXPORT_DATA_EXTENSION}")
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4)
+
+        modal = MessageModal(
+            _("All data has been exported to {path}").format(path=path)
+        )
+        self.app.push_screen(modal)
 
     def load_backup(self, backup: Optional[Path]) -> None:
         """Load a backup file

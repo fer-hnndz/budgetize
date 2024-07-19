@@ -20,7 +20,9 @@ class TuiApp(App):
         """Called when the app is mounted"""
         self.title = f"Budgetize (v{VERSION})"
         logger.info(
-            f"======================= STARTING A NEW BUDGETIZE v{VERSION}INSTANCE =======================\n\n\n"
+            "======================= STARTING A NEW BUDGETIZE v{} INSTANCE =======================\n\n\n".format(
+                VERSION
+            )
         )
         logger.info("Checking if user has default settings...")
         settings = SettingsManager()
@@ -30,12 +32,6 @@ class TuiApp(App):
             self.push_screen(InitialConfig())
         else:
             logger.info("User has custom settings. Redirecting to MainMenu...")
-            logger.info("Installing Main Menu screen...")
             self.install_screen(MainMenu(), "main_menu")
-            logger.info("Success installing Main Menu Screen")
-            logger.info("Installing CreateAccount screen...")
             self.install_screen(CreateAccount(), "create_account")
-            logger.info("Succes installing CreateAccount screen")
-
-            logger.info("Showing Main Menu screen...")
             self.push_screen("main_menu")
