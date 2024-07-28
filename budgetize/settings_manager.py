@@ -17,7 +17,7 @@ class SettingsDict(TypedDict):
     language: str
     categories: list[str]
     base_currency: str
-    budget: dict
+    budget: Optional[dict]
 
 
 class SettingsManager:

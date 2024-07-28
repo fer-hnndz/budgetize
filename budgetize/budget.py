@@ -7,7 +7,7 @@ class Budget:
     A budget should have an expected monthly income, and the expend limit for each selected category.
     """
 
-    def __init__(self, income: float, categories: dict[int, float]):
+    def __init__(self, income: float, categories: dict[str, float]):
         """Initializes a new budget.
 
         Arguments
@@ -29,19 +29,19 @@ class Budget:
         """
         return self._income
 
-    def get_expend_limit(self, id: int) -> float:
+    def get_expend_limit(self, category: str) -> float:
         """Returns the expend limit for a given category.
 
         Arguments
         ---------
-            id: `int`
-                The category ID.
+            category: `str`
+                The name of the category.
 
         Returns:
             The expend limit for the given category.
         """
 
-        return self._categories[id]
+        return self._categories[category]
 
     def to_dict(self) -> dict:
         """Returns the budget as a dictionary.

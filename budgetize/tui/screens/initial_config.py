@@ -96,6 +96,7 @@ class InitialConfig(Screen):
                 "language": str(language),
                 "base_currency": str(currency),
                 "categories": settings.get_categories(),
+                "budget": None,
             }
             logger.debug(f"Saving settings: {new_settings}")
             settings.save(new_settings)

@@ -149,10 +149,12 @@ class Settings(Screen):
         language_changed = language != self.manager.get_language()
 
         # TODO: CREATE A METHOD TO UPDATE THIS
+        budget = self.manager.load_budget()
         new_settings: SettingsDict = {
             "language": language,
             "base_currency": currency,
             "categories": self.manager.get_categories(),
+            "budget": budget.to_dict() if budget else None,
         }
 
         logger.debug("Saving settings: " + str(new_settings))

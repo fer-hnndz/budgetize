@@ -2,19 +2,20 @@
 
 import logging
 from random import choice, randint
-from typing import Optional
+from typing import Generator, Optional
 
 from arrow import Arrow
 from babel.numbers import format_currency, parse_decimal
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, Vertical
+from textual.containers import Center, Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import (
     Button,
     DataTable,
     Footer,
     Header,
+    Input,
     Label,
     ProgressBar,
     TabbedContent,
@@ -30,12 +31,21 @@ from budgetize.tui.modals.confirm_modal import ConfirmModal
 from budgetize.tui.modals.error_modal import ErrorModal
 from budgetize.tui.modals.transaction_details import TransactionDetails
 from budgetize.tui.screens.add_transaction import AddTransaction
+from budgetize.tui.screens.create_budget import CreateBudget
 from budgetize.tui.screens.manage_accounts import ManageAccounts
 from budgetize.tui.screens.settings import Settings
 from budgetize.tui.screens.transfer import TransferScreen
 from budgetize.utils import _
 
 logger = logging.getLogger(__name__)
+BUDGET_MSG = _(
+    """Need a Budget? Let's get to action.
+With a budget you can:
+- Track every cent coming in and going out of your accounts.
+- Add limits to expend on each category.
+- Get reports of how much you have been following your budget.
+"""
+)
 
 
 class MainMenu(Screen):
@@ -138,7 +148,18 @@ class MainMenu(Screen):
                 )
                 yield DataTable(id="recent-transactions-table")
 
-            # with TabPane(_("Budgets"), id="budgets-tab"):
+            with TabPane(_("Budgets"), id="budgets-tab"):
+
+                settings_manager = SettingsManager()
+                budget = settings_manager.load_budget()
+
+                if not budget:
+                    with Center():
+                        yield Label(BUDGET_MSG, id="budget-msg")
+                        yield Button(
+                            "Create Budget",
+                            id="create-budget-btn",
+                        )
 
             #     with Center():
             #         yield Label(
@@ -168,6 +189,8 @@ class MainMenu(Screen):
             #                 total=1000, show_eta=False, id="budget-progress"
             #             )
 
+    # ================== Textual Events ==================
+
     async def on_mount(self) -> None:
         """Called when the screen is about to be shown"""
         logger.info("Mounting MainMenu...")
@@ -180,6 +203,51 @@ class MainMenu(Screen):
 
     def after_layout(self) -> None:
         self.run_worker(self.update_ui_info, exclusive=True)  # type: ignore
+
+    def on_screen_resume(self) -> None:
+        """Called when the screen is now the current screen"""
+        # Reset key values to avoid crashes
+        self.last_account_key = None
+        self.last_account_value = "None"
+        self.last_recent_transactions_key = None
+        self.last_recent_transactions_value = "None"
+
+        self.app.sub_title = _("Main Menu")
+        self.run_worker(self.update_ui_info, exclusive=True)  # type: ignore
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Button press handler"""
+        if event.button.id == "create-account-button":
+            self.app.push_screen("create_account")
+            # Set rates as not fetched in case user creates an account with a new currency
+            self.rates_fetched = False
+        if event.button.id == "manage-accounts-button":
+            accounts = self.DB.get_accounts()
+            if sum(1 for _ in accounts) > 0:  # Get the length of the generator
+                self.app.push_screen(ManageAccounts())
+            else:
+                self.app.notify(
+                    severity="warning",
+                    title=_("Cannot Manage Accounts"),
+                    message=_("You must need atleast one account to manage accounts."),
+                )
+
+        if event.button.id == "transfer-btn":
+            self.action_create_transfer()
+
+        if event.button.id == "create-budget-btn":
+            self.app.push_screen(CreateBudget())
+
+    def on_data_table_cell_selected(self, event: DataTable.CellSelected) -> None:
+        """Called when a cell in the DataTable is selected"""
+        if event.data_table.id == "recent-transactions-table":
+            row_pos = event.coordinate.row
+            for n, row_key in enumerate(event.data_table.rows):
+                if (n == row_pos) and (row_key.value is not None):
+                    details_screen = TransactionDetails(int(row_key.value))
+                    self.app.push_screen(details_screen)
+
+    # ==================== App UI Updates ====================
 
     async def update_ui_info(self) -> None:
         """Lets the user now that the app is about to update exchange rates and update UI elements"""
@@ -236,46 +304,6 @@ class MainMenu(Screen):
                 timeout=6,
             )
             self.rates_fetched = True
-
-    def on_screen_resume(self) -> None:
-        """Called when the screen is now the current screen"""
-        # Reset key values to avoid crashes
-        self.last_account_key = None
-        self.last_account_value = "None"
-        self.last_recent_transactions_key = None
-        self.last_recent_transactions_value = "None"
-
-        self.app.sub_title = _("Main Menu")
-        self.run_worker(self.update_ui_info, exclusive=True)  # type: ignore
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Button press handler"""
-        if event.button.id == "create-account-button":
-            self.app.push_screen("create_account")
-            # Set rates as not fetched in case user creates an account with a new currency
-            self.rates_fetched = False
-        if event.button.id == "manage-accounts-button":
-            accounts = self.DB.get_accounts()
-            if sum(1 for _ in accounts) > 0:  # Get the length of the generator
-                self.app.push_screen(ManageAccounts())
-            else:
-                self.app.notify(
-                    severity="warning",
-                    title=_("Cannot Manage Accounts"),
-                    message=_("You must need atleast one account to manage accounts."),
-                )
-        if event.button.id == "transfer-btn":
-            self.action_create_transfer()
-            return
-
-    def on_data_table_cell_selected(self, event: DataTable.CellSelected) -> None:
-        """Called when a cell in the DataTable is selected"""
-        if event.data_table.id == "recent-transactions-table":
-            row_pos = event.coordinate.row
-            for n, row_key in enumerate(event.data_table.rows):
-                if (n == row_pos) and (row_key.value is not None):
-                    details_screen = TransactionDetails(int(row_key.value))
-                    self.app.push_screen(details_screen)
 
     def _update_recent_transactions_table(self) -> None:
         """Updates the recent transactions DataTable widget."""
