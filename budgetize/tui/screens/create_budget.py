@@ -94,16 +94,31 @@ class CreateBudget(Screen):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handler for all button presses."""
-        if event.button.id == "add-limit-btn":
+        category_select = self.query_one("#category-select", expect_type=Select)
+        limit_input = self.query_one("#category-limit-input", expect_type=Input)
+        delete_button = self.query_one("#delete-limit-btn", expect_type=Button)
 
-            category_select = self.query_one("#category-select", expect_type=Select)
-            limit_input = self.query_one("#category-limit-input", expect_type=Input)
-            delete_button = self.query_one("#delete-limit-btn", expect_type=Button)
+        if event.button.id == "add-limit-btn":
+            limit_val = float(limit_input.value)
+
+            if limit_val <= 0:
+                self.app.notify(
+                    title=_("Could not add Limit"),
+                    message=_("The limit must be greater than 0."),
+                    severity="error",
+                )
+                return
 
             self.categories_limit[str(category_select.value)] = float(limit_input.value)
             delete_button.disabled = False
             limit_input.clear()
-            self._update_limits_label()
+
+        if event.button.id == "delete-limit-btn":
+            self.categories_limit.pop(str(category_select.value))
+            delete_button.disabled = True
+            limit_input.clear()
+
+        self._update_limits_label()
 
     def on_select_changed(self, event: Select.Changed) -> None:
         """Handler for all select changes."""
@@ -146,6 +161,11 @@ class CreateBudget(Screen):
 
     def _update_limits_label(self) -> None:
         """Updates the label that shows the limit for each category"""
+        msg = self._get_limits_msg()
+        self.query_one("#limits-label", expect_type=Label).update(msg)
+
+    def _get_limits_msg(self) -> str:
+        """Returns the message that shows the limit for each catergory."""
 
         msg = ""
         self.limits_total = 0.0
@@ -158,12 +178,8 @@ class CreateBudget(Screen):
             )
 
             # Calculate ratio (percentage) of the limit to the expected income
-            category_ratio = (
-                round((limit / self.expected_income), 2)
-                if self.expected_income > 0
-                else -1
-            )
-            ratio_msg = f"{category_ratio * 100}%" if category_ratio >= 0 else "N/A"
+            ratio_msg = self._get_category_ratio_msg(limit)
+
             msg += f"{category}: {category_limit} ({ratio_msg})\n"
             self.limits_total += limit
 
@@ -198,4 +214,11 @@ class CreateBudget(Screen):
                 )
             )
 
-        self.query_one("#limits-label", expect_type=Label).update(msg)
+        return msg
+
+    def _get_category_ratio_msg(self, limit: float) -> str:
+        """Returns the ratio of the limit to the expected income."""
+
+        ratio = limit / self.expected_income
+        ratio_msg = f"{round(ratio * 100, 2)}%" if ratio >= 0 else "N/A"
+        return ratio_msg
