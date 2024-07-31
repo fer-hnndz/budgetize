@@ -149,17 +149,7 @@ class MainMenu(Screen):
                 yield DataTable(id="recent-transactions-table")
 
             with TabPane(_("Budgets"), id="budgets-tab"):
-
-                settings_manager = SettingsManager()
-                budget = settings_manager.load_budget()
-
-                if not budget:
-                    with Center():
-                        yield Label(BUDGET_MSG, id="budget-msg")
-                        yield Button(
-                            "Create Budget",
-                            id="create-budget-btn",
-                        )
+                pass
 
             #     with Center():
             #         yield Label(
@@ -221,6 +211,7 @@ class MainMenu(Screen):
             self.app.push_screen("create_account")
             # Set rates as not fetched in case user creates an account with a new currency
             self.rates_fetched = False
+
         if event.button.id == "manage-accounts-button":
             accounts = self.DB.get_accounts()
             if sum(1 for _ in accounts) > 0:  # Get the length of the generator
@@ -238,6 +229,21 @@ class MainMenu(Screen):
         if event.button.id == "create-budget-btn":
             self.app.push_screen(CreateBudget())
 
+        if event.button.id == "edit-budget-btn":
+            settings_manager = SettingsManager()
+            self.app.push_screen(CreateBudget(budget=settings_manager.load_budget()))
+
+        if event.button.id == "delete-budget-btn":
+            settings_manager = SettingsManager()
+            settings_manager.delete_budget()
+            self.app.notify(
+                title=_("Budget Deleted"),
+                message=_("You have successfully deleted your budget."),
+                severity="information",
+            )
+
+            self.after_layout()
+
     def on_data_table_cell_selected(self, event: DataTable.CellSelected) -> None:
         """Called when a cell in the DataTable is selected"""
         if event.data_table.id == "recent-transactions-table":
@@ -254,6 +260,8 @@ class MainMenu(Screen):
 
         if self.is_quitting:
             return
+
+        await self.build_budget_widgets()
 
         labels_container = self.query_one("#balance-labels", expect_type=Vertical)
         logger.debug(labels_container.children)
@@ -432,6 +440,43 @@ class MainMenu(Screen):
                 traceback_msg=msg,
             )
             self.app.push_screen(modal)
+
+    async def build_budget_widgets(self) -> None:
+        """(Coroutine) Adds the children for the budget tab accordingly."""
+
+        logger.info("Building Budget Widgets...")
+        budgets_tab = self.query_one("#budgets-tab", expect_type=TabPane)
+        await budgets_tab.remove_children()
+
+        settings_manager = SettingsManager()
+        budget = settings_manager.load_budget()
+
+        center = Center(id="limits-center")
+        await budgets_tab.mount(center)
+        if not budget:
+            logger.debug("No budget found. Showing message to create one.")
+
+            center.mount(
+                Label(BUDGET_MSG, id="budget-msg"),
+                Button(
+                    "Create Budget",
+                    id="create-budget-btn",
+                ),
+            )
+            return
+
+        mgr = SettingsManager()
+        for category, limit in budget.get_all_limits().items():
+            center.mount(
+                Label(
+                    "{category}: {limit}\nExpent: {amt}".format(
+                        category=category, limit=limit, amt=0
+                    ),
+                    id=f"{category}-label",
+                )
+            )
+        center.mount(Button("Edit Budget", id="edit-budget-btn"))
+        center.mount(Button("Delete Budget", id="delete-budget-btn", variant="error"))
 
     # ==================== App Bindings ====================
 

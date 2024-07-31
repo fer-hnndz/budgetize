@@ -121,3 +121,8 @@ class SettingsManager:
         """Saves the budget to the Settings file."""
         self._settings["budget"] = budget.to_dict()
         self.save(self._settings)
+
+    def delete_budget(self) -> None:
+        """Deletes the budget from the Settings file."""
+        self._settings["budget"] = None
+        self.save(self._settings)

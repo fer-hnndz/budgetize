@@ -28,12 +28,13 @@ class CreateBudget(Screen):
         self.app.sub_title = _("Create Budget")
         super().__init__()
 
-        self.budget = budget
         self.mgr = SettingsManager()
-
-        self.categories_limit: dict[str, float] = {}
-        self.expected_income = 0.0
+        self.expected_income = budget.get_income() if budget else 0.0
+        self.categories_limit: dict[str, float] = (
+            budget.to_dict()["categories"] if budget else {}
+        )
         self.limits_total = 0.0
+        self.budget_balanced = True if budget else False
 
     def compose(self) -> ComposeResult:
         """Compose the screen."""
@@ -50,7 +51,7 @@ class CreateBudget(Screen):
             expected_income = Input(
                 id="expected-income-input",
                 type="number",
-                value=str(self.budget.get_income()) if self.budget else None,
+                value=str(self.expected_income),
                 placeholder=format_currency(
                     number=1200,
                     currency=self.mgr.get_base_currency(),
@@ -90,7 +91,13 @@ class CreateBudget(Screen):
             with Horizontal(id="limits-btns"):
                 yield Button(_("Add Limit"), id="add-limit-btn")
                 yield Button(_("Delete Limit"), id="delete-limit-btn", variant="error")
-            yield Button(_("Save Budget"), id="save-budget-btn", variant="success")
+            yield Button(
+                _("Save Budget"), id="save-budget-btn", variant="success", disabled=True
+            )
+
+    def after_layout(self) -> None:
+        """Called after the layout is done."""
+        self._update_limits_label()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handler for all button presses."""
@@ -117,6 +124,20 @@ class CreateBudget(Screen):
             self.categories_limit.pop(str(category_select.value))
             delete_button.disabled = True
             limit_input.clear()
+
+        if event.button.id == "save-budget-btn":
+            new_budget = Budget(
+                income=self.expected_income, categories=self.categories_limit
+            )
+
+            self.mgr.save_budget(new_budget)
+            self.app.notify(
+                title=_("Budget Saved"),
+                message=_("Your budget has been saved."),
+                severity="information",
+            )
+            self.app.pop_screen()
+            return
 
         self._update_limits_label()
 
@@ -164,9 +185,13 @@ class CreateBudget(Screen):
         msg = self._get_limits_msg()
         self.query_one("#limits-label", expect_type=Label).update(msg)
 
+        save_button = self.query_one("#save-budget-btn", expect_type=Button)
+        save_button.disabled = not self.budget_balanced
+
     def _get_limits_msg(self) -> str:
         """Returns the message that shows the limit for each catergory."""
 
+        self.budget_balanced = False
         msg = ""
         self.limits_total = 0.0
         for category, limit in self.categories_limit.items():
@@ -207,6 +232,7 @@ class CreateBudget(Screen):
             ).format(difference=difference)
         elif self.limits_total == self.expected_income:
             msg += _("[green]You have perfectly balanced your budget. Good job!")
+            self.budget_balanced = True
         else:
             msg += _(
                 "[blue]You still have money on your expected income to spend (+ {difference}). Perhaps you can increase some limits.".format(

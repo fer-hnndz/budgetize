@@ -29,6 +29,14 @@ class Budget:
         """
         return self._income
 
+    def get_all_limits(self) -> dict[str, float]:
+        """Returns all the categories and their expend limits.
+
+        Returns:
+            A dictionary with the categories and their expend limits.
+        """
+        return self._categories.copy()
+
     def get_expend_limit(self, category: str) -> float:
         """Returns the expend limit for a given category.
 
