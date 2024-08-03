@@ -19,6 +19,8 @@ from budgetize.utils import _
 
 logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
+
 
 class AddTransaction(Screen):
     """Screen that handles adding a new transaction"""

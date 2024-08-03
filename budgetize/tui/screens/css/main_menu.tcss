@@ -16,7 +16,11 @@ Header {
     background: $accent-lighten-3;
 }
 
+<<<<<<< HEAD
 #manage-accounts-button, #transfer-btn, #create-budget-btn {
+=======
+#manage-accounts-button, #transfer-btn {
+>>>>>>> dev
     background: $warning-darken-2;
 }
 
