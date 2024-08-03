@@ -2,7 +2,7 @@
 
 import logging
 from random import choice, randint
-from typing import Generator, Optional
+from typing import Any, Generator, Optional
 
 from arrow import Arrow
 from babel.numbers import format_currency, parse_decimal
@@ -150,34 +150,6 @@ class MainMenu(Screen):
 
             with TabPane(_("Budgets"), id="budgets-tab"):
                 pass
-
-            #     with Center():
-            #         yield Label(
-            #             "[bold][lime]Monthly Goal:[/lime][/bold] $1000", id="goal-label"
-            #         )
-
-            #         with Horizontal(id="budget-categories"):
-            #             # Loop through Budget categories
-            #             spend_limit = [250, 700, 50]
-            #             i = 0
-            #             for category in ["Food", "Entertainment", "Transportation"]:
-            #                 color = choice(RICH_COLORS)
-            #                 spent = randint(10, round(spend_limit[i] * 1.15))
-            #                 MainMenu.TOTAL_SPENT += spent
-            #                 balance_color = (
-            #                     "[green]" if spent < spend_limit[i] else "[red]"
-            #                 )
-
-            #                 yield Label(
-            #                     f"[{color}]{category}[/{color}]\nLimit: [{color}]{spend_limit[i]}[/{color}]\nCurrent Spent:{balance_color}{spent}",
-            #                 )
-            #                 i += 1
-
-            #         with Center():
-            #             yield Label("Budget Progress")
-            #             yield ProgressBar(
-            #                 total=1000, show_eta=False, id="budget-progress"
-            #             )
 
     # ================== Textual Events ==================
 
@@ -466,11 +438,13 @@ class MainMenu(Screen):
             return
 
         mgr = SettingsManager()
+        container = Horizontal(id="budget-labels-horizontal")
+        center.mount(container)
         for category, limit in budget.get_all_limits().items():
-            center.mount(
+            container.mount(
                 Label(
-                    "{category}: {limit}\nExpent: {amt}".format(
-                        category=category, limit=limit, amt=0
+                    "[{color}]{category}[white]: {limit}\nExpent: {amt}".format(
+                        category=category, limit=limit, amt=0, color=choice(RICH_COLORS)
                     ),
                     id=f"{category}-label",
                 )
@@ -498,7 +472,7 @@ class MainMenu(Screen):
                 message=_("You must need atleast one account to add a transaction."),
             )
 
-    def quit_callback(self, quit: bool) -> None:
+    def quit_callback(self, quit: Any) -> None:
         """Called when the user confirms the quit modal"""
 
         if quit:
