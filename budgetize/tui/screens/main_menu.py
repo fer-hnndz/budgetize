@@ -424,10 +424,10 @@ class MainMenu(Screen):
         budget = settings_manager.load_budget()
 
         center = Center(id="limits-center")
+
         await budgets_tab.mount(center)
         if not budget:
             logger.debug("No budget found. Showing message to create one.")
-
             center.mount(
                 Label(BUDGET_MSG, id="budget-msg"),
                 Button(
@@ -438,6 +438,13 @@ class MainMenu(Screen):
             return
 
         mgr = SettingsManager()
+
+        # Mount Budget progress bar
+        progress = ProgressBar(total=budget.get_income(), show_eta=False)
+        center.mount(Label(_("Current Budget Progress")), progress)
+        progress.advance(await self.DB.get_monthly_expense())
+
+        # Mount Horizontal container to show each category limit
         container = Horizontal(id="budget-labels-horizontal")
         center.mount(container)
         for category, limit in budget.get_all_limits().items():
