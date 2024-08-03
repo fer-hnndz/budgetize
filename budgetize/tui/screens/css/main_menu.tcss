@@ -42,3 +42,11 @@ Header {
 #budget-categories {
     height: auto;
 }
+
+#budget-labels-horizontal {
+    height: auto;
+    width: 100%;
+}
+#budget-labels-horizontal Label {
+    margin: 4 0 2 4; 
+}
