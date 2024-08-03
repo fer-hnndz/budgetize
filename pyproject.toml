@@ -29,6 +29,7 @@ beautifulsoup4 = "^4.12.3"
 asyncio = "^3.4.3"
 httpx = "*"
 pyperclip = "^1.8.2"
+setuptools = "^72.1.0"
 
 [tool.poetry.group.dev.dependencies]
 types-setuptools = "^69.2.0.20240317"
@@ -39,6 +40,7 @@ isort = "^5.13.2"
 pylint = "^3.1.0"
 textual-dev = "*"
 types-beautifulsoup4 = "^4.12.0.20240511"
+pipenv = "^2024.0.1"
 
 [build-system]
 requires = ["poetry-core"]

@@ -5,6 +5,7 @@ import json
 import logging
 import os
 from pathlib import Path
+from typing import Any
 
 import babel
 from textual.app import ComposeResult
@@ -96,6 +97,7 @@ class InitialConfig(Screen):
                 "language": str(language),
                 "base_currency": str(currency),
                 "categories": settings.get_categories(),
+                "budget": None,
             }
             logger.debug(f"Saving settings: {new_settings}")
             settings.save(new_settings)
@@ -117,10 +119,11 @@ class InitialConfig(Screen):
 
             self.app.push_screen(fs, callback=self.process_file_selector_result)
 
-    def process_file_selector_result(self, path: Path) -> None:
+    def process_file_selector_result(self, path: Any) -> None:
         """Process the result of the file selector modal."""
         logging.debug(f"Exported Data selected: {path}")
 
+        selected_path: Path = path  # type: ignore
         _ = gettext.translation(
             "budgetize",
             localedir=TRANSLATIONS_PATH,
@@ -170,6 +173,7 @@ class InitialConfig(Screen):
 
         self.app.push_screen(modal, callback=self.quit_callback)
 
-    def quit_callback(self, data: str = "") -> None:
+    # TODO: Find a better way of doing this.
+    def quit_callback(self, data: Any) -> None:
         """Callback to quit the app. NOTE: PARAMTER IS NOT USED."""
         self.app.exit()

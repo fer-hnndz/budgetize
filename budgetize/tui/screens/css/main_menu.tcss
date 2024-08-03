@@ -16,7 +16,11 @@ Header {
     background: $accent-lighten-3;
 }
 
+<<<<<<< HEAD
+#manage-accounts-button, #transfer-btn, #create-budget-btn {
+=======
 #manage-accounts-button, #transfer-btn {
+>>>>>>> dev
     background: $warning-darken-2;
 }
 
@@ -41,4 +45,17 @@ Header {
 
 #budget-categories {
     height: auto;
+}
+
+#budget-labels-horizontal {
+    height: auto;
+    width: 100%;
+}
+
+#budget-labels-horizontal Label {
+    margin: 4 0 2 4; 
+}
+
+#limits-center {
+    align: center middle;
 }

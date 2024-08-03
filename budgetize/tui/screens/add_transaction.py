@@ -6,15 +6,18 @@ from traceback import format_exc
 from typing import Optional
 
 from arrow import Arrow
-from budgetize.db.database import Database
-from budgetize.db.orm.transactions import Transaction
-from budgetize.settings_manager import SettingsManager
-from budgetize.utils import _
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.screen import Screen
 from textual.validation import Number
 from textual.widgets import Button, Footer, Header, Input, Label, Select
+
+from budgetize.db.database import Database
+from budgetize.db.orm.transactions import Transaction
+from budgetize.settings_manager import SettingsManager
+from budgetize.utils import _
+
+logger = logging.getLogger(__name__)
 
 logger = logging.getLogger(__name__)
 
@@ -130,10 +133,7 @@ class AddTransaction(Screen):
                 int(date_strs[1]),
             )
             date = Arrow.fromdate(date_from_input)
-            logger.warning(
-                "PARSE DATE BASED ON LOCALE. THIS PARSING IS DONE MANUALLY.",
-            )
-            logger.debug(f"Parsed Date: {date}")
+            logger.debug(f"Parsed Date (Manually): {date}")
 
         except Exception:
             traceback_str = format_exc()

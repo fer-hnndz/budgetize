@@ -3,10 +3,11 @@
 import json
 import os
 from pathlib import Path
-from typing import TypedDict
+from typing import Optional, TypedDict
 
 from babel import Locale
 
+from budgetize import Budget
 from budgetize.consts import APP_FOLDER_PATH, DEFAULT_SETTINGS
 
 
@@ -16,6 +17,7 @@ class SettingsDict(TypedDict):
     language: str
     categories: list[str]
     base_currency: str
+    budget: Optional[dict]
 
 
 class SettingsManager:
@@ -95,3 +97,32 @@ class SettingsManager:
     def get_settings_dict(self) -> SettingsDict:
         """Returns a COPY of the Settings dict."""
         return self._settings.copy()
+
+    def load_budget(self) -> Optional[Budget]:
+        """Loads the budget from the Settings file.
+
+        Returns
+        -------
+            A `budgetize.budget.Budget` object with the loaded data.
+            May return None if the budget does not exist.
+        """
+
+        budget_data: dict = self._settings.get("budget")  # type: ignore
+
+        return (
+            None
+            if not budget_data
+            else Budget(
+                income=budget_data["income"], categories=budget_data["categories"]
+            )
+        )
+
+    def save_budget(self, budget: Budget) -> None:
+        """Saves the budget to the Settings file."""
+        self._settings["budget"] = budget.to_dict()
+        self.save(self._settings)
+
+    def delete_budget(self) -> None:
+        """Deletes the budget from the Settings file."""
+        self._settings["budget"] = None
+        self.save(self._settings)
