@@ -24,12 +24,21 @@ from budgetize.db.database import Database
 from budgetize.tui.modals.transaction_details import TransactionDetails
 from budgetize.utils import _
 
+logger = logging.getLogger(__name__)
+
 
 class ManageAccounts(Screen):
     """Screen that allows the user to manage their accounts."""
 
     DB: Database = None  # type: ignore
-    BINDINGS = [Binding("Q,q", "pop_screen", _("Back to Main Menu"), key_display="Q")]
+    BINDINGS = [
+        Binding(
+            key="q,Q",
+            action="quit_screen",
+            description=_("Back to Main Menu"),
+            key_display="Q",
+        )
+    ]
 
     def __init__(self) -> None:
         """Creates a new ManageAccounts Screen"""
@@ -37,7 +46,7 @@ class ManageAccounts(Screen):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        logging.info("Composing ManageAccounts Screen")
+        logger.info("Composing ManageAccounts Screen")
 
         self.app.sub_title = _("Manage Accounts")
         yield Header()
@@ -46,9 +55,8 @@ class ManageAccounts(Screen):
         with TabbedContent():
             accounts = self.DB.get_accounts()
             for acc in accounts:
-                logging.info(f"Generating tab for account {acc.name}")
+                logger.info(f"Generating tab for account {acc.name}")
                 with TabPane(acc.name, id=f"tab-{acc.name.replace(' ', '-')}"):
-
                     account_balance = self.DB.get_account_balance(acc.id)
                     yield Label(
                         _("Balance: {balance}").format(
@@ -56,15 +64,18 @@ class ManageAccounts(Screen):
                                 number=account_balance,
                                 currency=acc.currency,
                                 locale=SettingsManager().get_locale(),
-                            )
-                        )
+                            ),
+                        ),
                     )
                     yield self.get_transactions_table(acc.id)
                     yield Button.error(_("Delete Account"), id=f"delete-acc-{acc.id}")
 
+    def action_quit_screen(self) -> None:
+        """Quits the application"""
+        self.app.pop_screen()
+
     def generate_accounts_tab(self) -> Generator:
         """Generates the accounts tab including all user accounts"""
-
         with TabbedContent() as tabs:
             accounts = self.DB.get_accounts()
             for acc in accounts:
@@ -76,8 +87,8 @@ class ManageAccounts(Screen):
                                 number=account_balance,
                                 currency=acc.currency,
                                 locale=SettingsManager().get_locale(),
-                            )
-                        )
+                            ),
+                        ),
                     )
                     yield self.get_transactions_table(acc.id)
                     yield Button(_("Delete Account"), id=f"delete-acc-{acc.id}")
@@ -85,16 +96,17 @@ class ManageAccounts(Screen):
 
     def get_transactions_table(self, account: int) -> DataTable:
         """Returns the data table containing the transactions for an account."""
-
-        logging.info(f"Building transactions table for Account #{account}")
-        table: DataTable = DataTable(id=f"management-table-{str(account)}")  # type: ignore
+        logger.info(f"Building transactions table for Account #{account}")
+        table: DataTable = DataTable(id=f"management-table-{account!s}")  # type: ignore
         table.add_columns(_("Date"), _("Amount"), _("Category"), _("Description"))
 
         now = Arrow.now()
         month = now.format("M")
         year = now.format("YYYY")
         transactions = self.DB.get_monthly_transactions_from_account(
-            account, month=month, year=year
+            account,
+            month=month,
+            year=year,
         )
 
         for trans in transactions:
@@ -107,28 +119,30 @@ class ManageAccounts(Screen):
                 trans.description,
                 key=str(trans.id),
             )
-        logging.info("Table done building.")
+        logger.info("Table done building.")
         return table
 
     def on_data_table_cell_selected(self, event: DataTable.CellSelected) -> None:
         """Cell selection handler"""
-
         selected_cell = event.coordinate.row
         current_row = 0
         for row in event.data_table.rows:
             if current_row == selected_cell and row.value is not None:
                 details_screen = TransactionDetails(
-                    int(row.value), from_manage_accounts=True
+                    int(row.value),
+                    from_manage_accounts=True,
                 )
-                logging.info("Showing Transaction Details modal")
+                logger.info("Showing Transaction Details modal")
                 self.app.push_screen(details_screen)
                 break
             current_row += 1
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Button push handler"""
+        if event.button.id is None:
+            return
 
-        if event.button.id == "delete-acc":
+        if "delete-acc" in event.button.id:
             # Format of btn is delete-acc-{Account.id}
 
             account_id = int(event.button.id.split("-")[-1])

@@ -1,16 +1,57 @@
-Label {
-    width: 100%;
+Header {
+    background: $panel;
+}
+
+#accounts-table {
+    width: 50%;
+}
+
+#balance-labels Label {
     text-align: center;
+    text-align: center;
+    width: 100%;
 }
 
-Rule {
-    margin: 0;
+#create-account-button, #transaction-button {
+    background: $accent-lighten-3;
 }
 
-Horizontal {
+#manage-accounts-button, #transfer-btn, #create-budget-btn {
+    background: $warning-darken-2;
+}
+
+#tabs Horizontal {
     align: center top;
 }
 
-Button {
-    margin: 1 2;
+#tabs Button {
+    margin: 1 1;
+}
+
+#goal-label{
+    text-align: center;
+    width: 100%;
+}
+
+#budget-categories Label {
+    text-align: center;
+    width: auto;
+    margin: 1 5 1 5;
+}
+
+#budget-categories {
+    height: auto;
+}
+
+#budget-labels-horizontal {
+    height: auto;
+    width: 100%;
+}
+
+#budget-labels-horizontal Label {
+    margin: 4 0 2 4; 
+}
+
+#limits-center {
+    align: center middle;
 }

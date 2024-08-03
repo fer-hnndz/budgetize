@@ -1,5 +1,7 @@
 """Defines the modal to edit user categories"""
 
+from typing import Any
+
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer
 from textual.screen import ModalScreen
@@ -36,7 +38,7 @@ class CategoriesModal(ModalScreen):
         with Horizontal(id="horizontal"):
             yield Button(_("Add Category"), id="add-category-btn", variant="primary")
             yield Button.error(
-                _("Delete Selected Categories"), id="delete-btn", disabled=True
+                _("Delete Selected Categories"), id="delstrete-btn", disabled=True
             )
             yield Button(_("Close"), id="close-btn")
 
@@ -79,7 +81,7 @@ class CategoriesModal(ModalScreen):
 
         delete_button.disabled = True if not selected_items else False
 
-    def add_category(self, category_name: str) -> None:
+    def add_category(self, category_name: Any) -> None:
         """Adds a new category to the list of categories"""
 
         self.current_categories.append(category_name)

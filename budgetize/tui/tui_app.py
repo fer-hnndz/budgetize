@@ -9,9 +9,8 @@ from budgetize.settings_manager import SettingsManager
 from budgetize.tui.screens.create_account import CreateAccount
 from budgetize.tui.screens.initial_config import InitialConfig
 from budgetize.tui.screens.main_menu import MainMenu
-from budgetize.utils import create_logger
 
-create_logger()
+logger = logging.getLogger(__name__)
 
 
 class TuiApp(App):
@@ -20,20 +19,19 @@ class TuiApp(App):
     def on_mount(self) -> None:
         """Called when the app is mounted"""
         self.title = f"Budgetize (v{VERSION})"
-        logging.info("Checking if user has default settings...")
+        logger.info(
+            "======================= STARTING A NEW BUDGETIZE v{} INSTANCE =======================\n\n\n".format(
+                VERSION
+            )
+        )
+        logger.info("Checking if user has default settings...")
         settings = SettingsManager()
 
         if settings.is_default_settings():
-            logging.info("User has default settings. Redirecting to InitialConfig...")
+            logger.info("User has default settings. Redirecting to InitialConfig...")
             self.push_screen(InitialConfig())
         else:
-            logging.info("User has custom settings. Redirecting to MainMenu...")
-            logging.info("Installing Main Menu screen...")
+            logger.info("User has custom settings. Redirecting to MainMenu...")
             self.install_screen(MainMenu(), "main_menu")
-            logging.info("Success installing Main Menu Screen")
-            logging.info("Installing CreateAccount screen...")
             self.install_screen(CreateAccount(), "create_account")
-            logging.info("Succes installing CreateAccount screen")
-
-            logging.info("Showing Main Menu screen...")
             self.push_screen("main_menu")

@@ -26,8 +26,7 @@ repos:
         language: system
         types: [python]
         args: [
-            "budgetize",
-            "--fail-under=9",
-            "--recursive=True",
-            "--output-format=colorized"
+        "budgetize",
+        "--rcfile",
+        ".pylintrc"  # Adjust the path if necessary, relative to the root of your repository
         ]

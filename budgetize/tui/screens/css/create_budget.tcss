@@ -1,0 +1,40 @@
+Center {
+    width: 100%;
+    text-align: center;
+    align: center middle;
+}
+
+Label {
+    text-align: center;
+    width: 100%;
+}
+
+Select {
+    width: 50%;
+}
+
+Horizontal {
+    height: auto;
+    width: 100%;
+}
+
+#limits-btns {
+    width: 100%;
+    align: center middle;
+}
+
+#limits-btns Button {
+    margin: 1 8;
+}
+
+#add-limit-btn {
+    background: $accent-lighten-3;
+}
+
+#save-budget-btn {
+    width: 90%;
+}
+
+#limits-label {
+    border: dashed;
+}

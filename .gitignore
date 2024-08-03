@@ -1,4 +1,5 @@
 venv/
+.venv/
 __pycache__
 exchange_rates.json
 .mypy_cache/

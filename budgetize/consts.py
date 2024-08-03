@@ -5,7 +5,7 @@ import os
 import pkg_resources
 from babel import Locale
 
-VERSION = "0.1.0"
+VERSION = "0.2.0a0"
 VALID_EXCHANGE_TIMESTAMP = 7 * 24 * 60 * 60  # 1 week in seconds
 # Database
 
@@ -14,7 +14,9 @@ APP_FOLDER_NAME = ".budgetize"
 user_folder = os.path.expanduser("~")
 APP_FOLDER_PATH = os.path.join(user_folder, ".budgetize")
 DB_FILE_NAME = "budgetize.sqlite"
+EXPORT_DATA_EXTENSION = "bdgz"
 PROD_DB_URL = f"sqlite:///{os.path.join(APP_FOLDER_PATH, DB_FILE_NAME)}"
+BACKUPS_FOLDER = os.path.join(APP_FOLDER_PATH, "backups")
 
 # Localization
 TRANSLATIONS_PATH: str = pkg_resources.resource_filename("budgetize", "translations")
@@ -59,6 +61,17 @@ DEFAULT_SETTINGS = {
     "base_currency": "",
 }
 
+RICH_COLORS = [
+    "green3",
+    "cyan1",
+    "blue_violet",
+    "cornflower_blue",
+    "medium_violet_red",
+    "orange3",
+    "yellow1",
+    "dodger_blue",
+    "dark_olive_green1",
+]
 
 CURRENCIES: list[tuple[str, str]] = [
     ("SHP", "St. Helena Pound"),

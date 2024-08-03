@@ -1,0 +1,14 @@
+MessageModal {
+    align: center middle;
+}
+
+#dialog {
+    height: 12;
+    width: 62;
+    align: center middle;
+}
+
+#message {
+    margin-top: 2;
+    width: 90%;
+}

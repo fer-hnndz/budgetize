@@ -1,18 +1,22 @@
-#yes-button #no-button {
-    margin: 0 1;
+#yes-button, #no-button {
+    margin: 1 0 1 0;
+    text-align: center;
 }
 
-ConfirmQuit {
+ConfirmModal {
     align: center middle;
 }
 
 #question {
+    width: 100%;
+    text-align: center;
     margin-top: 3;
 }
 
 #dialog {
     height: 12;
     width: 62;
+    align: center middle;
 }
 
 #horizontal-container {

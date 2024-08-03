@@ -8,44 +8,44 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Budgetize VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-04-13 21:26-0600\n"
+"POT-Creation-Date: 2024-07-11 12:05-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.14.0\n"
+"Generated-By: Babel 2.15.0\n"
 
-#: budgetize/consts.py:32
+#: budgetize/consts.py:33
 msgid "Income"
 msgstr ""
 
-#: budgetize/consts.py:33
+#: budgetize/consts.py:34
 msgid "Food"
 msgstr ""
 
-#: budgetize/consts.py:34
+#: budgetize/consts.py:35
 msgid "Groceries"
 msgstr ""
 
-#: budgetize/consts.py:35
+#: budgetize/consts.py:36
 msgid "Medicine"
 msgstr ""
 
-#: budgetize/consts.py:36
+#: budgetize/consts.py:37
 msgid "Car"
 msgstr ""
 
-#: budgetize/consts.py:37
+#: budgetize/consts.py:38
 msgid "Gifts"
 msgstr ""
 
-#: budgetize/consts.py:38
+#: budgetize/consts.py:39
 msgid "Investment"
 msgstr ""
 
-#: budgetize/consts.py:39
+#: budgetize/consts.py:40
 msgid "Entertainment"
 msgstr ""
 
@@ -91,15 +91,46 @@ msgid "Exit"
 msgstr ""
 
 #: budgetize/tui/modals/confirm_quit.py:23
+#: budgetize/tui/modals/file_selector_modal.py:45
 #: budgetize/tui/modals/input_modal.py:65
-#: budgetize/tui/screens/create_account.py:25
-#: budgetize/tui/screens/create_account.py:66
-#: budgetize/tui/screens/transfer.py:71
+#: budgetize/tui/screens/create_account.py:29
+#: budgetize/tui/screens/create_account.py:71
+#: budgetize/tui/screens/transfer.py:72
 msgid "Cancel"
+msgstr ""
+
+#: budgetize/tui/modals/file_selector_modal.py:22
+msgid "Select a File"
+msgstr ""
+
+#: budgetize/tui/modals/file_selector_modal.py:44
+msgid "Accept"
+msgstr ""
+
+#: budgetize/tui/modals/file_selector_modal.py:64
+#: budgetize/tui/modals/file_selector_modal.py:72
+#: budgetize/tui/screens/settings.py:96
+msgid "Recover From Backup"
+msgstr ""
+
+#: budgetize/tui/modals/file_selector_modal.py:65
+msgid "Please select a backup file to recover from."
+msgstr ""
+
+#: budgetize/tui/modals/file_selector_modal.py:73
+msgid "Please select a valid backup file to recover from."
 msgstr ""
 
 #: budgetize/tui/modals/input_modal.py:58
 msgid "Done"
+msgstr ""
+
+#: budgetize/tui/modals/message_modal.py:25
+msgid "OK"
+msgstr ""
+
+#: budgetize/tui/modals/message_modal.py:29
+msgid "Please restart Budgetize."
 msgstr ""
 
 #: budgetize/tui/modals/transaction_details.py:36
@@ -142,217 +173,215 @@ msgstr ""
 msgid "Transaction Deleted"
 msgstr ""
 
-#: budgetize/tui/screens/add_transaction.py:30
+#: budgetize/tui/screens/add_transaction.py:31
 msgid "Cancel Transaction"
 msgstr ""
 
-#: budgetize/tui/screens/add_transaction.py:50
-#: budgetize/tui/screens/main_menu.py:246
+#: budgetize/tui/screens/add_transaction.py:54
+#: budgetize/tui/screens/main_menu.py:249
 msgid "Account"
 msgstr ""
 
-#: budgetize/tui/screens/add_transaction.py:58
-#: budgetize/tui/screens/main_menu.py:246
-#: budgetize/tui/screens/manage_accounts.py:91
+#: budgetize/tui/screens/add_transaction.py:62
+#: budgetize/tui/screens/main_menu.py:250
+#: budgetize/tui/screens/manage_accounts.py:89
 msgid "Amount"
 msgstr ""
 
-#: budgetize/tui/screens/add_transaction.py:75
-#: budgetize/tui/screens/main_menu.py:246
-#: budgetize/tui/screens/manage_accounts.py:91
+#: budgetize/tui/screens/add_transaction.py:79
+#: budgetize/tui/screens/main_menu.py:251
+#: budgetize/tui/screens/manage_accounts.py:89
 msgid "Date"
 msgstr ""
 
-#: budgetize/tui/screens/add_transaction.py:86
-#: budgetize/tui/screens/main_menu.py:246
-#: budgetize/tui/screens/manage_accounts.py:91
+#: budgetize/tui/screens/add_transaction.py:92
+#: budgetize/tui/screens/main_menu.py:253
+#: budgetize/tui/screens/manage_accounts.py:89
 msgid "Description"
 msgstr ""
 
-#: budgetize/tui/screens/add_transaction.py:94
+#: budgetize/tui/screens/add_transaction.py:100
 msgid "Update Transaction"
 msgstr ""
 
-#: budgetize/tui/screens/add_transaction.py:94
-#: budgetize/tui/screens/main_menu.py:45
+#: budgetize/tui/screens/add_transaction.py:100
 msgid "Add Transaction"
 msgstr ""
 
-#: budgetize/tui/screens/add_transaction.py:152
+#: budgetize/tui/screens/add_transaction.py:159
 msgid "Sucessfully updated transaction!"
 msgstr ""
 
-#: budgetize/tui/screens/add_transaction.py:152
+#: budgetize/tui/screens/add_transaction.py:160
 msgid "Transaction Updated"
 msgstr ""
 
-#: budgetize/tui/screens/add_transaction.py:166
+#: budgetize/tui/screens/add_transaction.py:174
 msgid "Sucessfully added transaction of {currency} {amount}"
 msgstr ""
 
-#: budgetize/tui/screens/add_transaction.py:169
+#: budgetize/tui/screens/add_transaction.py:178
 msgid "Transaction Added"
 msgstr ""
 
-#: budgetize/tui/screens/create_account.py:38
-#: budgetize/tui/screens/create_account.py:65
-#: budgetize/tui/screens/main_menu.py:106
+#: budgetize/tui/screens/create_account.py:41
+#: budgetize/tui/screens/create_account.py:70
+#: budgetize/tui/screens/main_menu.py:108
 msgid "Create Account"
 msgstr ""
 
-#: budgetize/tui/screens/create_account.py:45
+#: budgetize/tui/screens/create_account.py:48
 msgid "Account Currency"
 msgstr ""
 
-#: budgetize/tui/screens/create_account.py:46
-#: budgetize/tui/screens/main_menu.py:277
+#: budgetize/tui/screens/create_account.py:49
+#: budgetize/tui/screens/main_menu.py:283
 msgid "Account Name"
 msgstr ""
 
-#: budgetize/tui/screens/create_account.py:50
+#: budgetize/tui/screens/create_account.py:55
 msgid "Bank Account"
 msgstr ""
 
-#: budgetize/tui/screens/create_account.py:52
+#: budgetize/tui/screens/create_account.py:57
 msgid "Starting Balance"
 msgstr ""
 
-#: budgetize/tui/screens/create_account.py:60
+#: budgetize/tui/screens/create_account.py:65
 msgid "Initial Balance must be atleast zero."
 msgstr ""
 
-#: budgetize/tui/screens/create_account.py:84
+#: budgetize/tui/screens/create_account.py:88
 msgid "Account Name already Exists"
 msgstr ""
 
-#: budgetize/tui/screens/create_account.py:85
+#: budgetize/tui/screens/create_account.py:89
 msgid "You cannot have 2 accounts with the same name!"
 msgstr ""
 
-#: budgetize/tui/screens/create_account.py:99
+#: budgetize/tui/screens/create_account.py:102
 msgid "Account created successfully."
 msgstr ""
 
-#: budgetize/tui/screens/initial_config.py:39
+#: budgetize/tui/screens/initial_config.py:42
 msgid "Initial Setup"
 msgstr ""
 
-#: budgetize/tui/screens/initial_config.py:41
+#: budgetize/tui/screens/initial_config.py:44
 msgid "Select your Base Currency"
 msgstr ""
 
-#: budgetize/tui/screens/initial_config.py:43
+#: budgetize/tui/screens/initial_config.py:46
 msgid "Select a language"
 msgstr ""
 
-#: budgetize/tui/screens/initial_config.py:45
+#: budgetize/tui/screens/initial_config.py:48
 msgid "Save"
 msgstr ""
 
-#: budgetize/tui/screens/initial_config.py:84
+#: budgetize/tui/screens/initial_config.py:88
 msgid "Welcome to Budgetize. Restart the app to apply selected language."
 msgstr ""
 
-#: budgetize/tui/screens/initial_config.py:85
-msgid "Settings Applied"
-msgstr ""
-
-#: budgetize/tui/screens/main_menu.py:39
+#: budgetize/tui/screens/main_menu.py:50
 msgid "Quit Budgetize"
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:51
-msgid "Open Settings"
-msgstr ""
-
-#: budgetize/tui/screens/main_menu.py:57
+#: budgetize/tui/screens/main_menu.py:56
 msgid "Force Exchange Rate Update"
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:63
-msgid "Create a new Transfer"
+#: budgetize/tui/screens/main_menu.py:62
+msgid "Open Settings"
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:82 budgetize/tui/screens/main_menu.py:205
+#: budgetize/tui/screens/main_menu.py:82 budgetize/tui/screens/main_menu.py:209
 msgid "Main Menu"
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:108
-msgid "Transfer between Accounts"
+#: budgetize/tui/screens/main_menu.py:86
+msgid "Accounts"
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:110
-#: budgetize/tui/screens/manage_accounts.py:42
+#: budgetize/tui/screens/main_menu.py:113
+#: budgetize/tui/screens/manage_accounts.py:43
 msgid "Manage Accounts"
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:112
+#: budgetize/tui/screens/main_menu.py:119
+msgid "New Transanction"
+msgstr ""
+
+#: budgetize/tui/screens/main_menu.py:124
+msgid "Transfer between Accounts"
+msgstr ""
+
+#: budgetize/tui/screens/main_menu.py:129
 msgid "Recent Transactions"
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:173
-#: budgetize/tui/screens/main_menu.py:196
+#: budgetize/tui/screens/main_menu.py:131
+msgid ""
+"[bold][sandy_brown]Tip:[/bold][/sandy_brown] [italic]Click on a "
+"transaction to manage it."
+msgstr ""
+
+#: budgetize/tui/screens/main_menu.py:167
+#: budgetize/tui/screens/main_menu.py:194
 msgid "Updating Currency Rates"
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:174
+#: budgetize/tui/screens/main_menu.py:168
 msgid ""
 "Please wait while we retrieve the latest currency conversion rates for "
 "you."
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:186
-msgid ""
-"\n"
-"\n"
-" Using outdated exchange rates for now."
-msgstr ""
-
 #: budgetize/tui/screens/main_menu.py:188
-#: budgetize/tui/screens/main_menu.py:360
+#: budgetize/tui/screens/main_menu.py:364
 msgid "Error Fetching Exchange Rates"
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:197
+#: budgetize/tui/screens/main_menu.py:195
 msgid "Updated all currency rates."
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:220
+#: budgetize/tui/screens/main_menu.py:225
 msgid "Cannot Manage Accounts"
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:221
+#: budgetize/tui/screens/main_menu.py:226
 msgid "You must need atleast one account to manage accounts."
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:246
-#: budgetize/tui/screens/manage_accounts.py:91
+#: budgetize/tui/screens/main_menu.py:252
+#: budgetize/tui/screens/manage_accounts.py:89
 msgid "Category"
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:278
+#: budgetize/tui/screens/main_menu.py:284
 msgid "Balance"
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:322
+#: budgetize/tui/screens/main_menu.py:326
 msgid ""
 "Income this Month\n"
 "{income_color}{monthly_income}"
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:333
+#: budgetize/tui/screens/main_menu.py:337
 msgid ""
 "Balance\n"
 "{balance_color}{balance}"
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:343
+#: budgetize/tui/screens/main_menu.py:347
 msgid ""
 "Expenses this Month\n"
 "{expense_color}{monthly_expense}"
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:355
+#: budgetize/tui/screens/main_menu.py:359
 msgid ""
 "\n"
 "\n"
@@ -360,93 +389,111 @@ msgid ""
 "Or create an issue at Github to get support."
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:387
+#: budgetize/tui/screens/main_menu.py:385
 msgid "Cannot add a Transaction"
 msgstr ""
 
-#: budgetize/tui/screens/main_menu.py:388
+#: budgetize/tui/screens/main_menu.py:386
 msgid "You must need atleast one account to add a transaction."
 msgstr ""
 
-#: budgetize/tui/screens/manage_accounts.py:32
+#: budgetize/tui/screens/manage_accounts.py:33
 msgid "Back to Main Menu"
 msgstr ""
 
 #: budgetize/tui/screens/manage_accounts.py:54
-#: budgetize/tui/screens/manage_accounts.py:74
+#: budgetize/tui/screens/manage_accounts.py:73
 msgid "Balance: {balance}"
 msgstr ""
 
 #: budgetize/tui/screens/manage_accounts.py:63
-#: budgetize/tui/screens/manage_accounts.py:83
+#: budgetize/tui/screens/manage_accounts.py:82
 msgid "Delete Account"
 msgstr ""
 
-#: budgetize/tui/screens/manage_accounts.py:138
+#: budgetize/tui/screens/manage_accounts.py:140
 msgid "{account_name} has been deleted."
 msgstr ""
 
-#: budgetize/tui/screens/manage_accounts.py:139
+#: budgetize/tui/screens/manage_accounts.py:141
 msgid "Account Deleted"
 msgstr ""
 
-#: budgetize/tui/screens/settings.py:23
+#: budgetize/tui/screens/settings.py:29
 msgid "Quit without saving"
 msgstr ""
 
-#: budgetize/tui/screens/settings.py:29
+#: budgetize/tui/screens/settings.py:35
 msgid "Save and Quit"
 msgstr ""
 
-#: budgetize/tui/screens/settings.py:34
+#: budgetize/tui/screens/settings.py:42
 msgid "Settings"
 msgstr ""
 
-#: budgetize/tui/screens/settings.py:46
+#: budgetize/tui/screens/settings.py:54
 msgid "Language"
 msgstr ""
 
-#: budgetize/tui/screens/settings.py:54
+#: budgetize/tui/screens/settings.py:62
 msgid "Main Currency"
 msgstr ""
 
-#: budgetize/tui/screens/settings.py:61
+#: budgetize/tui/screens/settings.py:69
 msgid "Manage Categories"
 msgstr ""
 
-#: budgetize/tui/screens/settings.py:93
+#: budgetize/tui/screens/settings.py:70
+msgid "Revert Accounts & Transactions from Backup"
+msgstr ""
+
+#: budgetize/tui/screens/settings.py:81
+msgid "Select the backup you want to revert to"
+msgstr ""
+
+#: budgetize/tui/screens/settings.py:97
+msgid "No backup selected."
+msgstr ""
+
+#: budgetize/tui/screens/settings.py:104
+msgid ""
+"Backup loaded successfully.\n"
+"Please restart Budgetize."
+msgstr ""
+
+#: budgetize/tui/screens/settings.py:130
 msgid "Close Budgetize to apply the new language."
 msgstr ""
 
-#: budgetize/tui/screens/settings.py:94
+#: budgetize/tui/screens/settings.py:131
 msgid "Language Change"
 msgstr ""
 
-#: budgetize/tui/screens/settings.py:100
+#: budgetize/tui/screens/settings.py:137
 msgid "Settings saved."
 msgstr ""
 
-#: budgetize/tui/screens/settings.py:100
+#: budgetize/tui/screens/settings.py:137
 msgid "Settings Changed"
 msgstr ""
 
-#: budgetize/tui/screens/transfer.py:26
+#: budgetize/tui/screens/transfer.py:27
 msgid "Transfer Funds"
 msgstr ""
 
-#: budgetize/tui/screens/transfer.py:47
+#: budgetize/tui/screens/transfer.py:48
 msgid "Origin Account"
 msgstr ""
 
-#: budgetize/tui/screens/transfer.py:53
+#: budgetize/tui/screens/transfer.py:54
 msgid "Amount to Tranfer"
 msgstr ""
 
-#: budgetize/tui/screens/transfer.py:62
+#: budgetize/tui/screens/transfer.py:63
 msgid "Destination Account"
 msgstr ""
 
-#: budgetize/tui/screens/transfer.py:70
+#: budgetize/tui/screens/transfer.py:71
 msgid "Confirm Transfer"
 msgstr ""
 
