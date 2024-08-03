@@ -5,9 +5,15 @@ You may choose on of the cards in the project's roadmap, fix an issue or add a f
 
 **Table of Contents**
 - [💻 Preparing the Development Environment](#💻-preparing-the-development-environment)
-    - [⚙ Setting up dependencies](#⚙-setting-up-dependencies)
-    - [✍ Git Workflow](#✍-git-workflow)
+    - [⚙ Setting up dependencies](#-setting-up-dependencies)
+    - [✍ Git Workflow](#-git-workflow)
 - [🌎 Localizing](#🌎-localizing)
+    - [Extracting Translatable Strings](#extracting-translatable-strings)
+    - [The Localizing Workflow](#-the-localizing-workflow)
+        - [Creating a New Locale File](#creating-a-new-locale-file)
+        - [Updating Locale Files](#updating-locale-files)
+    - [Localizing Strings](#localizing-strings)
+    - [Compiling Locales](#compiling-locales)
 
 # 💻 Preparing the Development Environment
 ## ⚙ Setting up dependencies
@@ -47,70 +53,85 @@ For contributing, just follow these steps:
 When submitting your pull request make sure to name it accordingly and explain in detail what you changed. Thanks for contributing!
 
 # 🌎 Localizing
-**Index**
-
-- [Extracting Translatable Strings](#extracting-translatable-strings)
-- [💬 The Localizing Process](#💬-the-localizing-process)
-    - [Creating a New Locale File](#creating-a-new-locale-file)
-    - [Updating Locale Files](#updating-locale-files)
-    - [Compiling Locales](#compiling-locales)
+This section will guide you through the process of localizing (translating) messages within Budgetize.
 
 ## Extracting Translatable Strings
 All translatable strings (*aka. those strings wrapped with `_()`*) are those strings that a user will see in the UI. These strings need to be extracted to a `*.po` file and translated for Babel to use them accordingly.\
 To extract translatable strings run:
-Create a folder with the locale you want to translate.
 
 ```bash
-poetry run pybabel extract ./budgetize -o ./budgetize/translations/TRANSLATION_TEMPLATE.po --project Budgetize
+pybabel extract ./budgetize -o ./budgetize/translations/TRANSLATION_TEMPLATE.po --project Budgetize
 ```
 
 This will serve as the template for all other Locale files and their respective translations.\
 **NOTE: THE TEMPLATE SHOULD ONLY BE UPDATED IF NEW TRANSLATABLE STRINGS WERE ADDED**
 
-## 💬 The Localizing Process
+# 💬 The Localizing Workflow
+This section details the process of creating/updating locale files.\
+Please follow carefully since you don't want to mess existing translations.
+
+## Updating the Translatable Strings
 ### Creating a New Locale File
-*Please refer to [Updating Locale Files](#updating-locale-files) if the locale file already exists.*
+*Please refer to [Updating Locale Files](#updating-locale-files) if the locale file already exists.*\
+**DO NOT RUN ANY OF THIS COMMANDS FOR EXISTING LOCALES. OTHERWISE PREVIOUS TRANSLATIONS WILL BE OVERWRITTEN.**
+
 
 To create a new locale, head over to `budgetize/translations` and create a folder.
 1. Create a folder and name it with your locale (Ex. `en` for English)
 2. Create a folder called `LC_MESSAGES` in your newly created folder.
 3. Once you've created those folders, run this command to generate the file to write the translations:
 ```bash
-poetry run pybabel init -D budgetize -i ./budgetize/translations/TRANSLATION_TEMPLATE.po -o ./budgetize/translations/{locale}/{locale}.po -l {locale}
+pybabel init -D budgetize -i ./budgetize/translations/TRANSLATION_TEMPLATE.po -o ./budgetize/translations/{locale}/{locale}.po -l {locale}
+
 # Example
 poetry run pybabel init -D bugetize -i ./budgetize/translations/TRANSLATION_TEMPLATE.po -o ./budgetize/translations/es/es.po -l es
-```
-
-Now, for every generated `msgid` line, which is the translatable string, write below the `msgstr` which is the string translated to the specified locale.\
-**EXAMPLE IN SPANISH (locale `es`)**
-```
-msgid "Income"
-msgstr "Ingresos"
-
-msgid "Food"
-msgstr "Alimentos"
-
-msgid "Groceries"
-msgstr "Supermercado"
-
-msgid "Medicine"
-msgstr "Medicina"
 ```
 
 ### Updating Locale Files
 Every once in a while more translatable strings may be added to the translations template. To extract these new strings, you may run the command:
 
 ```bash
-poetry run pybabel update -i .\budgetize\translations\TRANSLATION_TEMPLATE.po -o .\budgetize\translations\{locale}\{locale}.po -l {locale} --previous --update-header-comment -D budgetize
+pybabel update -i .\budgetize\translations\TRANSLATION_TEMPLATE.po -o .\budgetize\translations\{locale}\{locale}.po -l {locale} --previous --update-header-comment -D budgetize
+
 # Example
-poetry run pybabel update -i .\budgetize\translations\TRANSLATION_TEMPLATE.po -o .\budgetize\translations\es\es.po -l es --previous --update-header-comment -D budgetize
+pybabel update -i .\budgetize\translations\TRANSLATION_TEMPLATE.po -o .\budgetize\translations\es\es.po -l es --previous --update-header-comment -D budgetize
 ```
 
-### Compiling Locales
-Once you have translated the strings into a new locale, you may compile those strings in a `*.mo` file for Babel to detect.\
+## Localizing Strings
+Now, for every generated `msgid` line, which is the translatable string, write below the `msgstr` which is the string translated to the specified locale.\
+**EXAMPLE IN SPANISH (locale `es`)**
+```
+# budgetize\...\...
+msgid "Income"
+msgstr "Ingresos"
+
+# budgetize\...\...
+msgid "Food"
+msgstr "Alimentos"
+
+# budgetize\...\...
+msgid "Groceries"
+msgstr "Supermercado"
+
+# budgetize\...\...
+msgid "Medicine"
+msgstr "Medicina"
+```
+
+If you ever want to know the context of the string, above `msgid` is the location on the codebase where the string was extracted. This can help understanding the context.
+
+#### Fuzzy Translations
+You may want to use your text editor and search for `fuzzy` translations.\
+These are translations that Babel attempted to automatically translate, but may need to be checked by a human to confirm if it is correct.\
+**Once you checked it, delete the line containing the `fuzzy`**
+
+
+## Compiling Locales
+Once you have translated the strings into a new locale, you may compile those strings in a `.mo` file for Babel to detect the locale.\
 To compile your locale run:
 ```bash
-poetry run pybabel compile -D budgetize -l {locale} -i budgetize/translations/{locale}/{locale}.po -d ./budgetize/translations/{locale}
+pybabel compile -D budgetize -l {locale} -i budgetize/translations/{locale}/{locale}.po -d ./budgetize/translations/{locale}
+
 # Example
-poetry run pybabel compile -D budgetize -l es -i budgetize/translations/es/es.po -d ./budgetize/translations/es
+pybabel compile -D budgetize -l es -i budgetize/translations/es/es.po -d ./budgetize/translations/es
 ```

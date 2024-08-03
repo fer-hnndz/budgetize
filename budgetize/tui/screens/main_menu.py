@@ -205,6 +205,9 @@ class MainMenu(Screen):
             settings_manager = SettingsManager()
             self.app.push_screen(CreateBudget(budget=settings_manager.load_budget()))
 
+        if event.button.id == "transaction-button":
+            self.action_verify_add_transaction()
+
         if event.button.id == "delete-budget-btn":
             settings_manager = SettingsManager()
             settings_manager.delete_budget()
