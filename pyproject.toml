@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "budgetize"
-version = "0.2.0b0"
+version = "0.2.0rc0"
 description = "A Terminal User Interface (TUI) to create budgets, track your incomes/expenses and manage your finances."
 authors = ["fer-hnndz <jfernandohernandez28@gmail.com>"]
 license = "GPL-3.0-only"
